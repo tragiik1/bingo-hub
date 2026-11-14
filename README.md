@@ -1,46 +1,30 @@
 # Bingo Hub
 
-Everything for an Elden Ring bingo race in one download: the Bingo Board, the Bingo Randomizer, the Debug Tool and a small hub app that ties them together.
+Elden Ring bingo in one download: the bingo board, the randomizer, a practice tool, and a small app that runs them.
 
-## Download
+## Install
 
-Get **Elden-Ring-Bingo-vX.Y.Z.zip** from the [latest release](../../releases/latest).
+Download `Elden-Ring-Bingo-vX.Y.Z.zip` from [Releases](../../releases/latest), extract it, and open `Bingo Hub.exe`.
 
-1. Extract it anywhere, e.g. `C:\Games\Elden Ring Bingo`.
-2. Open `Bingo Hub.exe`. If Windows SmartScreen appears, click **More info → Run anyway** (the app isn't code-signed).
-3. Check the **Setup** page. Anything that needs fixing has a button.
+Windows may say it protected your PC because the app isn't signed. Click **More info**, then **Run anyway**.
 
-The hub updates itself: when a new version is out it shows **Update available** in the sidebar.
+The app updates itself.
 
-## What the hub does
+## Included
 
-- **Race**: seed, then a checklist: open the Board, randomize (seed is copied for you), back up, launch with the bingo mod.
-- **Saves**: automatic backups of `ER0000.sl2` before launching and after randomizing; restore any of them.
-- **Boards**: goal lists, search, and random practice cards.
-- **Run log**: results, opponents and seeds, with CSV export.
-- **Setup**: checks the install (game path, Steam, runtimes, stray mod DLLs) and fixes what it can.
+| Tool | Used for |
+| --- | --- |
+| EldenBingo | Bingo board and map |
+| Bingo Randomizer 0.91 | Randomized gear from a shared seed |
+| ModEngine 2 | Loading the randomized files |
+| Elden Ring Debug Tool | Practice |
 
-It also tells you if the game was started without the bingo mod.
-
-## Included tools
-
-These are made by their own authors and ship unchanged:
-
-- **EldenBingo**: lobby board and map
-- **Bingo Randomizer 0.91**: originally by Nordgaren
-- **ModEngine 2**: by the soulsmods team
-- **Elden Ring Debug Tool**: by Nordgaren, for practice only
+These tools belong to their authors and are included unchanged. The Bingo Randomizer and Debug Tool were originally made by Nordgaren, ModEngine 2 by the soulsmods team.
 
 ## Building
-
-Rust 1.88+ on Windows.
 
 ```
 cargo build --release
 ```
 
-Releasing (needs the GitHub CLI): put `owner/repo` in `repo.txt`, then
-
-```
-.\release.ps1 1.1.0 "What changed"
-```
+`release.ps1 <version> "<notes>"` builds, packages and publishes a release.
