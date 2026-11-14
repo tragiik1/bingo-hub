@@ -627,7 +627,7 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
         add(
             Level::Bad,
             "This folder is inside OneDrive",
-            "OneDrive locks files and makes the Randomizer crash. Move this folder to e.g. C:\\Games.".into(),
+            "OneDrive makes the Randomizer crash. Move this folder to e.g. C:\\Games.".into(),
             Some(("Show folder", Fix::OpenFolder(root))),
         );
     }
