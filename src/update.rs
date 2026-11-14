@@ -35,9 +35,10 @@ pub struct Component {
     pub merge: bool,
     /// Relative path -> SHA-256 of the files that identify this version.
     pub files: BTreeMap<String, String>,
-    #[serde(skip)]
+    /// Set when the zip lives in an earlier release (the tool didn't change); else found by `asset`.
+    #[serde(default)]
     pub url: String,
-    #[serde(skip)]
+    #[serde(default)]
     pub size: u64,
 }
 
@@ -158,11 +159,12 @@ pub fn check() -> Result<Option<Release>, String> {
                     if up_to_date(&c) {
                         continue;
                     }
-                    if let Some((u, s)) = find(&c.asset) {
+                    if c.url.is_empty() {
+                        let Some((u, s)) = find(&c.asset) else { continue };
                         c.url = u;
                         c.size = s;
-                        tools.push(c);
                     }
+                    tools.push(c);
                 }
             }
         }

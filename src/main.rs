@@ -1,8 +1,11 @@
 #![windows_subsystem = "windows"]
 
 mod app;
+mod bingosave;
+mod classes;
 mod core;
 mod crash;
+mod graces;
 mod sys;
 mod ui;
 mod update;

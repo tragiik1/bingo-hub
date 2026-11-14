@@ -68,17 +68,44 @@ $tools_ = @(
     @{ name = 'Debug Tool';       folder = 'Debug Tool';       asset = 'Debug-Tool.zip';       merge = $false; keys = @('Elden Ring Debug Tool.exe') },
     @{ name = 'Boards';           folder = 'Boards';           asset = 'Boards.zip';           merge = $true;  keys = @((Get-ChildItem "$stage\Boards\*.json").Name) }
 )
+# Tools that haven't changed since the last release point at that release's zip instead of
+# being uploaded again, so most releases only upload the hub and the full package.
+$prev = @{}
+if ($repo -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+    try {
+        $last = gh api "repos/$repo/releases/latest" | ConvertFrom-Json
+        $murl = ($last.assets | Where-Object name -eq 'manifest.json').browser_download_url
+        if ($murl) {
+            foreach ($c in (Invoke-RestMethod $murl).components) {
+                $a = $last.assets | Where-Object name -eq $c.asset
+                $url = if ($c.url) { $c.url } elseif ($a) { $a.browser_download_url } else { '' }
+                $size = if ($c.url) { $c.size } elseif ($a) { $a.size } else { 0 }
+                if ($url) { $prev[$c.folder] = @{ files = ($c.files | ConvertTo-Json -Compress); url = $url; size = $size } }
+            }
+        }
+    } catch { Write-Host "  (Couldn't read the last release; uploading every tool.)" -ForegroundColor Yellow }
+}
+$toolAssets = @()
 $components = foreach ($t in $tools_) {
-    & "$env:SystemRoot\System32\tar.exe" -a -c -f "$dist\$($t.asset)" -C $stage $t.folder
-    if ($LASTEXITCODE -ne 0) { throw "Zipping $($t.name) failed" }
     $files = [ordered]@{}
     foreach ($k in $t.keys) { $files[$k] = (Get-FileHash -LiteralPath "$stage\$($t.folder)\$k" -Algorithm SHA256).Hash.ToLower() }
-    [ordered]@{ name = $t.name; folder = $t.folder; asset = $t.asset; merge = $t.merge; files = $files }
+    $entry = [ordered]@{ name = $t.name; folder = $t.folder; asset = $t.asset; merge = $t.merge; files = $files }
+    $old = $prev[$t.folder]
+    if ($old -and $old.files -eq ([pscustomobject]$files | ConvertTo-Json -Compress)) {
+        $entry.url = $old.url
+        $entry.size = $old.size
+        Write-Host "  $($t.name): unchanged, reusing the last upload"
+    } else {
+        & "$env:SystemRoot\System32\tar.exe" -a -c -f "$dist\$($t.asset)" -C $stage $t.folder
+        if ($LASTEXITCODE -ne 0) { throw "Zipping $($t.name) failed" }
+        $toolAssets += "$dist\$($t.asset)"
+        Write-Host "  $($t.name): changed, uploading"
+    }
+    $entry
 }
 $manifest = Join-Path $dist 'manifest.json'
 [IO.File]::WriteAllText($manifest, (@{ components = @($components) } | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
-$toolAssets = @($tools_ | ForEach-Object { "$dist\$($_.asset)" }) + $manifest
-Write-Host "  Tool zips and manifest.json"
+$toolAssets += $manifest
 
 if (-not (Get-Process 'Bingo Hub' -ErrorAction SilentlyContinue)) {
     Copy-Item $exe "$tools\Bingo Hub.exe" -Force

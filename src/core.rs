@@ -180,6 +180,12 @@ pub struct Settings {
     pub auto_backup_on_randomize: bool,
     pub keep_auto_backups: u32,
     pub debug_tool_as_admin: bool,
+    /// Set the race graces automatically once a bingo character has loaded.
+    pub auto_graces: bool,
+    /// Bingo launches use their own save file instead of the normal one.
+    pub separate_save: bool,
+    /// Setup warnings the user dismissed ("title|detail"); they come back if the detail changes.
+    pub dismissed: Vec<String>,
     pub debug_warning_accepted: bool,
     pub game_exe_override: Option<String>,
     pub last_page: String,
@@ -197,6 +203,9 @@ impl Default for Settings {
             auto_backup_on_randomize: true,
             keep_auto_backups: 10,
             debug_tool_as_admin: false,
+            auto_graces: true,
+            separate_save: false,
+            dismissed: Vec::new(),
             debug_warning_accepted: false,
             game_exe_override: None,
             last_page: "Race".into(),
@@ -222,9 +231,6 @@ impl Settings {
         self.rando_run_time
     }
 
-    pub fn seed_set(&self) -> Option<DateTime<Utc>> {
-        parse_time(&self.seed_set_utc, true).map(|d| d.with_timezone(&Utc))
-    }
 }
 
 /// Parses ISO timestamps written by either version. Naive times are UTC if `naive_utc`, else local.
@@ -570,6 +576,8 @@ pub struct Run {
     pub score: String,
     pub time: String,
     pub notes: String,
+    /// Race code at the time of the run.
+    pub code: String,
 }
 
 impl Run {

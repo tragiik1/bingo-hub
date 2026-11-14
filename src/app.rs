@@ -23,6 +23,7 @@ const SIDEBAR_W: f32 = 212.0;
 #[derive(Clone, Copy, PartialEq)]
 enum Page {
     Race,
+    Classes,
     Saves,
     Boards,
     Runs,
@@ -30,10 +31,11 @@ enum Page {
 }
 
 impl Page {
-    const ALL: [Page; 5] = [Page::Race, Page::Saves, Page::Boards, Page::Runs, Page::Setup];
+    const ALL: [Page; 6] = [Page::Race, Page::Classes, Page::Saves, Page::Boards, Page::Runs, Page::Setup];
     fn key(self) -> &'static str {
         match self {
             Page::Race => "Race",
+            Page::Classes => "Classes",
             Page::Saves => "Saves",
             Page::Boards => "Boards",
             Page::Runs => "Runs",
@@ -72,6 +74,10 @@ enum Act {
     Export,
     Fix(Fix),
     Toast(String),
+    ApplyGraces,
+    Dismiss(String),
+    Undismiss(String),
+    ResetBingoSave,
     CheckUpdate,
     ShowUpdate,
     InstallUpdate,
@@ -88,6 +94,7 @@ enum Upd {
 }
 
 enum Confirmed {
+    ResetBingoSave,
     Restore(Backup),
     Delete(Backup),
     Debug,
@@ -137,6 +144,8 @@ pub struct App {
     checks_busy: bool,
     badge: (usize, usize),
     upd: Upd,
+    prev_game: GameState,
+    show_dismissed: bool,
     /// Started right after a hub update: finish any tool updates without asking again.
     auto_tools: bool,
 }
@@ -172,6 +181,8 @@ impl App {
             checks_busy: false,
             badge: (0, 0),
             upd: Upd::Idle,
+            prev_game: GameState::NotRunning,
+            show_dismissed: false,
             auto_tools: args.iter().any(|a| a == "--updated"),
         };
         if args.iter().any(|a| a == "--updated") {
@@ -241,6 +252,30 @@ impl App {
         });
     }
 
+    fn update_badge(&mut self) {
+        let dismissed = self.settings().dismissed;
+        let live: Vec<&Check> = self.checks.iter().flatten().filter(|c| !dismissed.contains(&dismiss_key(c))).collect();
+        self.badge = (live.iter().filter(|c| c.level == Level::Bad).count(), live.iter().filter(|c| c.level == Level::Warn).count());
+    }
+
+    /// Bingo game just started: add it to the run log (unless it's a relaunch of the same race).
+    fn auto_log_run(&mut self, ctx: &egui::Context, snap: &Snapshot) {
+        let (seed, code) = match &snap.rando_run {
+            Some(r) => (r.seed.clone(), r.code.clone()),
+            None => (self.settings().seed.trim().to_string(), String::new()),
+        };
+        let recent = self.runs.first().is_some_and(|r| {
+            r.result.is_empty() && r.seed == seed && r.date_local().is_some_and(|d| (Local::now() - d).num_hours() < 6)
+        });
+        if recent {
+            return;
+        }
+        let board = self.default_board.clone().map(|d| core::pretty(&PathBuf::from(d))).unwrap_or_default();
+        self.runs.insert(0, Run { date: Local::now().to_rfc3339(), seed, code, board, ..Default::default() });
+        core::save_runs(&self.runs);
+        self.toast(ctx, "Race added to your run log");
+    }
+
     fn load_boards(&mut self) {
         self.boards = core::list_boards();
         self.default_board = core::board_config_get("LastBingoFile").filter(|s| !s.is_empty());
@@ -267,8 +302,8 @@ impl App {
                 Msg::Toast(t) => self.toast(ctx, t),
                 Msg::Error(e) => self.alert("Something went wrong", e),
                 Msg::Checks(c) => {
-                    self.badge = (c.iter().filter(|c| c.level == Level::Bad).count(), c.iter().filter(|c| c.level == Level::Warn).count());
                     self.checks = Some(c);
+                    self.update_badge();
                     self.checks_busy = false;
                 }
                 Msg::BoardsChanged => {
@@ -382,9 +417,15 @@ impl App {
                                 return;
                             }
                         }
+                        if s.separate_save {
+                            if let Err(e) = crate::bingosave::swap_in() {
+                                let _ = tx.send(Msg::Error(format!("Couldn't switch to your bingo save, so the game wasn't launched. Your normal save is untouched.\n\n{e}")));
+                                return;
+                            }
+                        }
                         // Same command as launchmod_bingo.bat (the Randomizer's Bingo! button).
-                        // (The poller is woken below so the game shows up immediately.)
                         if let Err(e) = sys::launch(&core::paths().me2_launcher, &["-t", "er", "-c", ".\\config_bingo.toml"], false, true) {
+                            let _ = crate::bingosave::swap_out();
                             let _ = tx.send(Msg::Error(e));
                         }
                     });
@@ -461,6 +502,34 @@ impl App {
                 });
             }
             Act::Toast(t) => self.toast(ctx, t),
+            Act::Dismiss(k) => {
+                self.set(|s| s.dismissed.push(k));
+                self.update_badge();
+            }
+            Act::Undismiss(k) => {
+                self.set(|s| s.dismissed.retain(|d| *d != k));
+                self.update_badge();
+            }
+            Act::ResetBingoSave => self.confirm(
+                "New bingo save",
+                "Your next bingo game starts with an empty save. The current bingo save goes to the Recycle Bin. Your normal save isn't touched.",
+                "Start fresh",
+                Confirmed::ResetBingoSave,
+            ),
+            Act::ApplyGraces => {
+                if !snap.bingo_save {
+                    self.alert("Race graces", "Race graces only work on the separate bingo save, so your normal characters can never be changed. Turn it on in Setup and launch from the hub.");
+                } else if let (GameState::Modded, Some(pid)) = (snap.game, snap.game_pid) {
+                    self.bg(ctx, move |tx| {
+                        let _ = tx.send(match crate::graces::apply_now(pid) {
+                            Ok(m) => Msg::Toast(m),
+                            Err(e) => Msg::Crash("Race graces".into(), e),
+                        });
+                    });
+                } else {
+                    self.alert("Race graces", "Launch a bingo game and load into your character first.");
+                }
+            }
             Act::CheckUpdate => {
                 self.upd = Upd::Checking;
                 self.bg(ctx, |tx| {
@@ -549,6 +618,10 @@ impl App {
                 self.act(ctx, Act::OpenDebug, snap);
             }
             Confirmed::StartSteam => start_steam(),
+            Confirmed::ResetBingoSave => match crate::bingosave::reset_bingo_save() {
+                Ok(()) => self.toast(ctx, "Next bingo game starts with a fresh save"),
+                Err(e) => self.alert("Couldn't reset", e),
+            },
             Confirmed::DeleteRun(i) => {
                 if i < self.runs.len() {
                     self.runs.remove(i);
@@ -579,13 +652,10 @@ fn shuffle(v: &mut [usize]) {
     }
 }
 
-fn random_seed() -> String {
-    let mut v: Vec<usize> = (0..10).collect();
-    shuffle(&mut v);
-    let t = std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH).unwrap_or_default().as_nanos() as u64;
-    let x = t.wrapping_mul(6364136223846793005).wrapping_add(v[0] as u64 * 1442695040888963407);
-    (100_000_000 + (x >> 33) % 2_000_000_000).to_string()
+fn dismiss_key(c: &Check) -> String {
+    format!("{}|{}", c.title, c.detail)
 }
+
 
 // ================================================================ frame
 
@@ -606,6 +676,10 @@ impl eframe::App for App {
         self.drain(ctx);
         let snap = self.shared.snap.lock().unwrap().clone();
         let mut acts: Vec<Act> = Vec::new();
+        if snap.game == GameState::Modded && self.prev_game != GameState::Modded {
+            self.auto_log_run(ctx, &snap);
+        }
+        self.prev_game = snap.game;
 
         // Maximized borderless windows hang off-screen by the frame width: pad by exactly that.
         let [ol, ot, or, ob] = if maximized(ctx) {
@@ -627,8 +701,9 @@ impl eframe::App for App {
                 Page::Race => self.race(ui, &snap, &mut acts),
                 Page::Saves => self.saves(ui, &snap, &mut acts),
                 Page::Boards => self.boards_page(ui, &mut acts),
+                Page::Classes => self.classes_page(ui, &snap),
                 Page::Runs => self.runs_page(ui, &mut acts),
-                Page::Setup => self.setup(ui, &mut acts),
+                Page::Setup => self.setup(ui, &snap, &mut acts),
             });
             self.toast_ui(ui, content);
         });
@@ -812,12 +887,8 @@ impl App {
                 ui::section(ui, "Seed", 0.0);
                 ui.horizontal(|ui| {
                     ui.spacing_mut().item_spacing.x = 8.0;
-                    let mut changed = ui::field(ui, "seed", &mut self.seed, "Enter a seed", 240.0, 24).changed();
+                    let changed = ui::field(ui, "seed", &mut self.seed, "Optional: checks everyone used the same seed", 340.0, 60).changed();
                     ui.add_space(8.0);
-                    if ui::button(ui, "Generate", Kind::Secondary, true).clicked() {
-                        self.seed = random_seed();
-                        changed = true;
-                    }
                     if ui::button(ui, "Copy", Kind::Ghost, !self.seed.trim().is_empty()).clicked() {
                         ui.ctx().copy_text(self.seed.trim().to_string());
                         self.toast = Some(("Seed copied".into(), ui.ctx().input(|i| i.time)));
@@ -834,7 +905,6 @@ impl App {
                 ui::section(ui, "Checklist", 30.0);
                 let reg = snap.regulation.map(core::to_local);
                 let seed = settings.seed.trim().to_string();
-                let last = snap.backups.first();
                 ui::card(ui, |ui| {
                     let (lead, detail) = if snap.board.is_some() { (Lead::Check, "Open") } else { (Lead::Num("1"), "Not open") };
                     ui::row(ui, lead, "Bingo Board", detail, c::MUTED, false, false, |ui| {
@@ -858,17 +928,7 @@ impl App {
                             c::MUTED,
                             Some(format!("Race code {} (seed \"{}\")", run.code, run.seed)),
                         ),
-                        (None, Some(t)) => {
-                            let fresh = !seed.is_empty() && settings.seed_set().is_none_or(|s| t.with_timezone(&Utc) >= s);
-                            let d = if fresh {
-                                format!("Randomized {}", core::when(t.naive_local()).to_lowercase())
-                            } else if seed.is_empty() {
-                                format!("Last randomized {}", core::ago(t))
-                            } else {
-                                format!("Last randomized {}, before this seed was set", core::ago(t))
-                            };
-                            (if fresh { Lead::Check } else { Lead::Num("2") }, d, c::MUTED, None)
-                        }
+                        (None, Some(t)) => (Lead::Check, format!("Randomized {}", core::when(t.naive_local()).to_lowercase()), c::MUTED, None),
                     };
                     ui::row(ui, lead, "Randomize", &detail, color, false, true, |ui| {
                         if ui::button(ui, if snap.rando.is_some() { "Show" } else { "Open" }, Kind::Secondary, true).clicked() {
@@ -882,21 +942,28 @@ impl App {
                         }
                     });
 
-                    let recent = last.is_some_and(|b| (Local::now().naive_local() - b.when).num_hours() < 12);
-                    let detail = last.map(|b| format!("Last backup {}", core::when(b.when).to_lowercase())).unwrap_or("No backups yet".into());
-                    ui::row(ui, if recent { Lead::Check } else { Lead::Num("3") }, "Back up save", &detail, c::MUTED, false, true, |ui| {
-                        if ui::button(ui, "Back up", Kind::Secondary, true).clicked() {
-                            acts.push(Act::BackupPrompt);
-                        }
-                    });
-
+                    let normal_save_in_bingo = snap.game == GameState::Modded && settings.separate_save && !snap.bingo_save;
                     let (lead, detail, color) = match snap.game {
-                        GameState::Modded => (Lead::Check, "Running with the bingo mod".to_string(), c::MUTED),
-                        GameState::Starting => (Lead::Num("4"), "Starting".into(), c::MUTED),
+                        _ if normal_save_in_bingo => (
+                            Lead::Dot(c::WARN),
+                            "Using your normal save. Close the game and launch from here to use your bingo save.".to_string(),
+                            c::WARN,
+                        ),
+                        GameState::Modded => {
+                            let mut d = String::from("Running with the bingo mod");
+                            if snap.bingo_save {
+                                d += "   ·   bingo save";
+                            }
+                            if snap.graces == "set" {
+                                d += "   ·   race graces set";
+                            }
+                            (Lead::Check, d, c::MUTED)
+                        }
+                        GameState::Starting => (Lead::Num("3"), "Starting".into(), c::MUTED),
                         GameState::Vanilla => (Lead::Dot(c::BAD), "Running without the mod. Close it and launch from here.".into(), c::BAD),
                         GameState::Unknown => (Lead::Dot(c::WARN), "Running, mod not confirmed".into(), c::MUTED),
                         GameState::NotRunning => (
-                            Lead::Num("4"),
+                            Lead::Num("3"),
                             if reg.is_none() { "Randomize first".into() } else if snap.steam { "Ready".into() } else { "Steam isn't running".into() },
                             c::MUTED,
                         ),
@@ -908,6 +975,50 @@ impl App {
                         }
                     });
                 });
+
+                // Saves at a glance; backups happen by themselves.
+                ui.add_space(14.0);
+                let mut parts: Vec<String> = Vec::new();
+                if settings.separate_save {
+                    parts.push(if snap.bingo_save { "Bingo save in use".into() } else { "Separate bingo save on".into() });
+                }
+                parts.push(match snap.backups.first() {
+                    Some(b) => format!("Last backup {}", core::when(b.when).to_lowercase()),
+                    None => "No backups yet".into(),
+                });
+                ui::sub(ui, &parts.join("   ·   "));
+            });
+        });
+    }
+
+    // ------------------------------------------------------------ classes
+
+    fn classes_page(&mut self, ui: &mut Ui, snap: &Snapshot) {
+        egui::ScrollArea::vertical().id_salt("classes").auto_shrink([false, false]).show(ui, |ui| {
+            page_area(ui, Some(1000.0), |ui| {
+                ui::title(ui, "Classes");
+                let Some(sp) = &snap.classes else {
+                    ui::sub(ui, "Randomize to see this seed's starting classes.");
+                    return;
+                };
+                ui.add_space(-20.0);
+                let stale = snap.rando_run.as_ref().is_some_and(|r| r.seed != sp.seed);
+                ui::sub(ui, &format!("Seed \"{}\"{}", sp.seed, if stale { "   ·   from an earlier randomize" } else { "" }));
+                ui.add_space(20.0);
+                let gap = 12.0;
+                let w = ((ui.available_width() - gap) / 2.0).floor();
+                for pair in sp.classes.chunks(2) {
+                    ui.horizontal_top(|ui| {
+                        ui.spacing_mut().item_spacing.x = gap;
+                        for class in pair {
+                            ui.allocate_ui_with_layout(vec2(w, 0.0), Layout::top_down(Align::Min), |ui| {
+                                ui.set_width(w);
+                                class_card(ui, class);
+                            });
+                        }
+                    });
+                    ui.add_space(gap);
+                }
             });
         });
     }
@@ -1133,7 +1244,7 @@ impl App {
                     3 => (run.score.clone(), c::TEXT),
                     4 => (run.time.clone(), c::TEXT),
                     5 => (run.board.clone(), c::MUTED),
-                    6 => (run.seed.clone(), c::MUTED),
+                    6 => (if run.code.is_empty() { run.seed.clone() } else { format!("{}  ({})", run.seed, run.code) }, c::MUTED),
                     _ => (run.notes.clone(), c::TEXT),
                 }
             });
@@ -1148,7 +1259,7 @@ impl App {
 
     // ------------------------------------------------------------ setup
 
-    fn setup(&mut self, ui: &mut Ui, acts: &mut Vec<Act>) {
+    fn setup(&mut self, ui: &mut Ui, snap: &Snapshot, acts: &mut Vec<Act>) {
         let mut s = self.settings();
         let before = s.clone();
         egui::ScrollArea::vertical().id_salt("setup").auto_shrink([false, false]).show(ui, |ui| {
@@ -1157,8 +1268,11 @@ impl App {
                 match &self.checks {
                     None => ui::sub(ui, "Checking…"),
                     Some(checks) => {
-                        let mut issues: Vec<&Check> = checks.iter().filter(|c| c.is_issue()).collect();
+                        let dismissed_keys = s.dismissed.clone();
+                        let is_dismissed = |c: &Check| dismissed_keys.contains(&dismiss_key(c));
+                        let mut issues: Vec<&Check> = checks.iter().filter(|c| c.is_issue() && !is_dismissed(c)).collect();
                         issues.sort_by_key(|c| c.level);
+                        let hidden: Vec<&Check> = checks.iter().filter(|c| c.is_issue() && is_dismissed(c)).collect();
                         let ok: Vec<&Check> = checks.iter().filter(|c| !c.is_issue()).collect();
                         if !issues.is_empty() {
                             ui::section(ui, "Needs attention", 0.0);
@@ -1166,6 +1280,9 @@ impl App {
                                 for (i, ch) in issues.iter().enumerate() {
                                     let col = match ch.level { Level::Bad => c::BAD, Level::Warn => c::WARN, _ => c::MUTED };
                                     ui::row(ui, Lead::Dot(col), &ch.title, &ch.detail, c::MUTED, false, i > 0, |ui| {
+                                        if ch.level != Level::Bad && ui::button(ui, "Dismiss", Kind::Ghost, true).clicked() {
+                                            acts.push(Act::Dismiss(dismiss_key(ch)));
+                                        }
                                         if let Some((label, fix)) = &ch.fix {
                                             if ui::button(ui, label, Kind::Secondary, true).clicked() {
                                                 acts.push(Act::Fix(fix.clone()));
@@ -1174,6 +1291,25 @@ impl App {
                                     });
                                 }
                             });
+                        }
+                        if !hidden.is_empty() {
+                            ui.add_space(8.0);
+                            let label = if self.show_dismissed { "Hide dismissed".to_string() } else { format!("Show {} dismissed", hidden.len()) };
+                            if ui::button(ui, &label, Kind::Ghost, true).clicked() {
+                                self.show_dismissed = !self.show_dismissed;
+                            }
+                            if self.show_dismissed {
+                                ui.add_space(8.0);
+                                ui::card(ui, |ui| {
+                                    for (i, ch) in hidden.iter().enumerate() {
+                                        ui::row(ui, Lead::Dot(c::FAINT), &ch.title, &ch.detail, c::MUTED, false, i > 0, |ui| {
+                                            if ui::button(ui, "Restore", Kind::Ghost, true).clicked() {
+                                                acts.push(Act::Undismiss(dismiss_key(ch)));
+                                            }
+                                        });
+                                    }
+                                });
+                            }
                         }
                         ui::section(ui, "Checks", if issues.is_empty() { 0.0 } else { 30.0 });
                         ui::card(ui, |ui| {
@@ -1202,6 +1338,54 @@ impl App {
                         });
                     });
                     ui.add_space(8.0);
+                });
+
+                ui::section(ui, "Bingo save", 30.0);
+                let save_status = if snap.bingo_save {
+                    "In use by the bingo game. Your normal save comes back when it closes.".to_string()
+                } else if !s.separate_save {
+                    "Off: bingo runs share your normal save file".to_string()
+                } else if crate::bingosave::has_bingo_save() {
+                    "Ready. Launch from the hub to use it.".to_string()
+                } else {
+                    "Your first bingo launch starts a fresh save".to_string()
+                };
+                ui::card(ui, |ui| {
+                    ui.add_space(8.0);
+                    ui.horizontal(|ui| {
+                        ui.add_space(18.0);
+                        ui::toggle(ui, &mut s.separate_save, "Use a separate save for bingo (launch from the hub)");
+                    });
+                    ui::row(ui, Lead::None, "Status", &save_status, c::MUTED, true, true, |ui| {
+                        if s.separate_save && crate::bingosave::has_bingo_save() && !snap.bingo_save && ui::button(ui, "Start fresh", Kind::Ghost, true).clicked() {
+                            acts.push(Act::ResetBingoSave);
+                        }
+                    });
+                });
+
+                ui::section(ui, "Race graces", 30.0);
+                let status = match snap.graces.as_str() {
+                    _ if !s.auto_graces => "Automatic setting is off".to_string(),
+                    _ if !s.separate_save => "Needs the separate bingo save, so your normal characters are never changed".to_string(),
+                    "nosave" => "Not used: this game is on your normal save".to_string(),
+                    "" => "Applied automatically when you load into a bingo character".to_string(),
+                    "set" => "Set for this character".to_string(),
+                    "waiting" => "Waiting for you to load into a character".to_string(),
+                    x if x.starts_with("skipped:") => format!("Left alone: this character already has {} graces", &x[8..]),
+                    x => x.trim_start_matches("error:").to_string(),
+                };
+                let can_apply = snap.game == GameState::Modded && snap.bingo_save;
+                ui::card(ui, |ui| {
+                    ui.add_space(8.0);
+                    ui.horizontal(|ui| {
+                        ui.add_space(18.0);
+                        ui::toggle(ui, &mut s.auto_graces, "Set race graces when I load into a bingo character");
+                    });
+                    ui::row(ui, Lead::None, "Status", &status, c::MUTED, true, true, |ui| {
+                        if ui::button(ui, "Apply now", Kind::Ghost, can_apply).clicked() {
+                            acts.push(Act::ApplyGraces);
+                        }
+                    });
                 });
 
                 ui::section(ui, "About", 30.0);
@@ -1442,4 +1626,43 @@ fn run_form(ui: &mut Ui, run: &mut Run, date: &mut String, width: f32) {
     pair(ui, ("Board", &mut run.board, "run_board", ""), ("Seed", &mut run.seed, "run_seed", ""));
     label(ui, "Notes");
     ui::field(ui, "run_notes", &mut run.notes, "", width, 400);
+}
+
+fn class_card(ui: &mut Ui, class: &crate::classes::Class) {
+    ui::card(ui, |ui| {
+        ui.add_space(10.0);
+        ui.horizontal(|ui| {
+            ui.add_space(18.0);
+            ui.vertical(|ui| {
+                ui.label(egui::RichText::new(&class.name).font(ui::strong()).color(c::TEXT));
+                ui.add_space(6.0);
+                for it in &class.items {
+                    let mut job = egui::text::LayoutJob::default();
+                    job.append(&it.name, 0.0, egui::TextFormat::simple(ui::body(), c::TEXT));
+                    if let Some(n) = it.count {
+                        job.append(&format!("  ×{n}"), 0.0, egui::TextFormat::simple(ui::small(), c::MUTED));
+                    }
+                    if let Some(l) = it.level {
+                        job.append(&format!("   needs lv {l}"), 0.0, egui::TextFormat::simple(ui::small(), c::WARN));
+                    }
+                    ui.label(job);
+                }
+                ui.add_space(8.0);
+                let short = |k: &str| match k {
+                    "Vigor" => "VIG", "Mind" => "MND", "Endurance" => "END", "Strength" => "STR",
+                    "Dexterity" => "DEX", "Intelligence" => "INT", "Faith" => "FAI", "Arcane" => "ARC",
+                    _ => "",
+                };
+                for row in class.stats.chunks(4) {
+                    let mut job = egui::text::LayoutJob::default();
+                    for (k, v) in row {
+                        job.append(short(k), 0.0, egui::TextFormat::simple(ui::small(), c::FAINT));
+                        job.append(&format!(" {v:<3}   "), 0.0, egui::TextFormat::simple(ui::small(), c::TEXT));
+                    }
+                    ui.label(job);
+                }
+            });
+        });
+        ui.add_space(10.0);
+    });
 }

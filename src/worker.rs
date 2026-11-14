@@ -35,6 +35,12 @@ pub struct Snapshot {
     pub backups: Vec<Backup>,
     pub game_exe: Option<PathBuf>,
     pub rando_run: Option<core::RandoRun>,
+    /// Race graces status for the current game, empty when not applicable.
+    pub graces: String,
+    /// The separate bingo save is in the save folder right now.
+    pub bingo_save: bool,
+    /// Starting classes for the last randomize.
+    pub classes: Option<crate::classes::Spoiler>,
 }
 
 pub struct Shared {
@@ -84,6 +90,12 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut rando_name = rando_file();
     let (mut prev_rando, mut prev_game): (Option<u32>, Option<u32>) = (None, None);
     let mut last_crash = String::new();
+    let mut grace_game: Option<(u32, Result<crate::graces::Game, String>, Instant)> = None;
+    let mut grace_checked = Instant::now();
+    let mut graces_status = String::new();
+    let mut saw_game_since_swap = false;
+    let mut spoiler_time: Option<SystemTime> = None;
+    let mut classes: Option<crate::classes::Spoiler> = None;
     // Race code inputs, recomputed only when one of them changes.
     let mut exe_key: Option<(PathBuf, u64, Option<SystemTime>)> = None;
     let mut exe_hash = String::new();
@@ -203,6 +215,66 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             }
         }
         prev_rando = rando_pid;
+
+        // Separate bingo save: put the normal save back once the bingo game has closed. Also runs
+        // on start-up, so a crash or a closed hub can't leave the bingo save in place.
+        if crate::bingosave::active() {
+            if game_pid.is_some() {
+                saw_game_since_swap = true;
+            } else if saw_game_since_swap || crate::bingosave::active_for().unwrap_or(0) > 90 {
+                saw_game_since_swap = false;
+                let _ = tx.send(match crate::bingosave::swap_out() {
+                    Ok(()) => Msg::Toast("Your normal save is back".into()),
+                    Err(e) => Msg::Error(format!("Couldn't swap your normal save back.\n\n{e}")),
+                });
+                ctx.request_repaint();
+            }
+        }
+
+        // Starting classes from the spoiler log, re-read when it changes.
+        let st = core::mtime(&crate::classes::log_path());
+        if st != spoiler_time {
+            spoiler_time = st;
+            classes = crate::classes::load();
+        }
+
+        // Race graces: only on the separate bingo save, and only on fresh characters.
+        match (game, game_pid) {
+            (GameState::Modded, Some(_)) if settings.auto_graces && !crate::bingosave::active() => {
+                graces_status = "nosave".into();
+            }
+            (GameState::Modded, Some(pid)) if settings.auto_graces => {
+                if grace_checked.elapsed() >= Duration::from_secs(3) {
+                    grace_checked = Instant::now();
+                    let reopen = match &grace_game {
+                        Some((p, Ok(_), _)) => *p != pid,
+                        Some((p, Err(_), at)) => *p != pid || at.elapsed() > Duration::from_secs(30),
+                        None => true,
+                    };
+                    if reopen {
+                        grace_game = Some((pid, crate::graces::Game::open(pid), Instant::now()));
+                    }
+                    graces_status = match &grace_game {
+                        Some((_, Ok(g), _)) => match g.apply() {
+                            crate::graces::Outcome::Applied(_) => {
+                                let _ = tx.send(Msg::Toast("Race graces set".into()));
+                                "set".into()
+                            }
+                            crate::graces::Outcome::AlreadySet => "set".into(),
+                            crate::graces::Outcome::NotLoaded => "waiting".into(),
+                            crate::graces::Outcome::NotFresh(n) => format!("skipped:{n}"),
+                        },
+                        Some((_, Err(e), _)) => format!("error:{e}"),
+                        None => String::new(),
+                    };
+                }
+            }
+            (GameState::NotRunning, _) => {
+                grace_game = None;
+                graces_status.clear();
+            }
+            _ => {}
+        }
         prev_game = game_pid;
 
         let snap = Snapshot {
@@ -217,6 +289,9 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             backups: backups.clone(),
             game_exe: game_exe.clone(),
             rando_run: rando_run.clone(),
+            graces: graces_status.clone(),
+            bingo_save: crate::bingosave::active(),
+            classes: classes.clone(),
         };
         {
             let mut cur = shared.snap.lock().unwrap();
