@@ -68,14 +68,13 @@ pub fn paths() -> &'static Paths {
     })
 }
 
+/// The Randomizer's exe. Its name changes between builds (BingoRandomizer0.91.exe, S2_Style_1.0.exe),
+/// so take whatever exe sits in the folder root; the newest wins if there's more than one.
 pub fn rando_exe() -> Option<PathBuf> {
     fs::read_dir(&paths().rando_dir)
         .ok()?
         .flatten()
-        .filter(|e| {
-            let n = e.file_name().to_string_lossy().to_lowercase();
-            n.starts_with("bingorandomizer") && n.ends_with(".exe")
-        })
+        .filter(|e| e.path().is_file() && e.file_name().to_string_lossy().to_lowercase().ends_with(".exe"))
         .max_by_key(|e| e.metadata().and_then(|m| m.modified()).ok())
         .map(|e| e.path())
 }
@@ -652,7 +651,7 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
     }
     match rando_exe() {
         Some(e) => add(Level::Ok, "Randomizer", e.file_stem().unwrap_or_default().to_string_lossy().into_owned(), None),
-        None => add(Level::Bad, "Randomizer missing", "No BingoRandomizer exe in the Bingo Randomizer folder".into(), None),
+        None => add(Level::Bad, "Randomizer missing", "No exe in the Bingo Randomizer folder".into(), None),
     }
     match (p.me2_launcher.is_file(), fs::read_to_string(&p.me2_config)) {
         (true, Ok(cfg)) if cfg.contains("path = \"bingo\"") => add(Level::Ok, "ModEngine 2", "Configured".into(), None),

@@ -64,7 +64,7 @@ Write-Host "  $zip ($mb MB)"
 # just the tools that changed. Boards are merged into the user's folder rather than replaced.
 $tools_ = @(
     @{ name = 'Bingo Board';      folder = 'Bingo Board';      asset = 'Bingo-Board.zip';      merge = $false; keys = @('EldenBingo.exe', 'EldenBingo.dll') },
-    @{ name = 'Randomizer';       folder = 'Bingo Randomizer'; asset = 'Bingo-Randomizer.zip'; merge = $false; keys = @((Get-ChildItem "$stage\Bingo Randomizer\BingoRandomizer*.exe").Name) },
+    @{ name = 'Randomizer';       folder = 'Bingo Randomizer'; asset = 'Bingo-Randomizer.zip'; merge = $false; keys = @((Get-ChildItem "$stage\Bingo Randomizer\*.exe").Name) },
     @{ name = 'Debug Tool';       folder = 'Debug Tool';       asset = 'Debug-Tool.zip';       merge = $false; keys = @('Elden Ring Debug Tool.exe') },
     @{ name = 'Boards';           folder = 'Boards';           asset = 'Boards.zip';           merge = $true;  keys = @((Get-ChildItem "$stage\Boards\*.json").Name) }
 )
