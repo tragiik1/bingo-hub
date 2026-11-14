@@ -71,6 +71,7 @@ enum Act {
     DeleteRun(usize),
     Export,
     Fix(Fix),
+    Toast(String),
     CheckUpdate,
     ShowUpdate,
     InstallUpdate,
@@ -459,6 +460,7 @@ impl App {
                     }
                 });
             }
+            Act::Toast(t) => self.toast(ctx, t),
             Act::CheckUpdate => {
                 self.upd = Upd::Checking;
                 self.bg(ctx, |tx| {
@@ -841,16 +843,42 @@ impl App {
                         }
                     });
 
-                    let fresh = reg.is_some_and(|t| !seed.is_empty() && settings.seed_set().is_none_or(|s| t.with_timezone(&Utc) >= s));
-                    let detail = match reg {
-                        None => "Not randomized yet".to_string(),
-                        Some(t) if fresh => format!("Randomized {}", core::when(t.naive_local()).to_lowercase()),
-                        Some(t) if seed.is_empty() => format!("Last randomized {}. Set a seed first.", core::ago(t)),
-                        Some(t) => format!("Last randomized {}, before this seed was set", core::ago(t)),
+                    // With the Randomizer's own record we know the exact seed; otherwise fall back to timestamps.
+                    let (lead, detail, color, code) = match (&snap.rando_run, reg) {
+                        (_, None) => (Lead::Num("2"), "Not randomized yet".to_string(), c::MUTED, None),
+                        (Some(run), Some(_)) if !seed.is_empty() && run.seed.trim() != seed => (
+                            Lead::Dot(c::WARN),
+                            format!("Randomized with \"{}\", not \"{}\". Randomize again.", run.seed, seed),
+                            c::WARN,
+                            None,
+                        ),
+                        (Some(run), Some(_)) => (
+                            Lead::Check,
+                            format!("Seed \"{}\"   ·   race code {}", run.seed, run.code),
+                            c::MUTED,
+                            Some(format!("Race code {} (seed \"{}\")", run.code, run.seed)),
+                        ),
+                        (None, Some(t)) => {
+                            let fresh = !seed.is_empty() && settings.seed_set().is_none_or(|s| t.with_timezone(&Utc) >= s);
+                            let d = if fresh {
+                                format!("Randomized {}", core::when(t.naive_local()).to_lowercase())
+                            } else if seed.is_empty() {
+                                format!("Last randomized {}", core::ago(t))
+                            } else {
+                                format!("Last randomized {}, before this seed was set", core::ago(t))
+                            };
+                            (if fresh { Lead::Check } else { Lead::Num("2") }, d, c::MUTED, None)
+                        }
                     };
-                    ui::row(ui, if fresh { Lead::Check } else { Lead::Num("2") }, "Randomize", &detail, c::MUTED, false, true, |ui| {
+                    ui::row(ui, lead, "Randomize", &detail, color, false, true, |ui| {
                         if ui::button(ui, if snap.rando.is_some() { "Show" } else { "Open" }, Kind::Secondary, true).clicked() {
                             acts.push(Act::OpenRando);
+                        }
+                        if let Some(line) = &code {
+                            if ui::button(ui, "Copy code", Kind::Ghost, true).clicked() {
+                                ui.ctx().copy_text(line.clone());
+                                acts.push(Act::Toast("Race code copied".into()));
+                            }
                         }
                     });
 

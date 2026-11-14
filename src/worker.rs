@@ -34,6 +34,7 @@ pub struct Snapshot {
     pub live_save: Option<SystemTime>,
     pub backups: Vec<Backup>,
     pub game_exe: Option<PathBuf>,
+    pub rando_run: Option<core::RandoRun>,
 }
 
 pub struct Shared {
@@ -83,6 +84,11 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut rando_name = rando_file();
     let (mut prev_rando, mut prev_game): (Option<u32>, Option<u32>) = (None, None);
     let mut last_crash = String::new();
+    // Race code inputs, recomputed only when one of them changes.
+    let mut exe_key: Option<(PathBuf, u64, Option<SystemTime>)> = None;
+    let mut exe_hash = String::new();
+    let mut run_key: Option<(Option<SystemTime>, Option<SystemTime>, String)> = None;
+    let mut rando_run: Option<core::RandoRun> = None;
     let mut modded: HashMap<u32, bool> = HashMap::new();
     let mut last_reg = core::mtime(&p.regulation);
     let mut reg_changed_at: Option<Instant> = None;
@@ -155,6 +161,35 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             core::unlock_randomizer_output(); // a few stat calls; keeps a read-only flag from crashing it
         }
 
+        // Race code: the Randomizer's last run, the build that made it and the game patch it read.
+        if tick % 3 == 0 {
+            if let Some(exe) = core::rando_exe() {
+                let meta = std::fs::metadata(&exe).ok();
+                let key = (exe.clone(), meta.as_ref().map(|m| m.len()).unwrap_or(0), meta.and_then(|m| m.modified().ok()));
+                if exe_key.as_ref() != Some(&key) {
+                    exe_hash = core::file_hash_hex(&exe).unwrap_or_default();
+                    exe_key = Some(key);
+                }
+            }
+            let game_dir = game_exe.as_ref().and_then(|g| g.parent().map(|d| d.to_path_buf()));
+            let seed_time = core::mtime(&core::last_seed_file());
+            let key = (seed_time, game_dir.as_ref().and_then(|d| core::mtime(&d.join("regulation.bin"))), exe_hash.clone());
+            if run_key.as_ref() != Some(&key) {
+                rando_run = core::rando_run(&exe_hash, game_dir.as_deref());
+                run_key = Some(key);
+                // A new successful run: remember which game version it worked with.
+                let secs = seed_time.and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok()).map(|d| d.as_secs()).unwrap_or(0);
+                if rando_run.is_some() && secs > settings.rando_game_version_time() {
+                    if let Some(v) = game_exe.as_ref().and_then(|g| sys::file_version(g)) {
+                        let mut s = shared.settings.lock().unwrap();
+                        s.rando_game_version = v;
+                        s.rando_run_time = secs;
+                        s.save();
+                    }
+                }
+            }
+        }
+
         // A tool just closed: if Windows logged a crash for it, explain it.
         let rando_closed = prev_rando.is_some() && rando_pid.is_none();
         let game_closed = prev_game.is_some() && game_pid.is_none();
@@ -181,6 +216,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             live_save: core::live_save().and_then(|s| core::mtime(&s)),
             backups: backups.clone(),
             game_exe: game_exe.clone(),
+            rando_run: rando_run.clone(),
         };
         {
             let mut cur = shared.snap.lock().unwrap();

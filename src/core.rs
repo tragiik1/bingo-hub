@@ -79,6 +79,40 @@ pub fn rando_exe() -> Option<PathBuf> {
         .map(|e| e.path())
 }
 
+/// The Randomizer's last run, as recorded in its Cache\LastSeed.json.
+#[derive(Clone, PartialEq, Debug)]
+pub struct RandoRun {
+    pub seed: String,
+    /// Short code that matches only when seed, Randomizer build and game patch all match.
+    pub code: String,
+}
+
+pub fn last_seed_file() -> PathBuf {
+    paths().rando_dir.join("Cache").join("LastSeed.json")
+}
+
+pub fn hex(bytes: &[u8]) -> String {
+    bytes.iter().map(|b| format!("{b:02x}")).collect()
+}
+
+pub fn file_hash_hex(p: &Path) -> Option<String> {
+    hash(p).ok().map(|h| hex(&h))
+}
+
+/// Reads LastSeed.json and derives the race code from the inputs that decide the randomization:
+/// the seed it used, the Randomizer build (`exe_hash`) and the game's own regulation.bin.
+pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
+    if !paths().regulation.is_file() {
+        return None;
+    }
+    let text = fs::read_to_string(last_seed_file()).ok()?;
+    let v: serde_json::Value = serde_json::from_str(text.trim_start_matches('\u{feff}')).ok()?;
+    let seed = v["Seed"].as_str()?.to_string();
+    let game_reg = file_hash_hex(&game_dir?.join("regulation.bin")).unwrap_or_default();
+    let digest = Sha256::digest(format!("{exe_hash}|{seed}|{game_reg}").as_bytes());
+    Some(RandoRun { seed, code: hex(&digest[..3]).to_uppercase() })
+}
+
 pub fn mtime(p: &Path) -> Option<SystemTime> {
     fs::metadata(p).and_then(|m| m.modified()).ok()
 }
@@ -149,6 +183,9 @@ pub struct Settings {
     pub debug_warning_accepted: bool,
     pub game_exe_override: Option<String>,
     pub last_page: String,
+    /// Game version at the Randomizer's last successful run, and when that run was (unix secs).
+    pub rando_game_version: String,
+    pub rando_run_time: u64,
 }
 
 impl Default for Settings {
@@ -163,6 +200,8 @@ impl Default for Settings {
             debug_warning_accepted: false,
             game_exe_override: None,
             last_page: "Race".into(),
+            rando_game_version: String::new(),
+            rando_run_time: 0,
         }
     }
 }
@@ -179,6 +218,10 @@ impl Settings {
             let _ = fs::write(Self::file(), s);
         }
     }
+    pub fn rando_game_version_time(&self) -> u64 {
+        self.rando_run_time
+    }
+
     pub fn seed_set(&self) -> Option<DateTime<Utc>> {
         parse_time(&self.seed_set_utc, true).map(|d| d.with_timezone(&Utc))
     }
@@ -670,7 +713,16 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
         None => add(Level::Bad, "Elden Ring not found", "Not in any Steam library".into(), Some(("Locate", Fix::LocateGame))),
         Some(game) => {
             let dir = game.parent().unwrap().to_path_buf();
-            add(Level::Ok, "Elden Ring", ver(&game), None);
+            let game_ver = ver(&game);
+            if !settings.rando_game_version.is_empty() && settings.rando_game_version != game_ver {
+                add(
+                    Level::Warn,
+                    "Elden Ring updated since your last randomize",
+                    format!("{} to {}. If the Randomizer starts crashing, it may need an update.", settings.rando_game_version, game_ver),
+                    None,
+                );
+            }
+            add(Level::Ok, "Elden Ring", game_ver, None);
             if let Some(bp) = board_config_get("GamePath").filter(|s| !s.is_empty()) {
                 let same = bp.trim_end_matches('\\').eq_ignore_ascii_case(dir.to_string_lossy().trim_end_matches('\\'));
                 if same {
