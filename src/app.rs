@@ -298,6 +298,7 @@ impl App {
                     self.alert("Update failed", e);
                 }
                 Msg::Restart => ctx.send_viewport_cmd(ViewportCommand::Close),
+                Msg::Crash(title, body) => self.alert(&title, body),
                 Msg::ToolsUpdated(names) => {
                     self.upd = Upd::Current;
                     self.toast(ctx, format!("Updated {}", names.join(", ")));

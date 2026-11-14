@@ -68,6 +68,8 @@ pub enum Msg {
     Update(Result<Option<crate::update::Release>, String>, bool),
     UpdateFailed(String),
     ToolsUpdated(Vec<String>),
+    /// (title, explanation) for a Randomizer or game crash Windows just logged.
+    Crash(String, String),
     Restart,
 }
 
@@ -77,7 +79,10 @@ pub fn spawn(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
 
 fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let p = core::paths();
-    let rando_name = core::rando_exe().and_then(|e| e.file_name().map(|n| n.to_string_lossy().to_lowercase())).unwrap_or_default();
+    let rando_file = || core::rando_exe().and_then(|e| e.file_name().map(|n| n.to_string_lossy().to_lowercase())).unwrap_or_default();
+    let mut rando_name = rando_file();
+    let (mut prev_rando, mut prev_game): (Option<u32>, Option<u32>) = (None, None);
+    let mut last_crash = String::new();
     let mut modded: HashMap<u32, bool> = HashMap::new();
     let mut last_reg = core::mtime(&p.regulation);
     let mut reg_changed_at: Option<Instant> = None;
@@ -143,11 +148,27 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
         }
         if tick % 15 == 0 {
             game_exe = core::find_game_exe(settings.game_exe_override.as_deref());
+            rando_name = rando_file(); // its file name changes when the Randomizer is updated
         }
         let rando_pid = if rando_name.is_empty() { None } else { pid_of(&rando_name) };
         if rando_pid.is_some() {
             core::unlock_randomizer_output(); // a few stat calls; keeps a read-only flag from crashing it
         }
+
+        // A tool just closed: if Windows logged a crash for it, explain it.
+        let rando_closed = prev_rando.is_some() && rando_pid.is_none();
+        let game_closed = prev_game.is_some() && game_pid.is_none();
+        if rando_closed || game_closed {
+            std::thread::sleep(Duration::from_millis(1500)); // the log entry lands just after the exit
+            let found = if rando_closed { crate::crash::randomizer(&rando_name, 60) } else { crate::crash::game(60) };
+            if let Some(c) = found.filter(|c| c.when != last_crash) {
+                last_crash = c.when.clone();
+                let _ = tx.send(Msg::Crash(c.title, c.body));
+                ctx.request_repaint();
+            }
+        }
+        prev_rando = rando_pid;
+        prev_game = game_pid;
 
         let snap = Snapshot {
             game,

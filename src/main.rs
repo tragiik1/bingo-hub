@@ -2,6 +2,7 @@
 
 mod app;
 mod core;
+mod crash;
 mod sys;
 mod ui;
 mod update;
