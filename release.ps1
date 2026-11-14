@@ -83,6 +83,10 @@ git diff --cached --quiet
 if ($LASTEXITCODE -ne 0) { git commit -q -m "Release v$Version" }
 git push -q origin HEAD
 if (-not $Notes) { $Notes = "Bingo Hub $Version" }
-gh release create "v$Version" "$dist\Bingo-Hub.exe" $zip --repo $repo --title "Bingo Hub $Version" --notes $Notes
+# Notes go through a file: passing quotes straight to gh from PowerShell mangles them.
+$notesFile = Join-Path $dist 'notes.md'
+Set-Content $notesFile $Notes -Encoding utf8
+gh release create "v$Version" "$dist\Bingo-Hub.exe" $zip --repo $repo --title "Bingo Hub $Version" --notes-file $notesFile
+if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Creating the GitHub release failed" }
 Pop-Location
 Write-Host "Released. Installed hubs will offer the update within a few hours (or on next start)." -ForegroundColor Green
