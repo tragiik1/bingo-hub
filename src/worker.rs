@@ -67,6 +67,7 @@ pub enum Msg {
     /// (result, user asked for it)
     Update(Result<Option<crate::update::Release>, String>, bool),
     UpdateFailed(String),
+    ToolsUpdated(Vec<String>),
     Restart,
 }
 

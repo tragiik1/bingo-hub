@@ -60,6 +60,26 @@ if ($LASTEXITCODE -ne 0) { throw "Zipping failed" }
 $mb = [math]::Round((Get-Item $zip).Length / 1MB)
 Write-Host "  $zip ($mb MB)"
 
+# One zip per tool plus a manifest of each tool's fingerprint, so installed hubs can update
+# just the tools that changed. Boards are merged into the user's folder rather than replaced.
+$tools_ = @(
+    @{ name = 'Bingo Board';      folder = 'Bingo Board';      asset = 'Bingo-Board.zip';      merge = $false; keys = @('EldenBingo.exe', 'EldenBingo.dll') },
+    @{ name = 'Randomizer';       folder = 'Bingo Randomizer'; asset = 'Bingo-Randomizer.zip'; merge = $false; keys = @((Get-ChildItem "$stage\Bingo Randomizer\BingoRandomizer*.exe").Name) },
+    @{ name = 'Debug Tool';       folder = 'Debug Tool';       asset = 'Debug-Tool.zip';       merge = $false; keys = @('Elden Ring Debug Tool.exe') },
+    @{ name = 'Boards';           folder = 'Boards';           asset = 'Boards.zip';           merge = $true;  keys = @((Get-ChildItem "$stage\Boards\*.json").Name) }
+)
+$components = foreach ($t in $tools_) {
+    & "$env:SystemRoot\System32\tar.exe" -a -c -f "$dist\$($t.asset)" -C $stage $t.folder
+    if ($LASTEXITCODE -ne 0) { throw "Zipping $($t.name) failed" }
+    $files = [ordered]@{}
+    foreach ($k in $t.keys) { $files[$k] = (Get-FileHash -LiteralPath "$stage\$($t.folder)\$k" -Algorithm SHA256).Hash.ToLower() }
+    [ordered]@{ name = $t.name; folder = $t.folder; asset = $t.asset; merge = $t.merge; files = $files }
+}
+$manifest = Join-Path $dist 'manifest.json'
+[IO.File]::WriteAllText($manifest, (@{ components = @($components) } | ConvertTo-Json -Depth 5), (New-Object Text.UTF8Encoding $false))
+$toolAssets = @($tools_ | ForEach-Object { "$dist\$($_.asset)" }) + $manifest
+Write-Host "  Tool zips and manifest.json"
+
 if (-not (Get-Process 'Bingo Hub' -ErrorAction SilentlyContinue)) {
     Copy-Item $exe "$tools\Bingo Hub.exe" -Force
     Write-Host "  Updated your own Bingo Hub.exe"
@@ -86,7 +106,7 @@ if (-not $Notes) { $Notes = "Bingo Hub $Version" }
 # Notes go through a file: passing quotes straight to gh from PowerShell mangles them.
 $notesFile = Join-Path $dist 'notes.md'
 Set-Content $notesFile $Notes -Encoding utf8
-gh release create "v$Version" "$dist\Bingo-Hub.exe" $zip --repo $repo --title "Bingo Hub $Version" --notes-file $notesFile
+gh release create "v$Version" "$dist\Bingo-Hub.exe" $zip @toolAssets --repo $repo --title "Bingo Hub $Version" --notes-file $notesFile
 if ($LASTEXITCODE -ne 0) { Pop-Location; throw "Creating the GitHub release failed" }
 Pop-Location
 Write-Host "Released. Installed hubs will offer the update within a few hours (or on next start)." -ForegroundColor Green

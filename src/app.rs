@@ -136,6 +136,8 @@ pub struct App {
     checks_busy: bool,
     badge: (usize, usize),
     upd: Upd,
+    /// Started right after a hub update: finish any tool updates without asking again.
+    auto_tools: bool,
 }
 
 impl App {
@@ -169,6 +171,7 @@ impl App {
             checks_busy: false,
             badge: (0, 0),
             upd: Upd::Idle,
+            auto_tools: args.iter().any(|a| a == "--updated"),
         };
         if args.iter().any(|a| a == "--updated") {
             app.toast = Some((format!("Updated to {}", update::VERSION), 0.0));
@@ -272,7 +275,13 @@ impl App {
                     self.run_checks(ctx);
                 }
                 Msg::Update(r, manual) => {
+                    let auto = std::mem::take(&mut self.auto_tools);
                     self.upd = match r {
+                        Ok(Some(rel)) if auto && rel.hub.is_none() && !rel.tools.is_empty() => {
+                            self.upd = Upd::Available(rel);
+                            self.install_update(ctx);
+                            continue;
+                        }
                         Ok(Some(rel)) => Upd::Available(rel),
                         Ok(None) => {
                             if manual {
@@ -289,6 +298,12 @@ impl App {
                     self.alert("Update failed", e);
                 }
                 Msg::Restart => ctx.send_viewport_cmd(ViewportCommand::Close),
+                Msg::ToolsUpdated(names) => {
+                    self.upd = Upd::Current;
+                    self.toast(ctx, format!("Updated {}", names.join(", ")));
+                    self.load_boards();
+                    self.run_checks(ctx);
+                }
                 Msg::GameLocated(p) => {
                     self.set(|s| s.game_exe_override = Some(p.display().to_string()));
                     self.run_checks(ctx);
@@ -454,17 +469,7 @@ impl App {
                     self.modal = Some(Modal::Update(r.clone()));
                 }
             }
-            Act::InstallUpdate => {
-                if let Upd::Available(r) = self.upd.clone() {
-                    self.upd = Upd::Installing;
-                    self.bg(ctx, move |tx| {
-                        let _ = tx.send(match update::install(&r) {
-                            Ok(()) => Msg::Restart,
-                            Err(e) => Msg::UpdateFailed(e),
-                        });
-                    });
-                }
-            }
+            Act::InstallUpdate => self.install_update(ctx),
             Act::Fix(f) => {
                 match f {
                     Fix::OpenUrl(u) => sys::shell_open(&u),
@@ -493,6 +498,33 @@ impl App {
                 self.run_checks(ctx);
             }
         }
+    }
+
+    /// Tools first (they don't need a restart), then the hub, which restarts itself.
+    fn install_update(&mut self, ctx: &egui::Context) {
+        let Upd::Available(r) = self.upd.clone() else { return };
+        self.upd = Upd::Installing;
+        self.bg(ctx, move |tx| {
+            if !r.tools.is_empty() {
+                match update::install_tools(&r.tools) {
+                    Err(e) => {
+                        let _ = tx.send(Msg::UpdateFailed(e));
+                        return;
+                    }
+                    Ok(names) if r.hub.is_none() => {
+                        let _ = tx.send(Msg::ToolsUpdated(names));
+                        return;
+                    }
+                    Ok(_) => {}
+                }
+            }
+            if let Some((url, size)) = &r.hub {
+                let _ = tx.send(match update::install_hub(url, *size) {
+                    Ok(()) => Msg::Restart,
+                    Err(e) => Msg::UpdateFailed(e),
+                });
+            }
+        });
     }
 
     fn confirmed(&mut self, ctx: &egui::Context, then: Confirmed, snap: &Snapshot) {
@@ -734,7 +766,7 @@ impl App {
         ];
         let mut y = r.bottom() - 20.0 - tools.len() as f32 * 30.0;
         let notice = match &self.upd {
-            Upd::Available(rel) => Some(("Update available", format!("Version {}", rel.version), true)),
+            Upd::Available(rel) => Some(("Update available", if rel.hub.is_some() { format!("Version {}", rel.version) } else { rel.summary() }, true)),
             Upd::Installing => Some(("Updating", "Restarting shortly".to_string(), false)),
             _ => None,
         };
@@ -1149,7 +1181,7 @@ impl App {
                     Upd::Idle => (String::new(), c::MUTED),
                     Upd::Checking => ("Checking for updates…".into(), c::MUTED),
                     Upd::Current => ("Up to date".into(), c::MUTED),
-                    Upd::Available(r) => (format!("Version {} is available", r.version), c::ACCENT),
+                    Upd::Available(r) => (format!("Update available: {}", r.summary()), c::ACCENT),
                     Upd::Installing => ("Updating…".into(), c::MUTED),
                     Upd::Failed(e) => (e.clone(), c::WARN),
                 };
@@ -1251,7 +1283,8 @@ impl App {
                         "Save".into()
                     }
                     Modal::Update(r) => {
-                        ui::paragraph(ui, &format!("Bingo Hub {} is ready. It downloads in a few seconds and the hub restarts by itself. Your settings and backups stay as they are.", r.version), c::MUTED);
+                        let restart = if r.hub.is_some() { " The hub restarts by itself when it's done." } else { "" };
+                        ui::paragraph(ui, &format!("This updates {}.{restart} Your settings, saves and backups stay as they are.", r.summary()), c::MUTED);
                         if !r.notes.is_empty() {
                             ui.add_space(14.0);
                             egui::ScrollArea::vertical().max_height(180.0).show(ui, |ui| {
