@@ -199,25 +199,32 @@ pub fn parse_time(s: &str, naive_utc: bool) -> Option<DateTime<Local>> {
 
 // ---------------------------------------------------------------- Bingo Board's user.config
 
+/// The Board keeps one settings folder per version it has run as. Use the one for the installed
+/// version (or the closest older one), so swapping the Board to an older release still works.
 fn board_user_config() -> Option<PathBuf> {
+    let parse = |s: &str| -> Vec<u32> {
+        let mut v: Vec<u32> = s.split('.').map(|p| p.parse().unwrap_or(0)).collect();
+        v.resize(4, 0);
+        v
+    };
+    let installed = sys::file_version(&paths().board_exe).map(|s| parse(&s));
     let root = PathBuf::from(std::env::var_os("LOCALAPPDATA")?).join("EldenBingo");
-    let mut best: Option<(Vec<u32>, PathBuf)> = None;
+    let mut all: Vec<(Vec<u32>, PathBuf)> = Vec::new();
     for app in fs::read_dir(root).ok()?.flatten() {
         if !app.file_name().to_string_lossy().starts_with("EldenBingo") {
             continue;
         }
         for v in fs::read_dir(app.path()).into_iter().flatten().flatten() {
             let cfg = v.path().join("user.config");
-            if !cfg.is_file() {
-                continue;
-            }
-            let ver: Vec<u32> = v.file_name().to_string_lossy().split('.').map(|p| p.parse().unwrap_or(0)).collect();
-            if best.as_ref().is_none_or(|(b, _)| ver > *b) {
-                best = Some((ver, cfg));
+            if cfg.is_file() {
+                all.push((parse(&v.file_name().to_string_lossy()), cfg));
             }
         }
     }
-    best.map(|(_, p)| p)
+    all.sort_by(|a, b| b.0.cmp(&a.0));
+    let fitting = installed.and_then(|i| all.iter().position(|(v, _)| *v <= i));
+    let idx = fitting.unwrap_or(0);
+    (idx < all.len()).then(|| all.swap_remove(idx).1)
 }
 
 /// Byte range of a setting's value inside the XML, plus whether it's a self-closing <value />.
