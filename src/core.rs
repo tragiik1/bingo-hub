@@ -604,13 +604,24 @@ fn desktop8_installed() -> bool {
         .any(|e| e.file_name().to_string_lossy().starts_with("8."))
 }
 
-/// The OneDrive folder this install sits in, if any.
-pub fn onedrive() -> Option<PathBuf> {
-    let root = paths().board_dir.parent()?.to_string_lossy().to_lowercase();
-    ["OneDrive", "OneDriveConsumer", "OneDriveCommercial"].iter().filter_map(std::env::var_os).map(PathBuf::from).find(|od| {
-        let od = od.to_string_lossy().to_lowercase();
-        !od.is_empty() && root.starts_with(&od)
-    })
+/// The Randomizer deletes and rewrites `Resources\ME2\bingo` on every run, and its delete fails
+/// ("Access to the path … is denied") if any folder in there is marked read-only. Clear the flag.
+pub fn unlock_randomizer_output() {
+    fn walk(p: &Path) {
+        let Ok(meta) = fs::metadata(p) else { return };
+        let mut perm = meta.permissions();
+        if perm.readonly() {
+            #[allow(clippy::permissions_set_readonly_false)]
+            perm.set_readonly(false);
+            let _ = fs::set_permissions(p, perm);
+        }
+        if meta.is_dir() {
+            for e in fs::read_dir(p).into_iter().flatten().flatten() {
+                walk(&e.path());
+            }
+        }
+    }
+    walk(&paths().me2_dir.join("bingo"));
 }
 
 pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
@@ -622,15 +633,6 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
     let ver = |p: &Path| sys::file_version(p).unwrap_or_else(|| "Installed".into());
     let plural = |n: usize, w: &str| format!("{n} {w}{}", if n == 1 { "" } else { "s" });
 
-    if onedrive().is_some() {
-        let root = p.board_dir.parent().unwrap().to_path_buf();
-        add(
-            Level::Bad,
-            "This folder is inside OneDrive",
-            "OneDrive makes the Randomizer crash. Move this folder to e.g. C:\\Games.".into(),
-            Some(("Show folder", Fix::OpenFolder(root))),
-        );
-    }
     if p.board_exe.is_file() {
         add(Level::Ok, "Bingo Board", ver(&p.board_exe), None);
     } else {

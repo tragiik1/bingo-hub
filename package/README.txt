@@ -4,9 +4,7 @@ Everything you need for a bingo race, in one folder.
 
 
 FIRST TIME
-  1. Put this folder somewhere outside OneDrive, for example C:\Games\Elden Ring Bingo.
-     Desktop and Documents are often synced by OneDrive, and OneDrive makes the
-     Randomizer crash.
+  1. Put this folder wherever you like, for example C:\Games\Elden Ring Bingo.
   2. Open "Bingo Hub.exe". If Windows says it protected your PC, click
      "More info", then "Run anyway". That happens because the app isn't signed.
   3. Open the Setup page. Anything red or yellow comes with a button to fix it.

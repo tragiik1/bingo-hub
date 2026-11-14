@@ -86,6 +86,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut tick: u64 = 0;
     let mut procs = sys::ProcCache::default();
     let mut fast_until = Instant::now();
+    core::unlock_randomizer_output();
 
     loop {
         let settings = shared.settings.lock().unwrap().clone();
@@ -142,12 +143,16 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
         if tick % 15 == 0 {
             game_exe = core::find_game_exe(settings.game_exe_override.as_deref());
         }
+        let rando_pid = if rando_name.is_empty() { None } else { pid_of(&rando_name) };
+        if rando_pid.is_some() {
+            core::unlock_randomizer_output(); // a few stat calls; keeps a read-only flag from crashing it
+        }
 
         let snap = Snapshot {
             game,
             game_pid,
             board: pid_of("eldenbingo.exe"),
-            rando: if rando_name.is_empty() { None } else { pid_of(&rando_name) },
+            rando: rando_pid,
             debug: pid_of("elden ring debug tool.exe"),
             steam: pid_of("steam.exe").is_some(),
             regulation: reg,

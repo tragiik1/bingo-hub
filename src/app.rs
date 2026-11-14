@@ -329,6 +329,7 @@ impl App {
             }
             Act::OpenBoard => self.open_tool(snap.board, Some(p.board_exe.clone()), false),
             Act::OpenRando => {
+                core::unlock_randomizer_output();
                 let seed = self.settings().seed.trim().to_string();
                 if !seed.is_empty() {
                     ctx.copy_text(seed.clone());

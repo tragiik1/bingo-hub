@@ -29,7 +29,7 @@ Write-Host "Building Bingo Hub $Version" -ForegroundColor Cyan
 $toml = Get-Content "$src\Cargo.toml" -Raw
 $toml = [regex]::Replace($toml, '(?m)^version = ".*?"', "version = `"$Version`"", 1)
 Set-Content "$src\Cargo.toml" $toml -NoNewline -Encoding utf8
-# Build output stays out of OneDrive and out of the repo.
+# Build output stays out of the repo.
 if (-not $env:CARGO_TARGET_DIR) { $env:CARGO_TARGET_DIR = Join-Path $env:LOCALAPPDATA 'bingo-hub-target' }
 Push-Location $src
 cargo build --release
@@ -49,8 +49,11 @@ robocopy "$tools\Bingo Board" "$stage\Bingo Board" /E /NFL /NDL /NJH /NJS /NP | 
 robocopy "$tools\Debug Tool" "$stage\Debug Tool" /E /NFL /NDL /NJH /NJS /NP | Out-Null
 robocopy "$tools\Boards" "$stage\Boards" *.json /NFL /NDL /NJH /NJS /NP | Out-Null
 robocopy "$tools\Bingo Randomizer" "$stage\Bingo Randomizer" /E /XD Cache /XF *.log regulation.bin *.dcx /NFL /NDL /NJH /NJS /NP | Out-Null
-New-Item -ItemType Directory -Force "$stage\Bingo Randomizer\Resources\ME2\bingo\msg\engus" | Out-Null
 if ($LASTEXITCODE -ge 8) { throw "Copying the tools failed" }
+New-Item -ItemType Directory -Force "$stage\Bingo Randomizer\Resources\ME2\bingo\msg\engus" | Out-Null
+# Read-only folders here make the Randomizer crash when it deletes its old output.
+attrib -R "$stage\Bingo Randomizer\Resources\ME2\bingo" | Out-Null
+attrib -R "$stage\Bingo Randomizer\Resources\ME2\bingo\*" /S /D | Out-Null
 
 & "$env:SystemRoot\System32\tar.exe" -a -c -f $zip -C $dist 'Elden Ring Bingo'
 if ($LASTEXITCODE -ne 0) { throw "Zipping failed" }
