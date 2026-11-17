@@ -244,6 +244,54 @@ pub fn single_instance(name: &str) -> bool {
     }
 }
 
+// ---------------------------------------------------------------- hotkey and sounds
+
+pub const HOTKEY: &str = "Ctrl+F9";
+
+/// Hotkey state shared with the UI.
+pub mod hotkey {
+    pub const OFF: u8 = 0;
+    pub const ON: u8 = 1;
+    /// Another program already has the key.
+    pub const TAKEN: u8 = 2;
+}
+
+/// Calls `on_press` each time the global hotkey is pressed. The key is only registered while
+/// `active()` is true, so other programs keep Ctrl+F9 the rest of the time. Never returns.
+pub fn hotkey_loop(active: impl Fn() -> bool, state: &std::sync::atomic::AtomicU8, mut on_press: impl FnMut()) {
+    use std::sync::atomic::Ordering;
+    use windows_sys::Win32::UI::Input::KeyboardAndMouse::{RegisterHotKey, UnregisterHotKey, MOD_CONTROL, MOD_NOREPEAT, VK_F9};
+    unsafe {
+        // Thread timer: WM_TIMER lands in this thread's queue, so no window is needed.
+        SetTimer(std::ptr::null_mut(), 0, 500, None);
+        let mut msg: MSG = std::mem::zeroed();
+        while GetMessageW(&mut msg, std::ptr::null_mut(), 0, 0) > 0 {
+            match msg.message {
+                WM_HOTKEY => on_press(),
+                WM_TIMER => {
+                    let now = state.load(Ordering::Relaxed);
+                    let want = active();
+                    if want && now != hotkey::ON {
+                        let ok = RegisterHotKey(std::ptr::null_mut(), 1, MOD_CONTROL | MOD_NOREPEAT, VK_F9 as u32) != 0;
+                        state.store(if ok { hotkey::ON } else { hotkey::TAKEN }, Ordering::Relaxed);
+                    } else if !want && now != hotkey::OFF {
+                        if now == hotkey::ON {
+                            UnregisterHotKey(std::ptr::null_mut(), 1);
+                        }
+                        state.store(hotkey::OFF, Ordering::Relaxed);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+}
+
+/// Windows' notification sound, so results are heard while the game has the screen.
+pub fn chime(ok: bool) {
+    unsafe { windows_sys::Win32::System::Diagnostics::Debug::MessageBeep(if ok { MB_ICONASTERISK } else { MB_ICONHAND }) };
+}
+
 // ---------------------------------------------------------------- launching
 
 pub fn launch(exe: &Path, args: &[&str], admin: bool, hidden: bool) -> Result<(), String> {

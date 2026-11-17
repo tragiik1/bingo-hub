@@ -95,6 +95,8 @@ enum Upd {
 
 enum Confirmed {
     ResetBingoSave,
+    /// Set race graces on this game's character even though it has many already.
+    ForceGraces(u32),
     Restore(Backup),
     Delete(Backup),
     Debug,
@@ -345,7 +347,28 @@ impl App {
                     self.set(|s| s.game_exe_override = Some(p.display().to_string()));
                     self.run_checks(ctx);
                 }
+                Msg::Graces(pid, r) => self.graces_result(ctx, pid, r),
             }
+        }
+    }
+
+    fn graces_result(&mut self, ctx: &egui::Context, pid: u32, r: Result<crate::graces::Outcome, String>) {
+        use crate::graces::Outcome;
+        match r {
+            Ok(Outcome::Applied(off)) => self.toast(ctx, format!("Race graces set{}", if off > 0 { format!(", {off} others removed") } else { String::new() })),
+            Ok(Outcome::AlreadySet) => self.toast(ctx, "Race graces are already set"),
+            Ok(Outcome::NotLoaded) => self.alert("Race graces", "No character yet. Press it again on the name screen (where you set the keepsake) or once you've loaded in."),
+            Ok(Outcome::NotFresh(n)) => {
+                let backup = if self.settings().auto_backup_on_launch { " Your save was backed up when the game started." } else { "" };
+                self.confirm(
+                    "Race graces",
+                    format!("This character already has {n} graces, so it may not be a bingo character.\n\nSet the race graces anyway? Its other graces are removed, and the game saves that.{backup}"),
+                    "Set graces",
+                    Confirmed::ForceGraces(pid),
+                )
+            }
+            Ok(Outcome::WriteFailed) => self.alert("Race graces", "The game didn't take the graces. Try again once you're in game; if it keeps failing, use Cheat Engine for now."),
+            Err(e) => self.alert("Race graces", e),
         }
     }
 
@@ -413,7 +436,7 @@ impl App {
                     self.bg(ctx, move |tx| {
                         if s.auto_backup_on_launch {
                             if let Err(e) = core::create_backup("before launch", true, s.keep_auto_backups) {
-                                let _ = tx.send(Msg::Error(format!("Backup failed, so the game wasn't launched.\n\n{e}\n\nTurn off \"Back up save before launching\" in Setup to launch anyway.")));
+                                let _ = tx.send(Msg::Error(format!("Backup failed, so the game wasn't launched.\n\n{e}\n\nTurn off \"Back up save when the game starts\" in Setup to launch anyway.")));
                                 return;
                             }
                         }
@@ -517,17 +540,12 @@ impl App {
                 Confirmed::ResetBingoSave,
             ),
             Act::ApplyGraces => {
-                if !snap.bingo_save {
-                    self.alert("Race graces", "Race graces only work on the separate bingo save, so your normal characters can never be changed. Turn it on in Setup and launch from the hub.");
-                } else if let (GameState::Modded, Some(pid)) = (snap.game, snap.game_pid) {
+                if let (GameState::Modded, Some(pid)) = (snap.game, snap.game_pid) {
                     self.bg(ctx, move |tx| {
-                        let _ = tx.send(match crate::graces::apply_now(pid) {
-                            Ok(m) => Msg::Toast(m),
-                            Err(e) => Msg::Crash("Race graces".into(), e),
-                        });
+                        let _ = tx.send(Msg::Graces(pid, crate::graces::apply_now(pid, false)));
                     });
                 } else {
-                    self.alert("Race graces", "Launch a bingo game and load into your character first.");
+                    self.alert("Race graces", "Launch a bingo game first. Graces can be set from the name screen onwards.");
                 }
             }
             Act::CheckUpdate => {
@@ -618,6 +636,15 @@ impl App {
                 self.act(ctx, Act::OpenDebug, snap);
             }
             Confirmed::StartSteam => start_steam(),
+            Confirmed::ForceGraces(pid) => {
+                if snap.game_pid == Some(pid) {
+                    self.bg(ctx, move |tx| {
+                        let _ = tx.send(Msg::Graces(pid, crate::graces::apply_now(pid, true)));
+                    });
+                } else {
+                    self.alert("Race graces", "That game has closed. Nothing was changed.");
+                }
+            }
             Confirmed::ResetBingoSave => match crate::bingosave::reset_bingo_save() {
                 Ok(()) => self.toast(ctx, "Next bingo game starts with a fresh save"),
                 Err(e) => self.alert("Couldn't reset", e),
@@ -954,8 +981,10 @@ impl App {
                             if snap.bingo_save {
                                 d += "   ·   bingo save";
                             }
-                            if snap.graces == "set" {
+                            if snap.graces == crate::graces::Status::Set {
                                 d += "   ·   race graces set";
+                            } else if snap.hotkey == sys::hotkey::ON {
+                                d += &format!("   ·   {} in game sets race graces", sys::HOTKEY);
                             }
                             (Lead::Check, d, c::MUTED)
                         }
@@ -972,6 +1001,9 @@ impl App {
                     ui::row(ui, lead, "Launch Elden Ring", &detail, color, false, true, |ui| {
                         if ui::button(ui, if running { "Show" } else { "Launch" }, Kind::Primary, running || reg.is_some()).clicked() {
                             acts.push(Act::Launch);
+                        }
+                        if snap.game == GameState::Modded && ui::button(ui, "Set graces", Kind::Secondary, true).clicked() {
+                            acts.push(Act::ApplyGraces);
                         }
                     });
                 });
@@ -1332,7 +1364,7 @@ impl App {
                     ui.horizontal(|ui| {
                         ui.add_space(18.0);
                         ui.vertical(|ui| {
-                            ui::toggle(ui, &mut s.auto_backup_on_launch, "Back up save before launching");
+                            ui::toggle(ui, &mut s.auto_backup_on_launch, "Back up save when the game starts");
                             ui::toggle(ui, &mut s.auto_backup_on_randomize, "Back up save after randomizing");
                             ui::toggle(ui, &mut s.debug_tool_as_admin, "Run Debug Tool as administrator");
                         });
@@ -1364,28 +1396,32 @@ impl App {
                 });
 
                 ui::section(ui, "Race graces", 30.0);
-                let status = match snap.graces.as_str() {
-                    _ if !s.auto_graces => "Automatic setting is off".to_string(),
-                    _ if !s.separate_save => "Needs the separate bingo save, so your normal characters are never changed".to_string(),
-                    "nosave" => "Not used: this game is on your normal save".to_string(),
-                    "" => "Applied automatically when you load into a bingo character".to_string(),
-                    "set" => "Set for this character".to_string(),
-                    "waiting" => "Waiting for you to load into a character".to_string(),
-                    x if x.starts_with("skipped:") => format!("Left alone: this character already has {} graces", &x[8..]),
-                    x => x.trim_start_matches("error:").to_string(),
+                use crate::graces::Status;
+                let status = match &snap.graces {
+                    _ if !s.auto_graces => format!("Automatic setting is off. Use Set graces or {} in game.", sys::HOTKEY),
+                    Status::Idle if s.separate_save => "Set automatically on fresh characters in your bingo save".to_string(),
+                    Status::Idle => "Set automatically on new characters, from the name screen on".to_string(),
+                    Status::Waiting => "Waiting for a character".to_string(),
+                    Status::Set => "Set for this character".to_string(),
+                    Status::Skipped(n) => format!("Left alone: this character already has {n} graces. Set graces applies them anyway."),
+                    Status::Error(e) => e.clone(),
                 };
-                let can_apply = snap.game == GameState::Modded && snap.bingo_save;
+                let hotkey = match snap.hotkey {
+                    sys::hotkey::TAKEN => format!("{} is taken by another program. Use the Set graces button.", sys::HOTKEY),
+                    _ => format!("{} sets them on the current character while a bingo game runs", sys::HOTKEY),
+                };
                 ui::card(ui, |ui| {
                     ui.add_space(8.0);
                     ui.horizontal(|ui| {
                         ui.add_space(18.0);
-                        ui::toggle(ui, &mut s.auto_graces, "Set race graces when I load into a bingo character");
+                        ui::toggle(ui, &mut s.auto_graces, "Set race graces on new bingo characters");
                     });
                     ui::row(ui, Lead::None, "Status", &status, c::MUTED, true, true, |ui| {
-                        if ui::button(ui, "Apply now", Kind::Ghost, can_apply).clicked() {
+                        if ui::button(ui, "Set graces", Kind::Ghost, snap.game == GameState::Modded).clicked() {
                             acts.push(Act::ApplyGraces);
                         }
                     });
+                    ui::row(ui, Lead::None, "Hotkey", &hotkey, if snap.hotkey == sys::hotkey::TAKEN { c::WARN } else { c::MUTED }, true, true, |_| {});
                 });
 
                 ui::section(ui, "About", 30.0);

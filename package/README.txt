@@ -22,10 +22,19 @@ RACING
      game was started from Steam: close it and launch from the hub.
 
 
+RACE GRACES
+  The hub sets the race graces on a new bingo character by itself, on any
+  save: from the name screen (where you set the keepsake) or right after you
+  press Finish. Windows plays a sound when it's done. No Cheat Engine needed.
+  Characters you've already played are never changed automatically.
+  If it didn't happen, press Ctrl+F9 in game, or Set graces on the Race page.
+
+
 SAVES
-  Bingo runs use your normal save file. The hub keeps backups in "Save Backups"
-  and can restore any of them from the Saves page. Before playing online,
-  restore a backup from before your bingo runs and launch through Steam.
+  Bingo runs use your normal save file. The hub backs it up whenever the game
+  starts (even from the Randomizer's Bingo! button) and can restore any backup
+  from the Saves page. Before playing online, restore a backup from before your
+  bingo runs and launch through Steam.
 
 
 UPDATES

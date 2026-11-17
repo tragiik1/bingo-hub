@@ -6,13 +6,14 @@
 //! split into a block (id / divisor) and an index; blocks sit in a std::map keyed by block number,
 //! and each flag is one bit, big-endian within its byte.
 //!
-//! Only used on bingo launches (ModEngine 2 loaded, EAC off), and never on a character that
-//! already has many graces, so a normal save can't be wiped by accident.
+//! Only used on bingo launches (ModEngine 2 loaded, EAC off). Automatic setting never touches a
+//! character that has been played (see NEW_LIMIT / FRESH_LIMIT), so a normal playthrough can't be
+//! wiped by accident; the manual button and hotkey ask before going past FRESH_LIMIT.
 
 use std::collections::HashMap;
 use std::ffi::c_void;
 
-use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, INVALID_HANDLE_VALUE};
+use windows_sys::Win32::Foundation::{CloseHandle, GetLastError, ERROR_ACCESS_DENIED, HANDLE, INVALID_HANDLE_VALUE};
 use windows_sys::Win32::System::Diagnostics::Debug::{ReadProcessMemory, WriteProcessMemory};
 use windows_sys::Win32::System::Diagnostics::ToolHelp::*;
 use windows_sys::Win32::System::Threading::*;
@@ -56,6 +57,11 @@ pub const ALL: [u32; 315] = [
 /// A character with more graces than this isn't a fresh bingo character: leave it alone.
 pub const FRESH_LIMIT: usize = 40;
 
+/// Off the separate bingo save, automatic setting only touches a character this new: at most the
+/// tutorial graces. A brand-new character (name screen onwards) has none, and anything played
+/// longer may be someone's real playthrough.
+pub const NEW_LIMIT: usize = 3;
+
 /// Instructions that load the CSEventFlagMan pointer: `mov rdi, [rip+X]` followed by a null check.
 const PATTERNS: [&str; 2] = ["48 8B 3D ?? ?? ?? ?? 48 85 FF 74 ?? 48 8B 49", "48 8B 3D ?? ?? ?? ?? 48 85 FF ?? ?? 32 C0 E9"];
 
@@ -80,6 +86,21 @@ pub enum Outcome {
     NotFresh(usize),
     /// No character loaded yet (flags not readable).
     NotLoaded,
+    /// The flags were written but didn't read back as set.
+    WriteFailed,
+}
+
+/// What automatic setting is doing in the current game, for the UI.
+#[derive(Clone, PartialEq, Default, Debug)]
+pub enum Status {
+    #[default]
+    Idle,
+    /// Game running, no character readable yet.
+    Waiting,
+    Set,
+    /// Left alone: the character already has this many graces.
+    Skipped(usize),
+    Error(String),
 }
 
 fn parse_pattern(p: &str) -> Vec<Option<u8>> {
@@ -164,7 +185,12 @@ impl Game {
         let access = PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION | PROCESS_QUERY_INFORMATION;
         let h = unsafe { OpenProcess(access, 0, pid) };
         if h.is_null() {
-            return Err("Couldn't access the game. Graces only work on bingo launches (anti-cheat off).".into());
+            return Err(if unsafe { GetLastError() } == ERROR_ACCESS_DENIED {
+                "Windows blocked access to the game. If Steam or Elden Ring runs as administrator, run Bingo Hub as administrator too."
+            } else {
+                "Couldn't access the game. Graces only work on bingo launches (anti-cheat off)."
+            }
+            .into());
         }
         let mut g = Game { h, flag_man: 0 };
         let (base, _) = module(pid, "eldenring.exe").ok_or("Couldn't read the game's memory.")?;
@@ -330,8 +356,9 @@ impl Game {
         nv == v || self.write_u8(a, nv)
     }
 
-    /// Applies the race graces. With `only_fresh`, characters with many graces are left alone.
-    pub fn apply(&self) -> Outcome {
+    /// Applies the race graces. Characters with more than `limit` graces are left alone; `None`
+    /// applies regardless.
+    pub fn apply(&self, limit: Option<usize>) -> Outcome {
         let mut cache = HashMap::new();
         let wanted: Vec<u32> = WANTED.iter().map(|w| w.0).collect();
         let states: Vec<Option<bool>> = wanted.iter().map(|&id| self.get(id, &mut cache)).collect();
@@ -342,26 +369,21 @@ impl Game {
             return Outcome::AlreadySet;
         }
         let have = ALL.iter().filter(|&&id| self.get(id, &mut cache) == Some(true)).count();
-        if have > FRESH_LIMIT {
+        if limit.is_some_and(|l| have > l) {
             return Outcome::NotFresh(have);
         }
         wanted.iter().for_each(|&id| { self.set(id, true, &mut cache); });
         let off = ALL.iter().filter(|id| !wanted.contains(id)).filter(|&&id| self.get(id, &mut cache) == Some(true) && self.set(id, false, &mut cache)).count();
+        if !wanted.iter().all(|&id| self.get(id, &mut cache) == Some(true)) {
+            return Outcome::WriteFailed;
+        }
         Outcome::Applied(off)
     }
 }
 
-/// One-shot apply for the manual button.
-pub fn apply_now(pid: u32) -> Result<String, String> {
-    let g = Game::open(pid)?;
-    match g.apply() {
-        Outcome::Applied(off) => Ok(format!("Race graces set{}", if off > 0 { format!(", {off} others removed") } else { String::new() })),
-        Outcome::AlreadySet => Ok("Race graces are already set".into()),
-        Outcome::NotLoaded => Err("Load into your character first.".into()),
-        Outcome::NotFresh(n) => Err(format!(
-            "This character already has {n} graces, so it doesn't look like a fresh bingo character. Nothing was changed."
-        )),
-    }
+/// One-shot apply for the button and hotkey. `force` skips the fresh-character check.
+pub fn apply_now(pid: u32, force: bool) -> Result<Outcome, String> {
+    Ok(Game::open(pid)?.apply(if force { None } else { Some(FRESH_LIMIT) }))
 }
 
 #[cfg(test)]

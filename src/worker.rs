@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::mpsc::Sender;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicU8, Ordering};
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant, SystemTime};
 
@@ -35,12 +35,14 @@ pub struct Snapshot {
     pub backups: Vec<Backup>,
     pub game_exe: Option<PathBuf>,
     pub rando_run: Option<core::RandoRun>,
-    /// Race graces status for the current game, empty when not applicable.
-    pub graces: String,
+    /// Automatic race graces in the current game.
+    pub graces: crate::graces::Status,
     /// The separate bingo save is in the save folder right now.
     pub bingo_save: bool,
     /// Starting classes for the last randomize.
     pub classes: Option<crate::classes::Spoiler>,
+    /// The race graces hotkey, one of `sys::hotkey`.
+    pub hotkey: u8,
 }
 
 pub struct Shared {
@@ -50,11 +52,19 @@ pub struct Shared {
     pub focused: AtomicBool,
     /// Set to wake the poller right away (after launching something).
     pub poke: (Mutex<bool>, Condvar),
+    /// The race graces hotkey, one of `sys::hotkey`.
+    pub hotkey: AtomicU8,
 }
 
 impl Shared {
     pub fn new(settings: Settings) -> Self {
-        Self { snap: Mutex::new(Snapshot::default()), settings: Mutex::new(settings), focused: AtomicBool::new(true), poke: (Mutex::new(false), Condvar::new()) }
+        Self {
+            snap: Mutex::new(Snapshot::default()),
+            settings: Mutex::new(settings),
+            focused: AtomicBool::new(true),
+            poke: (Mutex::new(false), Condvar::new()),
+            hotkey: AtomicU8::new(sys::hotkey::OFF),
+        }
     }
 
     /// Re-scan now, and keep scanning quickly for a few seconds while the tool starts.
@@ -78,10 +88,34 @@ pub enum Msg {
     /// (title, explanation) for a Randomizer or game crash Windows just logged.
     Crash(String, String),
     Restart,
+    /// A manual race graces attempt (button or hotkey) on this game.
+    Graces(u32, Result<crate::graces::Outcome, String>),
 }
 
 pub fn spawn(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
+    let (s, t, c) = (shared.clone(), tx.clone(), ctx.clone());
+    std::thread::Builder::new().name("hotkey".into()).spawn(move || hotkey(s, t, c)).expect("hotkey thread");
     std::thread::Builder::new().name("poller".into()).spawn(move || run(shared, tx, ctx)).expect("poller thread");
+}
+
+/// Ctrl+F9 in game sets the race graces, the same as the button. Works from the name screen on.
+/// The result is heard straight away and shown in the hub once it's looked at.
+fn hotkey(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
+    let modded_pid = || {
+        let s = shared.snap.lock().unwrap();
+        s.game_pid.filter(|_| s.game == GameState::Modded)
+    };
+    sys::hotkey_loop(
+        || modded_pid().is_some(),
+        &shared.hotkey,
+        || {
+            let Some(pid) = modded_pid() else { return sys::chime(false) };
+            let r = crate::graces::apply_now(pid, false);
+            sys::chime(matches!(r, Ok(crate::graces::Outcome::Applied(_) | crate::graces::Outcome::AlreadySet)));
+            let _ = tx.send(Msg::Graces(pid, r));
+            ctx.request_repaint();
+        },
+    );
 }
 
 fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
@@ -92,7 +126,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut last_crash = String::new();
     let mut grace_game: Option<(u32, Result<crate::graces::Game, String>, Instant)> = None;
     let mut grace_checked = Instant::now();
-    let mut graces_status = String::new();
+    let mut graces_status = crate::graces::Status::Idle;
     let mut saw_game_since_swap = false;
     let mut spoiler_time: Option<SystemTime> = None;
     let mut classes: Option<crate::classes::Spoiler> = None;
@@ -238,13 +272,12 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             classes = crate::classes::load();
         }
 
-        // Race graces: only on the separate bingo save, and only on fresh characters.
+        // Race graces. On the separate bingo save every character is a bingo character, so any fresh
+        // one gets them. On any other save only a brand-new character does, which covers the name
+        // screen (where the Cheat Engine script was run) and the first moments after Finish.
         match (game, game_pid) {
-            (GameState::Modded, Some(_)) if settings.auto_graces && !crate::bingosave::active() => {
-                graces_status = "nosave".into();
-            }
             (GameState::Modded, Some(pid)) if settings.auto_graces => {
-                if grace_checked.elapsed() >= Duration::from_secs(3) {
+                if grace_checked.elapsed() >= Duration::from_secs(2) {
                     grace_checked = Instant::now();
                     let reopen = match &grace_game {
                         Some((p, Ok(_), _)) => *p != pid,
@@ -254,26 +287,42 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                     if reopen {
                         grace_game = Some((pid, crate::graces::Game::open(pid), Instant::now()));
                     }
+                    use crate::graces::{Outcome, Status};
+                    let limit = if crate::bingosave::active() { crate::graces::FRESH_LIMIT } else { crate::graces::NEW_LIMIT };
                     graces_status = match &grace_game {
-                        Some((_, Ok(g), _)) => match g.apply() {
-                            crate::graces::Outcome::Applied(_) => {
+                        Some((_, Ok(g), _)) => match g.apply(Some(limit)) {
+                            Outcome::Applied(_) => {
+                                sys::chime(true);
                                 let _ = tx.send(Msg::Toast("Race graces set".into()));
-                                "set".into()
+                                Status::Set
                             }
-                            crate::graces::Outcome::AlreadySet => "set".into(),
-                            crate::graces::Outcome::NotLoaded => "waiting".into(),
-                            crate::graces::Outcome::NotFresh(n) => format!("skipped:{n}"),
+                            Outcome::AlreadySet => Status::Set,
+                            Outcome::NotLoaded => Status::Waiting,
+                            Outcome::NotFresh(n) => Status::Skipped(n),
+                            Outcome::WriteFailed => Status::Error("The game didn't take the graces. Try Set graces again.".into()),
                         },
-                        Some((_, Err(e), _)) => format!("error:{e}"),
-                        None => String::new(),
+                        Some((_, Err(e), _)) => Status::Error(e.clone()),
+                        None => Status::Idle,
                     };
                 }
             }
             (GameState::NotRunning, _) => {
                 grace_game = None;
-                graces_status.clear();
+                graces_status = crate::graces::Status::Idle;
             }
             _ => {}
+        }
+
+        // A game just started, from the hub or anywhere else (the Randomizer's Bingo! button):
+        // back up the save before a character is loaded. Identical to the hub's pre-launch backup
+        // when launched from here, so that one is skipped as a duplicate.
+        if let Some(pid) = game_pid.filter(|_| prev_game.is_none()) {
+            let fresh_start = sys::process_age(pid).is_some_and(|a| a < 60.0);
+            if fresh_start && settings.auto_backup_on_launch && !crate::bingosave::active() {
+                if let Err(e) = core::create_backup("game started", true, settings.keep_auto_backups) {
+                    let _ = tx.send(Msg::Toast(format!("Couldn't back up your save: {e}")));
+                }
+            }
         }
         prev_game = game_pid;
 
@@ -292,6 +341,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             graces: graces_status.clone(),
             bingo_save: crate::bingosave::active(),
             classes: classes.clone(),
+            hotkey: shared.hotkey.load(Ordering::Relaxed),
         };
         {
             let mut cur = shared.snap.lock().unwrap();
