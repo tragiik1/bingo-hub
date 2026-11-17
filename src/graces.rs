@@ -193,6 +193,15 @@ impl Game {
             .into());
         }
         let mut g = Game { h, flag_man: 0 };
+        // Finding the flag manager means scanning the game's code, so remember it per game process.
+        static FOUND: std::sync::Mutex<Option<(u32, usize)>> = std::sync::Mutex::new(None);
+        let cached = *FOUND.lock().unwrap();
+        if let Some((_, addr)) = cached.filter(|c| c.0 == pid) {
+            g.flag_man = addr;
+            if g.looks_valid() {
+                return Ok(g);
+            }
+        }
         let (base, _) = module(pid, "eldenring.exe").ok_or("Couldn't read the game's memory.")?;
 
         // Sections. The game has two named .text (the second is anti-tamper code), so go by
@@ -275,6 +284,7 @@ impl Game {
         }
         if let Some(b) = best {
             g.flag_man = b;
+            *FOUND.lock().unwrap() = Some((pid, b));
             return Ok(g);
         }
         let _ = std::fs::write(crate::core::paths().data_dir.join("graces-debug.txt"), format!("{} candidates\n{report}", candidates.len()));

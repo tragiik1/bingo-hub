@@ -76,12 +76,12 @@ pub fn setup(ctx: &egui::Context) {
         v.extreme_bg_color = c::SURFACE;
         v.override_text_color = Some(c::TEXT);
         v.selection.bg_fill = c::ACCENT.gamma_multiply(0.35);
-        v.selection.stroke = Stroke::new(1.0, c::TEXT);
-        v.text_cursor.stroke = Stroke::new(1.5, c::ACCENT);
+        v.selection.stroke = Stroke::new(1.0_f32, c::TEXT);
+        v.text_cursor.stroke = Stroke::new(1.5_f32, c::ACCENT);
         v.widgets.inactive.bg_fill = c::RAISED;
         v.widgets.hovered.bg_fill = c::HOVER;
         v.widgets.active.bg_fill = c::HOVER;
-        v.widgets.inactive.fg_stroke = Stroke::new(1.0, c::MUTED);
+        v.widgets.inactive.fg_stroke = Stroke::new(1.0_f32, c::MUTED);
         v.window_shadow = egui::epaint::Shadow::NONE;
         v.popup_shadow = egui::epaint::Shadow::NONE;
         s.spacing.item_spacing = vec2(0.0, 0.0);
@@ -165,7 +165,7 @@ pub fn button(ui: &mut Ui, text: &str, kind: Kind, enabled: bool) -> Response {
         let p = ui.painter();
         p.rect_filled(rect, 6.0, fill);
         if let Some(s) = stroke {
-            p.rect_stroke(rect, 6.0, Stroke::new(1.0, s), StrokeKind::Inside);
+            p.rect_stroke(rect, 6.0, Stroke::new(1.0_f32, s), StrokeKind::Inside);
         }
         p.galley_with_override_text_color(rect.center() - g.size() / 2.0, g, text_c);
     }
@@ -193,7 +193,7 @@ pub fn field(ui: &mut Ui, id: &str, s: &mut String, hint: &str, width: f32, max_
         bg,
         Shape::Vec(vec![
             RectShape::filled(rect, 6.0, c::SURFACE).into(),
-            RectShape::stroke(rect, 6.0, Stroke::new(1.0, c::BORDER.lerp_to_gamma(c::ACCENT, t)), StrokeKind::Inside).into(),
+            RectShape::stroke(rect, 6.0, Stroke::new(1.0_f32, c::BORDER.lerp_to_gamma(c::ACCENT, t)), StrokeKind::Inside).into(),
         ]),
     );
     resp
@@ -210,7 +210,7 @@ pub fn toggle(ui: &mut Ui, on: &mut bool, label: &str) -> Response {
     let track = Rect::from_min_size(pos2(rect.left(), rect.center().y - 9.0), vec2(32.0, 18.0));
     let p = ui.painter();
     p.rect_filled(track, 9.0, c::RAISED.lerp_to_gamma(c::ACCENT, t));
-    p.rect_stroke(track, 9.0, Stroke::new(1.0, c::BORDER.lerp_to_gamma(c::ACCENT, t)), StrokeKind::Inside);
+    p.rect_stroke(track, 9.0, Stroke::new(1.0_f32, c::BORDER.lerp_to_gamma(c::ACCENT, t)), StrokeKind::Inside);
     let kx = egui::lerp(track.left() + 9.0..=track.right() - 9.0, t);
     p.circle_filled(pos2(kx, track.center().y), 7.0, c::MUTED.lerp_to_gamma(c::ON_ACCENT, t));
     p.galley_with_override_text_color(pos2(track.right() + 14.0, rect.center().y - g.size().y / 2.0), g, c::TEXT);
@@ -235,7 +235,7 @@ pub fn card<R>(ui: &mut Ui, add: impl FnOnce(&mut Ui) -> R) -> R {
         bg,
         Shape::Vec(vec![
             RectShape::filled(rect, 8.0, c::SURFACE).into(),
-            RectShape::stroke(rect, 8.0, Stroke::new(1.0, c::BORDER), StrokeKind::Inside).into(),
+            RectShape::stroke(rect, 8.0, Stroke::new(1.0_f32, c::BORDER), StrokeKind::Inside).into(),
         ]),
     );
     r.inner
@@ -253,7 +253,7 @@ pub fn row(ui: &mut Ui, lead: Lead, title_text: &str, detail: &str, detail_color
     let h = if compact { 40.0 } else { 62.0 };
     let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
     if divider {
-        ui.painter().hline(rect.x_range().shrink(16.0), rect.top(), Stroke::new(1.0, c::DIVIDER));
+        ui.painter().hline(rect.x_range().shrink(16.0), rect.top(), Stroke::new(1.0_f32, c::DIVIDER));
     }
     // A detached child so the buttons don't move the parent's cursor.
     let mut act = ui.new_child(UiBuilder::new().max_rect(rect.shrink2(vec2(16.0, 0.0))).layout(Layout::right_to_left(Align::Center)));
@@ -272,7 +272,7 @@ pub fn row(ui: &mut Ui, lead: Lead, title_text: &str, detail: &str, detail_color
             x += 34.0;
         }
         Lead::Check => {
-            let s = Stroke::new(2.0, c::GOOD);
+            let s = Stroke::new(2.0_f32, c::GOOD);
             let o = pos2(x + 8.0, cy);
             p.line_segment([o + vec2(-5.0, 0.0), o + vec2(-1.5, 3.5)], s);
             p.line_segment([o + vec2(-1.5, 3.5), o + vec2(5.0, -4.0)], s);
@@ -323,7 +323,7 @@ pub fn table(ui: &mut Ui, id: &str, rect: Rect, cols: &[Col], n: usize, selected
     let mut out = TableOut::default();
     let p = ui.painter();
     p.rect_filled(rect, 8.0, c::SURFACE);
-    p.rect_stroke(rect, 8.0, Stroke::new(1.0, c::BORDER), StrokeKind::Inside);
+    p.rect_stroke(rect, 8.0, Stroke::new(1.0_f32, c::BORDER), StrokeKind::Inside);
 
     let inner = rect.shrink2(vec2(1.0, 6.0));
     let total: f32 = cols.iter().map(|c| c.weight).sum();
@@ -361,7 +361,7 @@ pub fn table(ui: &mut Ui, id: &str, rect: Rect, cols: &[Col], n: usize, selected
                     ui.painter().rect_filled(r, 0.0, fill);
                 }
                 if i > 0 {
-                    ui.painter().hline(r.x_range(), r.top(), Stroke::new(1.0, c::DIVIDER));
+                    ui.painter().hline(r.x_range(), r.top(), Stroke::new(1.0_f32, c::DIVIDER));
                 }
                 for (ci, col) in cols.iter().enumerate() {
                     let (text, color) = cell(i, ci);
@@ -409,7 +409,7 @@ pub fn caption_button(ui: &mut Ui, rect: Rect, kind: Caption) -> Response {
         p.rect_filled(rect, CornerRadius::ZERO, bg);
     }
     let o = rect.center();
-    let s = Stroke::new(1.0, fg);
+    let s = Stroke::new(1.0_f32, fg);
     let snap = |v: f32| v.round() + 0.5;
     match kind {
         Caption::Min => {

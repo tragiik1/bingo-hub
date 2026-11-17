@@ -119,6 +119,7 @@ enum Modal {
 
 struct Practice {
     board: usize,
+    path: PathBuf,
     n: usize,
     cells: Vec<usize>,
     marked: Vec<bool>,
@@ -283,6 +284,16 @@ impl App {
         self.default_board = core::board_config_get("LastBingoFile").filter(|s| !s.is_empty());
         self.board_sel = self.board_sel.min(self.boards.len().saturating_sub(1));
         self.boards_loaded = true;
+        // Boards re-sort when one is added; a card dealt from a board that changed is closed.
+        if let Some(pr) = &mut self.practice {
+            match self.boards.iter().position(|b| b.path == pr.path && pr.cells.iter().all(|&g| g < b.goals.len())) {
+                Some(i) => {
+                    pr.board = i;
+                    self.board_sel = i; // "Deal again" deals from the selected board
+                }
+                None => self.practice = None,
+            }
+        }
     }
 
     fn is_default(&self, b: &Board) -> bool {
@@ -295,7 +306,7 @@ impl App {
         let mut idx: Vec<usize> = (0..b.goals.len()).collect();
         shuffle(&mut idx);
         idx.truncate(n * n);
-        self.practice = Some(Practice { board: self.board_sel, n, marked: vec![false; idx.len()], cells: idx });
+        self.practice = Some(Practice { board: self.board_sel, path: b.path.clone(), n, marked: vec![false; idx.len()], cells: idx });
     }
 
     fn drain(&mut self, ctx: &egui::Context) {
@@ -844,7 +855,7 @@ impl App {
 
     fn sidebar(&mut self, ui: &mut Ui, snap: &Snapshot, acts: &mut Vec<Act>) {
         let r = ui.max_rect();
-        ui.painter().vline(r.right() - 0.5, r.y_range(), Stroke::new(1.0, c::DIVIDER));
+        ui.painter().vline(r.right() - 0.5, r.y_range(), Stroke::new(1.0_f32, c::DIVIDER));
         titlebar(ui, Rect::from_min_size(r.min, vec2(r.width() - 1.0, TITLEBAR_H)), false);
         ui::text_at(ui, pos2(r.left() + 24.0, r.top() + TITLEBAR_H / 2.0 + 4.0), Align2::LEFT_CENTER, TITLE, ui::strong(), c::TEXT);
 
@@ -882,7 +893,7 @@ impl App {
             let resp = ui.interact(card, Id::new("update_card"), if clickable { Sense::click() } else { Sense::hover() });
             let t = ui.ctx().animate_bool_with_time(resp.id, clickable && resp.hovered(), 0.08);
             ui.painter().rect_filled(card, 8.0, c::SURFACE.lerp_to_gamma(c::RAISED, t));
-            ui.painter().rect_stroke(card, 8.0, Stroke::new(1.0, c::ACCENT.gamma_multiply(0.45)), StrokeKind::Inside);
+            ui.painter().rect_stroke(card, 8.0, Stroke::new(1.0_f32, c::ACCENT.gamma_multiply(0.45)), StrokeKind::Inside);
             ui::text_at(ui, pos2(card.left() + 12.0, card.top() + 17.0), Align2::LEFT_CENTER, head, ui::strong(), c::TEXT);
             ui::text_at(ui, pos2(card.left() + 12.0, card.top() + 36.0), Align2::LEFT_CENTER, &sub, ui::small(), c::ACCENT);
             if clickable && resp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
@@ -1129,7 +1140,7 @@ impl App {
             let sel = self.boards.get(self.board_sel).cloned();
 
             if let Some(pr) = &mut self.practice {
-                let board = &self.boards[pr.board.min(self.boards.len() - 1)];
+                let board = &self.boards[pr.board];
                 let mut close = false;
                 let mut deal = false;
                 toolbar(
@@ -1482,7 +1493,7 @@ impl App {
         let r = Rect::from_min_size(pos2(area.left() + ui::PAD_X, area.bottom() - 24.0 - size.y + (1.0 - a) * 6.0), size);
         let p = ui.painter();
         p.rect_filled(r, 8.0, c::RAISED.gamma_multiply(a));
-        p.rect_stroke(r, 8.0, Stroke::new(1.0, c::BORDER.gamma_multiply(a)), StrokeKind::Inside);
+        p.rect_stroke(r, 8.0, Stroke::new(1.0_f32, c::BORDER.gamma_multiply(a)), StrokeKind::Inside);
         p.galley_with_override_text_color(pos2(r.left() + 14.0, r.center().y - g.size().y / 2.0), g, c::TEXT.gamma_multiply(a));
         ui.ctx().request_repaint_after(std::time::Duration::from_millis(if a < 1.0 { 16 } else { 250 }));
     }
@@ -1502,7 +1513,7 @@ impl App {
         let width = if matches!(modal, Modal::Run { .. }) { 520.0 } else { 420.0 };
 
         egui::Area::new(Id::new("modal")).order(Order::Foreground).anchor(Align2::CENTER_CENTER, vec2(0.0, -20.0)).show(ctx, |ui| {
-            Frame::NONE.fill(c::SIDEBAR).stroke(Stroke::new(1.0, c::BORDER)).corner_radius(10).inner_margin(24).show(ui, |ui| {
+            Frame::NONE.fill(c::SIDEBAR).stroke(Stroke::new(1.0_f32, c::BORDER)).corner_radius(10).inner_margin(24).show(ui, |ui| {
                 ui.set_width(width);
                 let heading = match modal {
                     Modal::Confirm { title, .. } | Modal::Alert { title, .. } | Modal::Prompt { title, .. } => title.clone(),

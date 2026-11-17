@@ -52,7 +52,11 @@ impl ProcCache {
         let live: std::collections::HashSet<u32> = pids.iter().copied().collect();
         self.names.retain(|pid, _| live.contains(pid));
         for pid in pids {
-            self.names.entry(pid).or_insert_with(|| image_name(pid));
+            // Unreadable names are retried: a process opened too early would otherwise never be seen.
+            let name = self.names.entry(pid).or_default();
+            if name.is_empty() {
+                *name = image_name(pid);
+            }
         }
     }
 

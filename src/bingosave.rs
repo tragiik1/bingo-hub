@@ -114,7 +114,7 @@ pub fn swap_in() -> Result<(), String> {
 
     // 2. Journal before touching the save folder.
     let j = Journal { save_dir: dir.clone(), main_hash, started: now() };
-    fs::write(journal_path(), serde_json::to_string_pretty(&j).unwrap()).map_err(|e| e.to_string())?;
+    core::write_atomic(&journal_path(), serde_json::to_string_pretty(&j).unwrap()).map_err(|e| e.to_string())?;
 
     // 3. Rename the normal save out of the game's way.
     if has_main {

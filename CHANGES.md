@@ -150,6 +150,38 @@ To test: race on your own save, close, then start Elden Ring from Steam. The war
 after about 45 s, and the Saves page should have a `before bingo` backup. Restore it, start from
 Steam again, and there should be no warning.
 
+## Third round (separate commit): full code review, bug fixes
+
+The whole codebase was reviewed for bugs. No new features were added; these are fixes:
+
+- **Practice card crash** (`app.rs`). The card stored its board as a position in the board list.
+  Dropping a board file onto the Boards page while a card was open reloads and re-sorts the list,
+  so the card could point at a different board and index past its goals, which crashed the app
+  (`panic = "abort"`). The card now tracks its board by file path, and closes if that board is
+  gone or changed.
+- **Half-written files** (`core.rs`, `bingosave.rs`). Backups were copied straight to the
+  final `.sl2` name, so a failed copy (disk full, crash) left a truncated backup that was listed
+  and restorable, which would corrupt the save, and auto-backup duplicate detection compared
+  against it. Backups now copy to `.part` and are renamed when complete. Settings (`hub.json`),
+  the run log (`runs.json`) and the bingo save journal now go through `core::write_atomic`
+  (temp file + rename). A corrupt journal was the worst case: `active()` stayed true forever, but
+  `swap_out` couldn't read the file, so it did nothing.
+- **Unreadable run log** (`core::load_runs`). If `runs.json` fails to parse, it's copied to
+  `runs.bad.json` instead of being silently overwritten by the next save.
+- **Games launched with anti-cheat showed "Running, mod not confirmed"** (`worker.rs`). EAC stops
+  the hub from listing the game's modules, so it was `Unknown`. If the Easy Anti-Cheat service is
+  running, bingo launches never start it, so the game is now `Vanilla` ("No mod"). This also makes
+  the round-two warning before going online check only `Vanilla`. Before, it also fired on
+  `Unknown`, which would include a bingo game running as administrator.
+- **Process names that couldn't be read were cached forever** (`sys::ProcCache`). A process
+  opened too early would never be detected; empty names are now retried.
+- **Manual graces re-scanned the game every press** (`graces::Game::open`). Finding the event
+  flag manager means scanning tens of MB of game code. The address is now remembered per game
+  process (and re-checked before use), so the button and Ctrl+F9 respond straight away.
+- **Compiler warnings** (`ui.rs`, `app.rs`). 16 `Stroke::new(1.0, ..)` calls trigger a lint that
+  newer Rust says will become a hard error, which would break the release build after a toolchain
+  update. They got `_f32` suffixes; the build has zero warnings now.
+
 ## Ideas considered and left out
 
 - Making the separate save the default or auto-swapping on Randomizer launches. The group

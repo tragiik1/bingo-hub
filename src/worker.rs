@@ -171,6 +171,8 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                         GameState::Vanilla
                     }
                     Some(false) => GameState::Starting,
+                    // Anti-cheat blocks inspecting the game, and bingo launches never start it.
+                    None if pid_of("easyanticheat_eos.exe").or_else(|| pid_of("easyanticheat.exe")).is_some() => GameState::Vanilla,
                     None => GameState::Unknown,
                 },
             },
@@ -349,9 +351,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                 s.save();
             }
         }
-        // EAC-protected games can't be inspected, so they show as Unknown rather than Vanilla.
-        let normal_game = matches!(game, GameState::Vanilla | GameState::Unknown);
-        if let Some(pid) = game_pid.filter(|&p| normal_game && online_checked != Some(p) && sys::process_age(p).is_some_and(|a| a > 45.0)) {
+        if let Some(pid) = game_pid.filter(|&p| game == GameState::Vanilla && online_checked != Some(p) && sys::process_age(p).is_some_and(|a| a > 45.0)) {
             online_checked = Some(pid);
             if !settings.bingo_played_hash.is_empty() && live_hash().as_ref() == Some(&settings.bingo_played_hash) {
                 let restore = match core::newest_before_bingo() {

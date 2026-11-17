@@ -113,6 +113,13 @@ pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
     Some(RandoRun { seed, code: hex(&digest[..3]).to_uppercase() })
 }
 
+/// Writes through a temporary file and a rename, so a crash mid-write leaves the old file intact.
+pub fn write_atomic(p: &Path, data: impl AsRef<[u8]>) -> io::Result<()> {
+    let tmp = p.with_extension("tmp");
+    fs::write(&tmp, data)?;
+    fs::rename(&tmp, p)
+}
+
 pub fn mtime(p: &Path) -> Option<SystemTime> {
     fs::metadata(p).and_then(|m| m.modified()).ok()
 }
@@ -227,7 +234,7 @@ impl Settings {
     }
     pub fn save(&self) {
         if let Ok(s) = serde_json::to_string_pretty(self) {
-            let _ = fs::write(Self::file(), s);
+            let _ = write_atomic(&Self::file(), s);
         }
     }
     pub fn rando_game_version_time(&self) -> u64 {
@@ -406,9 +413,13 @@ pub fn create_backup(label: &str, auto: bool, keep: u32) -> Result<Option<PathBu
     }
     let name = format!("{} {}{}.sl2", Local::now().format(STAMP), if auto { "[auto] " } else { "" }, sanitize(label));
     let dest = paths().backups_dir.join(name);
-    let mut src = open_shared(&live).map_err(|e| e.to_string())?;
-    let mut dst = File::create(&dest).map_err(|e| e.to_string())?;
-    io::copy(&mut src, &mut dst).map_err(|e| e.to_string())?;
+    // Copied under another extension first: a half-written .sl2 would be listed and restorable.
+    let part = dest.with_extension("part");
+    let copied = open_shared(&live).and_then(|mut src| io::copy(&mut src, &mut File::create(&part)?)).and_then(|_| fs::rename(&part, &dest));
+    if let Err(e) = copied {
+        let _ = fs::remove_file(&part);
+        return Err(e.to_string());
+    }
     if auto {
         for old in list_backups().into_iter().filter(|b| b.auto).skip(keep.max(1) as usize) {
             let _ = sys::recycle(&old.path);
@@ -602,17 +613,19 @@ fn runs_file() -> PathBuf {
 }
 
 pub fn load_runs() -> Vec<Run> {
-    let mut v: Vec<Run> = fs::read_to_string(runs_file())
-        .ok()
-        .and_then(|s| serde_json::from_str(s.trim_start_matches('\u{feff}')).ok())
-        .unwrap_or_default();
+    let Ok(text) = fs::read_to_string(runs_file()) else { return vec![] };
+    let mut v: Vec<Run> = serde_json::from_str(text.trim_start_matches('\u{feff}')).unwrap_or_else(|_| {
+        // Unreadable: keep a copy, since the next save would overwrite it with an empty log.
+        let _ = fs::copy(runs_file(), runs_file().with_extension("bad.json"));
+        vec![]
+    });
     v.sort_by_key(|r| std::cmp::Reverse(r.date_local()));
     v
 }
 
 pub fn save_runs(runs: &[Run]) {
     if let Ok(s) = serde_json::to_string_pretty(runs) {
-        let _ = fs::write(runs_file(), s);
+        let _ = write_atomic(&runs_file(), s);
     }
 }
 
