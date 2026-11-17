@@ -181,6 +181,70 @@ The whole codebase was reviewed for bugs. No new features were added; these are 
 - **Compiler warnings** (`ui.rs`, `app.rs`). 16 `Stroke::new(1.0, ..)` calls trigger a lint that
   newer Rust says will become a hard error, which would break the release build after a toolchain
   update. They got `_f32` suffixes; the build has zero warnings now.
+- **README step that didn't exist** (`package/README.txt`). It told the host to press a Generate
+  button on the Race page; there isn't one. It now says to enter any seed and share it.
+- **Saving when a rename is refused** (`core::write_atomic`). If renaming the temp file fails
+  (antivirus or a sync tool holding the file), it now falls back to writing in place instead of
+  losing the save.
+
+## Findings for next steps (not code changes)
+
+Status: everything above is on `main` and unreleased. v1.0.8 is still the live release. Nothing
+here has been run in game yet; `cargo check` passes with zero warnings, but `cargo test` and
+release builds weren't possible on the machine these changes were made on.
+
+### Some seeds crash the Randomizer (the owner wants this fixed)
+
+Example: `hello123` and `hello124` work, `hello125` crashes. The seed text goes through SHA-256
+into a number that drives every shuffle, so similar seeds give unrelated shuffles; a crash means
+that seed's shuffle hits a bug.
+
+Prime suspect, from reading Nordgaren's original source (github.com/Nordgaren/ERBingoRandomizer,
+MIT), which `S2_Style` is built on:
+
+- `randomizeShopLineupParam` builds `shopLineupParamList` from
+  `_weaponDictionary.Keys.Select(removeWeaponMetadata)` (`id / 10000 * 10000`). Some of those
+  stripped IDs aren't weapons the Randomizer knows. `replaceShopLineupParam` pops one and does
+  `_weaponNameDictionary[newId]`, which throws `KeyNotFoundException`. Only seeds whose shuffle
+  puts such an ID into a shop crash. The starting-class code (`getRandomWeapon(int, list)`) guards
+  against exactly this with `_weaponDictionary.ContainsKey`; the shop code doesn't. The fix is to
+  filter the pool the same way.
+- Not confirmed: `S2_Style` is modified and couldn't be run. To confirm, run a crashing seed, then
+  `Get-WinEvent -FilterHashtable @{LogName='Application'; ProviderName='.NET Runtime'; Id=1026} -MaxEvents 1 | Format-List Message`
+  gives the stack trace.
+- Also noticed: `buildDictionaries` uses `Enumerable.Range(81, 86)` to leave ammo (types 81-86)
+  out of `_weaponDictionary`. `Range(start, count)` covers 81-166, so torches and probably the DLC
+  weapon types are left out of weapon randomization too.
+- Fixing it means changing the Randomizer. `S2_Style_1.0.exe` is a closed modified build (assembly
+  "Randomizer", namespace `ERBingoRandomizer`, no credits inside). The owner thinks it's another
+  person's edit of the original but doesn't remember who. Options: get the source or a fix from
+  that author; or rebuild from Nordgaren's MIT source with the fix, which only works if it
+  randomizes identically to `S2_Style` (it won't unless their changes are known). Whatever build is
+  used, everyone has to use the same one; the race code already includes the exe's hash.
+
+### Licences of the bundled tools
+
+| Tool | Licence | Notes |
+| --- | --- | --- |
+| EldenBingo 0.18 (awsker/EldenBingo) | GPL-3.0 | Modifiable; a modified build must publish its source under GPL. |
+| Elden Ring Debug Tool (Nordgaren) | GPL-3.0 | Same. |
+| ModEngine 2 (soulsmods) | MIT | Keep the copyright notice. |
+| Bingo Randomizer `S2_Style_1.0` | Unknown | See above. Original ERBingoRandomizer is MIT. |
+
+Gap: the release redistributes the two GPL tools but doesn't include their licence text or a link
+to their source. Adding both (README and the package) would fix it.
+
+### Answered questions
+
+- **Bingo Board stays on 0.18.** The group's board connects to `bingocard.bingobrawlers.com`.
+  EldenBingo 0.19 changed the packet format and doesn't connect there. Its "Elden Ring 1.17"
+  support only adds the two new starting classes, so 0.18 is correct. Don't bump it until the
+  server updates.
+- **The race code is complete.** The Randomizer's `LastSeed.json` holds only `Seed` and
+  `Sha256Hash`; there are no options to miss.
+- The group only used Cheat Engine for the graces. The other feature ideas raised (race invites,
+  character names on backups, Discord status, race modifiers, rivalry stats, goal tracking) were
+  turned down as not worth it.
 
 ## Ideas considered and left out
 
