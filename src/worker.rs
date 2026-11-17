@@ -85,8 +85,8 @@ pub enum Msg {
     Update(Result<Option<crate::update::Release>, String>, bool),
     UpdateFailed(String),
     ToolsUpdated(Vec<String>),
-    /// (title, explanation) for a Randomizer or game crash Windows just logged.
-    Crash(String, String),
+    /// (title, explanation), e.g. for a Randomizer or game crash Windows just logged.
+    Alert(String, String),
     Restart,
     /// A manual race graces attempt (button or hotkey) on this game.
     Graces(u32, Result<crate::graces::Outcome, String>),
@@ -128,6 +128,10 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut grace_checked = Instant::now();
     let mut graces_status = crate::graces::Status::Idle;
     let mut saw_game_since_swap = false;
+    let mut prev_state = GameState::NotRunning;
+    // This game ran with the bingo mod on the normal save (not the separate bingo save).
+    let mut bingo_on_normal = false;
+    let mut online_checked: Option<u32> = None;
     let mut spoiler_time: Option<SystemTime> = None;
     let mut classes: Option<crate::classes::Spoiler> = None;
     // Race code inputs, recomputed only when one of them changes.
@@ -244,7 +248,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             let found = if rando_closed { crate::crash::randomizer(&rando_name, 60) } else { crate::crash::game(60) };
             if let Some(c) = found.filter(|c| c.when != last_crash) {
                 last_crash = c.when.clone();
-                let _ = tx.send(Msg::Crash(c.title, c.body));
+                let _ = tx.send(Msg::Alert(c.title, c.body));
                 ctx.request_repaint();
             }
         }
@@ -324,6 +328,44 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                 }
             }
         }
+
+        // Bingo on the normal save. Auto backups rotate out, so the first bingo game after the save
+        // was played some other way keeps a "before bingo" copy that never does. When the game
+        // closes, remember what bingo left the save as, so launching it normally gets a warning.
+        let live_hash = || core::live_save().and_then(|s| core::file_hash_hex(&s));
+        if game == GameState::Modded && prev_state != GameState::Modded && !crate::bingosave::active() {
+            bingo_on_normal = true;
+            let just_started = game_pid.and_then(sys::process_age).is_some_and(|a| a < 120.0);
+            if just_started && live_hash().is_some_and(|h| h != settings.bingo_played_hash) {
+                if let Err(e) = core::create_backup(core::BEFORE_BINGO, false, settings.keep_auto_backups) {
+                    let _ = tx.send(Msg::Toast(format!("Couldn't back up your save: {e}")));
+                }
+            }
+        }
+        if game_closed && std::mem::take(&mut bingo_on_normal) {
+            if let Some(h) = live_hash() {
+                let mut s = shared.settings.lock().unwrap();
+                s.bingo_played_hash = h;
+                s.save();
+            }
+        }
+        // EAC-protected games can't be inspected, so they show as Unknown rather than Vanilla.
+        let normal_game = matches!(game, GameState::Vanilla | GameState::Unknown);
+        if let Some(pid) = game_pid.filter(|&p| normal_game && online_checked != Some(p) && sys::process_age(p).is_some_and(|a| a > 45.0)) {
+            online_checked = Some(pid);
+            if !settings.bingo_played_hash.is_empty() && live_hash().as_ref() == Some(&settings.bingo_played_hash) {
+                let restore = match core::newest_before_bingo() {
+                    Some(b) => format!("restore \"{}\" ({}) from the Saves page", b.label, core::when(b.when)),
+                    None => "restore a backup from before your bingo runs from the Saves page".into(),
+                };
+                let _ = tx.send(Msg::Alert(
+                    "This save was last used for bingo".into(),
+                    format!("Elden Ring is running without the bingo mod on a save that still has your bingo characters. Randomized gear and stats can get a character flagged online.\n\nBefore playing online, close the game and {restore}."),
+                ));
+                ctx.request_repaint();
+            }
+        }
+        prev_state = game;
         prev_game = game_pid;
 
         let snap = Snapshot {

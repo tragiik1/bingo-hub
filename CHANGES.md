@@ -1,6 +1,24 @@
 # Changes: race graces on any save, hotkey, backups on every game start
 
-Context for whoever works on this next. These changes were made on top of v1.0.8.
+Context for whoever works on this next. These changes were made on top of v1.0.8 and are **not
+released yet**: they're on `main` for testing, and the live version is still v1.0.8. The exact
+v1.0.8 state is kept as branch `backup/v1.0.8-working` and tag `v1.0.8-working-backup`.
+
+## Background from the owner (why any of this was changed)
+
+- The pre-set race graces feature **wasn't working for some people**.
+- **Most friends don't like the separate bingo save** and use their own save. Graces were
+  deliberately limited to the separate save, so on their own save the feature never ran. They
+  went back to the **Cheat Engine table**, which works but is tedious: open CE, attach to the
+  game, expand a huge table, find the event flag script, and run it.
+- **When CE works:** after creating the character, on the screen where you name it and pick the
+  keepsake, right before pressing **Finish**. Running the event flag script there means the
+  graces are already lit when you load in. The owner asked for a reliable manual backup that
+  does the same thing, usable on that screen or mid-game, plus a better automatic solution.
+- **The original safety feature still matters:** it exists so the hub can never overwrite the
+  graces of someone's real, non-bingo playthrough. Any solution has to keep that guarantee.
+- The owner asked for meaningful changes only, with no bloat, and wants them assessed before
+  they're released.
 
 ## The problem
 
@@ -100,6 +118,37 @@ Tests also weren't run: the machine had no MSVC linker.
    the error sound, and the confirm dialog appears when you switch to the hub.
 5. Launch with the Randomizer's Bingo! button: a "[auto] game started" backup appears on the
    Saves page.
+
+## Second round (separate commit): safer bingo on your own save, two fixes
+
+A backup of the last known-working state (v1.0.8, before any of this) is kept as branch
+`backup/v1.0.8-working` and tag `v1.0.8-working-backup`. To go back:
+`git checkout backup/v1.0.8-working`, or rebuild from that tag.
+
+- **"before bingo" backup that never rotates** (`worker.rs`, `core::BEFORE_BINGO`). With bingo on
+  the normal save now supported, the README's advice ("restore a backup from before your bingo
+  runs before playing online") could become impossible: auto backups keep only the newest 10,
+  and every game start, randomize and launch adds one. Now, when a bingo game starts on the
+  normal save (game under 120 s old, not the separate save) and the save differs from what the
+  last bingo game left it as, a non-auto backup labelled `before bingo` is made. Non-auto
+  backups are never rotated. One is made per switch from normal play to bingo, not per race.
+- **Warning before going online with a bingo save.** When a bingo game on the normal save closes,
+  the save's SHA-256 is stored in `Settings.bingo_played_hash` (`hub.json` key
+  `BingoPlayedHash`). If the game later runs without the mod (`Vanilla`, or `Unknown`, because
+  EAC blocks inspecting the process) for over 45 s, and the save still has that hash, the hub
+  shows a one-time alert per game process pointing at the newest `before bingo` backup. Once
+  the save is restored or played normally the hash no longer matches, so it doesn't nag.
+- **Restore is blocked while the separate bingo save is swapped in** (`app.rs`). Before, a
+  restore in that window wrote over the bingo save, then the swap-out stored it as the bingo
+  save and put the old normal save back, so the restore silently did nothing.
+- **Tool updates are checked against the manifest** (`update.rs`). The extracted files are
+  hashed against `manifest.json` before the installed folder is replaced. Before, only tar's
+  exit code was checked.
+- `Msg::Crash` was renamed to `Msg::Alert`, since it's a general (title, body) alert now.
+
+To test: race on your own save, close, then start Elden Ring from Steam. The warning should appear
+after about 45 s, and the Saves page should have a `before bingo` backup. Restore it, start from
+Steam again, and there should be no warning.
 
 ## Ideas considered and left out
 

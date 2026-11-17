@@ -336,7 +336,7 @@ impl App {
                     self.alert("Update failed", e);
                 }
                 Msg::Restart => ctx.send_viewport_cmd(ViewportCommand::Close),
-                Msg::Crash(title, body) => self.alert(&title, body),
+                Msg::Alert(title, body) => self.alert(&title, body),
                 Msg::ToolsUpdated(names) => {
                     self.upd = Upd::Current;
                     self.toast(ctx, format!("Updated {}", names.join(", ")));
@@ -460,6 +460,8 @@ impl App {
             Act::Restore(b) => {
                 if snap.game_pid.is_some() {
                     self.alert("Close the game first", "Elden Ring has the save open.");
+                } else if snap.bingo_save {
+                    self.alert("Wait a moment", "Your bingo save is still in the save folder. The hub puts your normal save back a few seconds after the game closes; restore after that.");
                 } else {
                     self.confirm("Restore save", format!("Replace your current save with \"{}\" ({})?\n\nYour current save is backed up first.", b.label, core::when(b.when)), "Restore", Confirmed::Restore(b));
                 }

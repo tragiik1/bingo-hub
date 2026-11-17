@@ -124,10 +124,13 @@ fn sha256_hex(p: &Path) -> Option<String> {
     Some(h.finalize().iter().map(|b| format!("{b:02x}")).collect())
 }
 
-/// True if every identifying file is present with the expected hash.
-fn up_to_date(c: &Component) -> bool {
-    let dir = root().join(&c.folder);
+/// True if every identifying file is in `dir` with the expected hash.
+fn matches(c: &Component, dir: &Path) -> bool {
     c.files.iter().all(|(rel, want)| sha256_hex(&dir.join(rel)).is_some_and(|got| got.eq_ignore_ascii_case(want)))
+}
+
+fn up_to_date(c: &Component) -> bool {
+    matches(c, &root().join(&c.folder))
 }
 
 /// What the latest release would change here, if anything.
@@ -236,7 +239,7 @@ pub fn install_tools(tools: &[Component]) -> Result<Vec<String>, String> {
         download(&c.url, c.size, &zip)?;
         let ok = tar().arg("-xf").arg(&zip).arg("-C").arg(work.join("x")).status().map(|s| s.success()).unwrap_or(false);
         let fresh = work.join("x").join(&c.folder);
-        if !ok || !fresh.is_dir() {
+        if !ok || !fresh.is_dir() || !matches(c, &fresh) {
             return Err(format!("The {} download was damaged. Try again.", c.name));
         }
         let target = root.join(&c.folder);

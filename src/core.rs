@@ -192,6 +192,8 @@ pub struct Settings {
     /// Game version at the Randomizer's last successful run, and when that run was (unix secs).
     pub rando_game_version: String,
     pub rando_run_time: u64,
+    /// SHA-256 of the normal save as the last bingo game on it left it ("" = none since).
+    pub bingo_played_hash: String,
 }
 
 impl Default for Settings {
@@ -211,6 +213,7 @@ impl Default for Settings {
             last_page: "Race".into(),
             rando_game_version: String::new(),
             rando_run_time: 0,
+            bingo_played_hash: String::new(),
         }
     }
 }
@@ -412,6 +415,14 @@ pub fn create_backup(label: &str, auto: bool, keep: u32) -> Result<Option<PathBu
         }
     }
     Ok(Some(dest))
+}
+
+/// Label of the kept (never rotated) backup made when a bingo game first runs on a save that was
+/// played some other way since, so there's always a clean copy to go back to before playing online.
+pub const BEFORE_BINGO: &str = "before bingo";
+
+pub fn newest_before_bingo() -> Option<Backup> {
+    list_backups().into_iter().find(|b| !b.auto && b.label == BEFORE_BINGO)
 }
 
 pub fn restore_backup(b: &Backup, keep: u32) -> Result<(), String> {

@@ -33,8 +33,10 @@ RACE GRACES
 SAVES
   Bingo runs use your normal save file. The hub backs it up whenever the game
   starts (even from the Randomizer's Bingo! button) and can restore any backup
-  from the Saves page. Before playing online, restore a backup from before your
-  bingo runs and launch through Steam.
+  from the Saves page. The first bingo game after you've played normally also
+  keeps a "before bingo" backup that is never cleaned up. Before playing
+  online, restore it and launch through Steam. The hub warns you if you start
+  the game normally on a save you last used for bingo.
 
 
 UPDATES
