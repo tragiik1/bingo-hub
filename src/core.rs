@@ -114,10 +114,15 @@ pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
 }
 
 /// Writes through a temporary file and a rename, so a crash mid-write leaves the old file intact.
+/// If the rename is refused (the file is open elsewhere, or a virus scanner has it), it falls
+/// back to writing in place rather than not saving at all.
 pub fn write_atomic(p: &Path, data: impl AsRef<[u8]>) -> io::Result<()> {
     let tmp = p.with_extension("tmp");
-    fs::write(&tmp, data)?;
-    fs::rename(&tmp, p)
+    fs::write(&tmp, &data)?;
+    fs::rename(&tmp, p).or_else(|_| {
+        let _ = fs::remove_file(&tmp);
+        fs::write(p, &data)
+    })
 }
 
 pub fn mtime(p: &Path) -> Option<SystemTime> {

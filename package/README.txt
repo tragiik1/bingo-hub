@@ -13,7 +13,7 @@ FIRST TIME
 
 
 RACING
-  1. Enter the race seed on the Race page, or press Generate and share it.
+  1. Enter the race seed on the Race page. The host can pick any seed and share it.
   2. Open the Bingo Board and join the lobby.
   3. Open the Randomizer. The seed is already copied: paste it (Ctrl+V) and
      press Randomize. The hub backs up your save when it finishes.
