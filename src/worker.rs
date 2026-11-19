@@ -294,7 +294,10 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                     grace_checked = Instant::now();
                     let reopen = match &grace_game {
                         Some((p, Ok(_), _)) => *p != pid,
-                        Some((p, Err(_), at)) => *p != pid || at.elapsed() > Duration::from_secs(30),
+                        Some((p, Err(e), at)) => {
+                            let wait = if e == crate::graces::NOT_READY { 2 } else { 30 };
+                            *p != pid || at.elapsed() >= Duration::from_secs(wait)
+                        }
                         None => true,
                     };
                     if reopen {
@@ -314,6 +317,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                             Outcome::NotFresh(n) => Status::Skipped(n),
                             Outcome::WriteFailed => Status::Error("The game didn't take the graces. Try Set graces again.".into()),
                         },
+                        Some((_, Err(e), _)) if e == crate::graces::NOT_READY => Status::Waiting,
                         Some((_, Err(e), _)) => Status::Error(e.clone()),
                         None => Status::Idle,
                     };

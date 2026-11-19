@@ -382,3 +382,12 @@ patched (`tools/randomizer-patch`).
   hash). Tested: `swap_round_trips` covers losing the journal mid-swap. Before the fix runs on the
   user's save, every file involved was copied to `Save Backups\2026-11-19 before putting normal
   save back`.
+- **Graces: "Couldn't find graces in this game version" was wrong.** On game 2.7.2 the existing
+  pattern finds CSEventFlagMan fine (divisor 1000, 125-byte blocks, tree at +0x38); the debug
+  file was written at 18:27:29, 14 s after the game's last save write, i.e. while it was closing,
+  when the singleton's static is null. `Game::open` now returns `graces::NOT_READY` when a
+  candidate's static holds null; the worker shows that as Waiting and retries after 2 s instead of
+  30 s. The "this game version" error and `graces-debug.txt` are kept for real failures.
+- Tested: new ignored read-only test `live_read` (`BINGOHUB_GAME_PID=<pid>`) against a bingo
+  launch at the title screen: manager at the pattern candidate, all 11 race graces read. Nothing
+  written; the save's fingerprint matched the hub's "game started" backup afterwards.

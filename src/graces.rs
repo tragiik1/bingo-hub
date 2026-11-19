@@ -65,6 +65,9 @@ pub const NEW_LIMIT: usize = 3;
 /// Instructions that load the CSEventFlagMan pointer: `mov rdi, [rip+X]` followed by a null check.
 const PATTERNS: [&str; 2] = ["48 8B 3D ?? ?? ?? ?? 48 85 FF 74 ?? 48 8B 49", "48 8B 3D ?? ?? ?? ?? 48 85 FF ?? ?? 32 C0 E9"];
 
+/// `Game::open` error while the game is still starting or closing (retry shortly).
+pub const NOT_READY: &str = "The game is still starting. Graces can be set once a character is loaded.";
+
 pub struct Game {
     h: HANDLE,
     /// Static address that holds the CSEventFlagMan pointer.
@@ -287,6 +290,11 @@ impl Game {
             *FOUND.lock().unwrap() = Some((pid, b));
             return Ok(g);
         }
+        // While the game starts up or shuts down the manager doesn't exist yet: its static holds
+        // null. That's "not yet", not "this game version is different".
+        if candidates.iter().any(|(c, _)| g.read_bytes(*c, 8).is_some_and(|b| b.iter().all(|&x| x == 0))) {
+            return Err(NOT_READY.into());
+        }
         let _ = std::fs::write(crate::core::paths().data_dir.join("graces-debug.txt"), format!("{} candidates\n{report}", candidates.len()));
         Err("Couldn't find graces in this game version. Use Cheat Engine for now.".into())
     }
@@ -407,6 +415,20 @@ mod tests {
     fn pattern_matching() {
         let hay = [0x90, 0x48, 0x8B, 0x3D, 1, 2, 3, 4, 0x48, 0x85, 0xFF, 0x74, 9, 0x48, 0x8B, 0x49];
         assert_eq!(find_all(&hay, &parse_pattern(PATTERNS[0])), vec![1]);
+    }
+
+    /// Against a running bingo game, reads only (nothing is written):
+    /// `BINGOHUB_GAME_PID=<pid> cargo test -- --ignored live_read --nocapture`
+    #[test]
+    #[ignore]
+    fn live_read() {
+        let pid: u32 = std::env::var("BINGOHUB_GAME_PID").unwrap().parse().unwrap();
+        let g = Game::open(pid).unwrap();
+        assert!(g.looks_valid());
+        let mut cache = HashMap::new();
+        let wanted: Vec<Option<bool>> = WANTED.iter().map(|w| g.get(w.0, &mut cache)).collect();
+        let on = ALL.iter().filter(|&&id| g.get(id, &mut cache) == Some(true)).count();
+        println!("flag manager {:#x}; wanted {wanted:?}; graces on {on}", g.flag_man);
     }
 
     #[test]
