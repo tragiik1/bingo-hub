@@ -1,6 +1,7 @@
 fn main() {
     // "owner/repo" for self-updates. Leave repo.txt out to build without updates.
     println!("cargo:rerun-if-changed=repo.txt");
+    println!("cargo:rerun-if-changed=assets/hub.ico");
     let repo = std::fs::read_to_string("repo.txt").unwrap_or_default();
     println!("cargo:rustc-env=BINGOHUB_REPO={}", repo.trim());
 

@@ -57,13 +57,18 @@ pub fn setup(ctx: &egui::Context) {
     let load = |f: &str| std::fs::read(dir.join(f)).ok();
     let regular = load("segoeui.ttf").or_else(|| load("arial.ttf"));
     let semibold = load("seguisb.ttf").or_else(|| load("segoeuib.ttf"));
+    let serif = load("pala.ttf").or_else(|| load("constan.ttf")).or_else(|| load("georgia.ttf"));
     if let Some(r) = regular {
         fonts.font_data.insert("r".into(), Arc::new(egui::FontData::from_owned(r)));
     }
     if let Some(s) = semibold {
         fonts.font_data.insert("sb".into(), Arc::new(egui::FontData::from_owned(s)));
     }
+    if let Some(f) = serif {
+        fonts.font_data.insert("serif".into(), Arc::new(egui::FontData::from_owned(f)));
+    }
     fonts.families.insert(FontFamily::Proportional, vec!["r".into()]);
+    fonts.families.insert(FontFamily::Name("serif".into()), vec!["serif".into(), "sb".into(), "r".into()]);
     fonts.families.insert(FontFamily::Monospace, vec!["r".into()]);
     fonts.families.insert(FontFamily::Name("sb".into()), vec!["sb".into(), "r".into()]);
     ctx.set_fonts(fonts);
@@ -246,6 +251,8 @@ pub enum Lead<'a> {
     Num(&'a str),
     Check,
     Dot(Color32),
+    /// Something is in progress.
+    Spin,
 }
 
 /// One line inside a card. `actions` are laid out right-to-left at the right edge.
@@ -280,6 +287,10 @@ pub fn row(ui: &mut Ui, lead: Lead, title_text: &str, detail: &str, detail_color
         }
         Lead::Dot(col) => {
             p.circle_filled(pos2(x + 8.0, cy), 3.5, col);
+            x += 34.0;
+        }
+        Lead::Spin => {
+            spinner(ui, pos2(x + 8.0, cy));
             x += 34.0;
         }
     }
@@ -435,4 +446,33 @@ pub fn caption_button(ui: &mut Ui, rect: Rect, kind: Caption) -> Response {
 /// Wrapped paragraph used in dialogs.
 pub fn paragraph(ui: &mut Ui, text: &str, color: Color32) {
     ui.add(egui::Label::new(RichText::new(text).font(body()).color(color)).wrap_mode(TextWrapMode::Wrap));
+}
+
+// ---------------------------------------------------------------- pixel art
+
+/// A small loading ring: eight pixel blocks, one bright one chasing round with a fading tail.
+pub fn spinner(ui: &Ui, center: egui::Pos2) {
+    let t = ui.ctx().input(|i| i.time);
+    ui.ctx().request_repaint_after(std::time::Duration::from_millis(60));
+    let head = ((t * 10.0) as usize) % 8;
+    for i in 0..8 {
+        let a = i as f32 / 8.0 * std::f32::consts::TAU;
+        let p = center + vec2(a.sin(), -a.cos()) * 6.0;
+        let age = (head + 8 - i) % 8;
+        let col = if age == 0 { c::ACCENT } else { c::ACCENT.gamma_multiply((0.55 - age as f32 * 0.12).max(0.12)) };
+        let r = Rect::from_center_size(pos2(p.x.round(), p.y.round()), vec2(3.0, 3.0));
+        ui.painter().rect_filled(r, 0.0, col);
+    }
+}
+
+/// "BINGO HUB" in the serif, letter-spaced.
+pub fn wordmark(ui: &Ui, left_center: egui::Pos2) {
+    let mut job = LayoutJob::default();
+    job.append(
+        "BINGO HUB",
+        0.0,
+        TextFormat { font_id: FontId::new(15.0, FontFamily::Name("serif".into())), color: c::TEXT, extra_letter_spacing: 2.2, ..Default::default() },
+    );
+    let g = ui.fonts_mut(|f| f.layout_job(job));
+    ui.painter().galley(pos2(left_center.x, left_center.y - g.size().y / 2.0), g, c::TEXT);
 }

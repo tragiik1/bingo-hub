@@ -1,5 +1,6 @@
 #![windows_subsystem = "windows"]
 
+mod art;
 mod app;
 mod bingosave;
 mod classes;

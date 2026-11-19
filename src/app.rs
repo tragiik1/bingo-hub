@@ -860,7 +860,16 @@ impl App {
         let r = ui.max_rect();
         ui.painter().vline(r.right() - 0.5, r.y_range(), Stroke::new(1.0_f32, c::DIVIDER));
         titlebar(ui, Rect::from_min_size(r.min, vec2(r.width() - 1.0, TITLEBAR_H)), false);
-        ui::text_at(ui, pos2(r.left() + 24.0, r.top() + TITLEBAR_H / 2.0 + 4.0), Align2::LEFT_CENTER, TITLE, ui::strong(), c::TEXT);
+        // Logo: a Tarnished resting at grace. It only moves while the hub has focus, so it never
+        // costs anything while the game is being played.
+        let (ctx, painter) = (ui.ctx().clone(), ui.painter().clone());
+        let (now, focused) = ctx.input(|i| (i.time, i.focused));
+        if focused {
+            ctx.request_repaint_after(std::time::Duration::from_millis(33));
+        }
+        let mark = pos2(r.left() + 16.0, r.top() + 9.0);
+        crate::art::logo(&painter, mark, 1.0, now);
+        ui::wordmark(ui, pos2(mark.x + 32.0 + 9.0, mark.y + 16.5));
 
         let mut y = r.top() + 70.0;
         for pg in Page::ALL {
@@ -899,6 +908,9 @@ impl App {
             ui.painter().rect_stroke(card, 8.0, Stroke::new(1.0_f32, c::ACCENT.gamma_multiply(0.45)), StrokeKind::Inside);
             ui::text_at(ui, pos2(card.left() + 12.0, card.top() + 17.0), Align2::LEFT_CENTER, head, ui::strong(), c::TEXT);
             ui::text_at(ui, pos2(card.left() + 12.0, card.top() + 36.0), Align2::LEFT_CENTER, &sub, ui::small(), c::ACCENT);
+            if !clickable {
+                ui::spinner(ui, pos2(card.right() - 20.0, card.center().y));
+            }
             if clickable && resp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
                 acts.push(Act::ShowUpdate);
             }
@@ -1004,7 +1016,7 @@ impl App {
                             }
                             (Lead::Check, d, c::MUTED)
                         }
-                        GameState::Starting => (Lead::Num("3"), "Starting".into(), c::MUTED),
+                        GameState::Starting => (Lead::Spin, "Starting".into(), c::MUTED),
                         GameState::Vanilla => (Lead::Dot(c::BAD), "Running without the mod. Close it and launch from here.".into(), c::BAD),
                         GameState::Unknown => (Lead::Dot(c::WARN), "Running, mod not confirmed".into(), c::MUTED),
                         GameState::NotRunning => (

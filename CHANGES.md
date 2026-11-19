@@ -391,3 +391,11 @@ patched (`tools/randomizer-patch`).
 - Tested: new ignored read-only test `live_read` (`BINGOHUB_GAME_PID=<pid>`) against a bingo
   launch at the title screen: manager at the pattern candidate, all 11 race graces read. Nothing
   written; the save's fingerprint matched the hub's "game started" backup afterwards.
+
+## Ninth round: logo and small UI touches (not released)
+
+- New logo, "Rest at Grace" (`src/art.rs`): a hooded Tarnished kneeling with their sword planted, lit from behind by a grace. 32x32 pixel art drawn in code every frame: the cloak's edge catches the light as it breathes, the hem stirs and embers rise. The light underneath is a soft mesh; the pixels are one mesh of plain quads (egui's rect feathering smears 1-point rects away). It repaints at ~30 fps only while the hub has focus. Picked from five concepts (grace, Tarnished, spirit jellyfish, golden tree, bingo card).
+- "BINGO HUB" wordmark in Palatino (falls back to Constantia, then Georgia; all ship with Windows), letter-spaced.
+- `ui::spinner`: a pixel ring loader (eight blocks, gold head with a fading tail). Used for "Elden Ring: Starting" on Race and the "Updating" card. Row lead `Lead::Spin`.
+- App icon rebuilt from the same sprite: `BINGOHUB_SPRITE_OUT=sprite.rgba cargo test --release art -- --ignored`, then `python tools/icon/make_icon.py sprite.rgba`. build.rs reruns when hub.ico changes.
+- Tested: sandbox launch (fake save folders), window captured with PrintWindow over 3 s: logo animates, about 0.3% of one core. The spinner wasn't seen live. All tests pass.
