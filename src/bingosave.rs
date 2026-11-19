@@ -132,6 +132,10 @@ pub fn swap_in() -> Result<(), String> {
     if store.join(SAVE).is_file() {
         let r = copy_checked(&store.join(SAVE), &live).and_then(|_| copy_checked(&store.join(SAVE), &bak).map(|_| ()));
         if let Err(e) = r {
+            // The files in the save folder are copies of the stored bingo save, possibly half
+            // written; remove them so undoing doesn't store them over the good copy.
+            let _ = fs::remove_file(&live);
+            let _ = fs::remove_file(&bak);
             let _ = swap_out();
             return Err(e);
         }

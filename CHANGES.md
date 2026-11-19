@@ -287,3 +287,47 @@ seeds randomize identically and crashing seeds start working. Not done yet.
   to a real character. Checking in-game play time (GameDataMan) instead of the grace count would
   close this, the title-screen write and the "real character with 3 or fewer graces" case.
 - The go-online warning shows on every normal launch after a race until the save is played.
+
+## Fifth round: patch-day check
+
+- **The Randomizer's crash is fixed** by patching its weapon-name table (`tools/randomizer-patch`):
+  all 115 named weapons the table lacked were added. 0/100 test seeds crash (was 46/100), and seed
+  1712's spoiler log is byte-identical to the unpatched build. The unpatched exe is in
+  `Data\Randomizer backup`.
+- **Setup warns when a game update adds weapons the Randomizer can't name** (`src/randocheck.rs`).
+  It reads the name table straight from the Randomizer's exe (the .NET bundle, then the IL that
+  fills the table) and the weapon names from the Randomizer's copy of the game text (DCX via the
+  game's own Oodle DLL, then BND4 and FMG). Read-only; re-checked only when either file changes.
+  The list goes to `Data\randomizer-missing-names.tsv`, and `tools/randomizer-patch/patch.ps1`
+  patches it in with one command. Fixes go out as a tool update, so every hub runs the same build.
+- **Stale Randomizer text** (`core::drop_stale_rando_text`): the Randomizer copies the game text to
+  `Cache\msg` on its first run and never refreshes it, and it only picks weapons that have a name
+  in that copy. So a copy made before a game update gives different games from the same seed than
+  one made after. The hub now deletes the copy when the game's regulation.bin is newer (the next
+  randomize remakes it), and the race code includes the copy's hash, so a mismatch shows up as a
+  different code instead of a silently different race.
+
+## Sixth round: full review fixes
+
+- **Run log edits could change the wrong run** (`app.rs`). Edit and Delete remembered the run's
+  position; a bingo launch adds a race at the top of the log, so with a dialog open the save or
+  delete landed one run off. They now find the run by value.
+- **A failed bingo-save swap-in could overwrite the stored bingo save** (`bingosave.rs`). If copying
+  the stored bingo save into the save folder failed partway, the undo stored the half-written copy
+  over the good one. The partial copies are now removed before undoing. The normal save was never
+  at risk.
+- **Game crash hints ignored a manually located game** (`crash.rs`): they now use the install the
+  hub uses.
+- **Wording**: "This seed doesn't work" now points at weapons from game updates (Setup lists them)
+  instead of a "known bug"; "Elden Ring updated since your last randomize" now says to randomize
+  again (the randomized files were made from the old version) instead of "the Randomizer may need
+  an update"; READMEs and LICENSES.txt say the Randomizer carries the weapon-name patch instead of
+  "included unchanged".
+- Duplicate wide-string helper in `randocheck.rs` replaced with `sys::wide`.
+
+Reviewed and fine as they are: settings, backups (copy to `.part` then rename), journal and save
+swap, race code inputs, process tracking, graces (open/validate/apply/limits), hotkey thread,
+self-update (rename, deferred swap, manifest check), crash parsing, spoiler parsing, release
+script. Known edges left alone: `restore_backup` copies straight over the live save (a "before
+restore" backup is made first); a Randomizer tool update replaces its folder, so its cache and last
+output go and everyone randomizes again (intended).

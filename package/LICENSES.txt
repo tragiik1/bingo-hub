@@ -1,7 +1,8 @@
 LICENCES
 
-Bingo Hub includes these tools unchanged. Each belongs to its authors and is
-under its own licence.
+Bingo Hub includes these tools. Each belongs to its authors and is under its
+own licence. They're unchanged, except the Randomizer, which has weapon names
+from recent game updates added to its built-in name table.
 
   EldenBingo 0.18 (Bingo Board)
     by awsker, GPL-3.0
@@ -13,6 +14,7 @@ under its own licence.
 
   Bingo Randomizer, S2 Style 1.0 (Bingo Randomizer)
     a modified build of ERBingoRandomizer by Nordgaren, MIT
+    (with the weapon names above added by Bingo Hub)
     Original source: https://github.com/Nordgaren/ERBingoRandomizer
 
   ModEngine 2 (Bingo Randomizer\Resources\ME2)

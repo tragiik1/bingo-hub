@@ -83,7 +83,8 @@ pub fn rando_exe() -> Option<PathBuf> {
 #[derive(Clone, PartialEq, Debug)]
 pub struct RandoRun {
     pub seed: String,
-    /// Short code that matches only when seed, Randomizer build and game patch all match.
+    /// Short code that matches only when seed, Randomizer build, game patch and the Randomizer's
+    /// copy of the game text all match.
     pub code: String,
 }
 
@@ -100,7 +101,8 @@ pub fn file_hash_hex(p: &Path) -> Option<String> {
 }
 
 /// Reads LastSeed.json and derives the race code from the inputs that decide the randomization:
-/// the seed it used, the Randomizer build (`exe_hash`) and the game's own regulation.bin.
+/// the seed it used, the Randomizer build (`exe_hash`), the game's own regulation.bin and the
+/// Randomizer's copy of the game text.
 pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
     if !paths().regulation.is_file() {
         return None;
@@ -109,8 +111,25 @@ pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
     let v: serde_json::Value = serde_json::from_str(text.trim_start_matches('\u{feff}')).ok()?;
     let seed = v["Seed"].as_str()?.to_string();
     let game_reg = file_hash_hex(&game_dir?.join("regulation.bin")).unwrap_or_default();
-    let digest = Sha256::digest(format!("{exe_hash}|{seed}|{game_reg}").as_bytes());
+    // The Randomizer picks weapons by the names in its copy of the game text, so a different copy
+    // (made before or after a game update) gives a different game from the same seed.
+    let text = file_hash_hex(&crate::randocheck::msgbnd_path()).unwrap_or_default();
+    let digest = Sha256::digest(format!("{exe_hash}|{seed}|{game_reg}|{text}").as_bytes());
     Some(RandoRun { seed, code: hex(&digest[..3]).to_uppercase() })
+}
+
+/// The Randomizer copies the game's text into `Cache\msg` on its first run and reuses it forever.
+/// If the game has been updated since, that copy is out of date: remove it (the Randomizer makes a
+/// new one from the game on its next run). Only the Randomizer's own cache is touched.
+pub fn drop_stale_rando_text(game_dir: &Path) {
+    let msg = paths().rando_dir.join("Cache").join("msg");
+    let copied = mtime(&crate::randocheck::msgbnd_path());
+    let game = mtime(&game_dir.join("regulation.bin"));
+    if let (Some(copied), Some(game)) = (copied, game) {
+        if copied < game {
+            let _ = fs::remove_dir_all(&msg);
+        }
+    }
 }
 
 /// Writes through a temporary file and a rename, so a crash mid-write leaves the old file intact.
@@ -771,7 +790,23 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
                 add(
                     Level::Warn,
                     "Elden Ring updated since your last randomize",
-                    format!("{} to {}. If the Randomizer starts crashing, it may need an update.", settings.rando_game_version, game_ver),
+                    format!("{} to {}. Your randomized files were made from the old version: randomize again before racing.", settings.rando_game_version, game_ver),
+                    None,
+                );
+            }
+            // A game update can add weapons the Randomizer can't name; seeds that hand one out crash.
+            if let Some(list) = rando_exe().and_then(|exe| crate::randocheck::missing_cached(&exe, &dir)).filter(|l| !l.is_empty()) {
+                crate::randocheck::write_list(&list);
+                let names: Vec<&str> = list.iter().take(3).map(|(_, n)| n.as_str()).collect();
+                let more = if list.len() > 3 { format!(" and {} more", list.len() - 3) } else { String::new() };
+                add(
+                    Level::Warn,
+                    "The Randomizer doesn't know some new weapons",
+                    format!(
+                        "{} from a game update ({}{more}). Seeds that hand one out crash. Until the Randomizer is updated, change a letter of the seed if it crashes.",
+                        plural(list.len(), "weapon"),
+                        names.join(", ")
+                    ),
                     None,
                 );
             }

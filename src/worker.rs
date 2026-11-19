@@ -227,6 +227,12 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             let seed_time = core::mtime(&core::last_seed_file());
             let key = (seed_time, game_dir.as_ref().and_then(|d| core::mtime(&d.join("regulation.bin"))), exe_hash.clone());
             if run_key.as_ref() != Some(&key) {
+                // After a game update the Randomizer's text copy is stale (it never refreshes it
+                // itself), which changes what seeds give from player to player. Drop it so the next
+                // randomize copies the current text, like everyone else's.
+                if let Some(d) = game_dir.as_deref().filter(|_| rando_pid.is_none()) {
+                    core::drop_stale_rando_text(d);
+                }
                 rando_run = core::rando_run(&exe_hash, game_dir.as_deref());
                 run_key = Some(key);
                 // A new successful run: remember which game version it worked with.
@@ -247,7 +253,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
         let game_closed = prev_game.is_some() && game_pid.is_none();
         if rando_closed || game_closed {
             std::thread::sleep(Duration::from_millis(1500)); // the log entry lands just after the exit
-            let found = if rando_closed { crate::crash::randomizer(&rando_name, 60) } else { crate::crash::game(60) };
+            let found = if rando_closed { crate::crash::randomizer(&rando_name, 60) } else { crate::crash::game(60, game_exe.as_deref().and_then(|g| g.parent())) };
             if let Some(c) = found.filter(|c| c.when != last_crash) {
                 last_crash = c.when.clone();
                 let _ = tx.send(Msg::Alert(c.title, c.body));

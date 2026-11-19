@@ -101,7 +101,8 @@ enum Confirmed {
     Delete(Backup),
     Debug,
     StartSteam,
-    DeleteRun(usize),
+    /// The run as it was when Delete was pressed (a race can be added to the log meanwhile).
+    DeleteRun(Run),
 }
 
 enum PromptFor {
@@ -113,7 +114,9 @@ enum Modal {
     Confirm { title: String, body: String, yes: String, then: Confirmed },
     Alert { title: String, body: String },
     Prompt { title: String, label: String, value: String, then: PromptFor },
-    Run { idx: Option<usize>, run: Run, date: String },
+    /// `orig` is the run being edited (None = new), found again by value when saving, since a
+    /// race can be added to the log while the dialog is open.
+    Run { orig: Option<Run>, run: Run, date: String },
     Update(Release),
 }
 
@@ -510,18 +513,18 @@ impl App {
                 let board = self.default_board.clone().map(|d| core::pretty(&PathBuf::from(d))).unwrap_or_default();
                 let now = Local::now();
                 let run = Run { date: now.to_rfc3339(), seed: self.settings().seed, board, ..Default::default() };
-                self.modal = Some(Modal::Run { idx: None, date: now.format("%Y-%m-%d %H:%M").to_string(), run });
+                self.modal = Some(Modal::Run { orig: None, date: now.format("%Y-%m-%d %H:%M").to_string(), run });
             }
             Act::EditRun(i) => {
                 if let Some(r) = self.runs.get(i) {
                     let date = r.date_local().map(|d| d.format("%Y-%m-%d %H:%M").to_string()).unwrap_or_default();
-                    self.modal = Some(Modal::Run { idx: Some(i), run: r.clone(), date });
+                    self.modal = Some(Modal::Run { orig: Some(r.clone()), run: r.clone(), date });
                 }
             }
             Act::DeleteRun(i) => {
-                if let Some(r) = self.runs.get(i) {
+                if let Some(r) = self.runs.get(i).cloned() {
                     let d = r.date_local().map(|d| d.format("%-d %b %Y").to_string()).unwrap_or_default();
-                    self.confirm("Delete run", format!("Delete the run from {d}?"), "Delete", Confirmed::DeleteRun(i));
+                    self.confirm("Delete run", format!("Delete the run from {d}?"), "Delete", Confirmed::DeleteRun(r));
                 }
             }
             Act::Export => {
@@ -662,8 +665,8 @@ impl App {
                 Ok(()) => self.toast(ctx, "Next bingo game starts with a fresh save"),
                 Err(e) => self.alert("Couldn't reset", e),
             },
-            Confirmed::DeleteRun(i) => {
-                if i < self.runs.len() {
+            Confirmed::DeleteRun(run) => {
+                if let Some(i) = self.runs.iter().position(|r| *r == run) {
                     self.runs.remove(i);
                     core::save_runs(&self.runs);
                     self.run_sel = None;
@@ -1514,7 +1517,7 @@ impl App {
                 ui.set_width(width);
                 let heading = match modal {
                     Modal::Confirm { title, .. } | Modal::Alert { title, .. } | Modal::Prompt { title, .. } => title.clone(),
-                    Modal::Run { idx, .. } => if idx.is_some() { "Edit run".into() } else { "New run".into() },
+                    Modal::Run { orig, .. } => if orig.is_some() { "Edit run".into() } else { "New run".into() },
                     Modal::Update(_) => "Update available".into(),
                 };
                 ui.label(egui::RichText::new(heading).font(ui::strong()).color(c::TEXT));
@@ -1595,15 +1598,15 @@ impl App {
                         }
                     }
                 }
-                Modal::Run { idx, mut run, date } => {
+                Modal::Run { orig, mut run, date } => {
                     if let Ok(n) = NaiveDateTime::parse_from_str(date.trim(), "%Y-%m-%d %H:%M") {
                         if let Some(d) = Local.from_local_datetime(&n).single() {
                             run.date = d.to_rfc3339();
                         }
                     }
-                    match idx {
-                        Some(i) if i < self.runs.len() => self.runs[i] = run,
-                        _ => self.runs.insert(0, run),
+                    match orig.and_then(|o| self.runs.iter().position(|r| *r == o)) {
+                        Some(i) => self.runs[i] = run,
+                        None => self.runs.insert(0, run),
                     }
                     self.runs.sort_by_key(|r| std::cmp::Reverse(r.date_local()));
                     core::save_runs(&self.runs);

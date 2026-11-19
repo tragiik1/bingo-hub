@@ -19,7 +19,7 @@ The app updates itself.
 | ModEngine 2 | Loading the randomized files |
 | Elden Ring Debug Tool | Practice |
 
-These tools belong to their authors and are included unchanged. The Bingo Randomizer and Debug Tool were originally made by Nordgaren, ModEngine 2 by the soulsmods team. EldenBingo and the Debug Tool are GPL-3.0, ERBingoRandomizer and ModEngine 2 are MIT; licence texts and source links are in [package/LICENSES.txt](package/LICENSES.txt).
+These tools belong to their authors and are included unchanged, except that weapon names from recent game updates were added to the Randomizer so seeds that hand them out don't crash (see [tools/randomizer-patch](tools/randomizer-patch)). The Bingo Randomizer and Debug Tool were originally made by Nordgaren, ModEngine 2 by the soulsmods team. EldenBingo and the Debug Tool are GPL-3.0, ERBingoRandomizer and ModEngine 2 are MIT; licence texts and source links are in [package/LICENSES.txt](package/LICENSES.txt).
 
 ## Building
 

@@ -65,7 +65,7 @@ pub fn randomizer(exe: &str, within_secs: u64) -> Option<Crash> {
     let (title, body) = if x.contains("KeyNotFoundException") && ev.text.contains("addDescriptionString") {
         (
             "This seed doesn't work",
-            "The Randomizer hit a known bug with this seed: it rolled an item it has no description for. Pick a different seed and send it to everyone in the race.".to_string(),
+            "This seed gave a starting class a weapon the Randomizer has no name for, usually one added by a game update (Setup lists them). Change a letter of the seed and send the new one to everyone in the race.".to_string(),
         )
     } else if x.contains("IOException") && x.contains("Access to the path") {
         core::unlock_randomizer_output();
@@ -81,15 +81,15 @@ pub fn randomizer(exe: &str, within_secs: u64) -> Option<Crash> {
     Some(Crash { title: title.into(), body, when: ev.date })
 }
 
-/// Why Elden Ring just crashed, if Windows logged it.
-pub fn game(within_secs: u64) -> Option<Crash> {
+/// Why Elden Ring just crashed, if Windows logged it. `game_dir` is the install the hub uses.
+pub fn game(within_secs: u64, game_dir: Option<&std::path::Path>) -> Option<Crash> {
     let ev = recent_events(within_secs).into_iter().find(|e| e.source == "Application Error" && e.app == "eldenring.exe")?;
     let p = core::paths();
     let mut hints = Vec::new();
     if !p.regulation.is_file() {
         hints.push("There was no randomized file to load. Randomize, then launch again.".to_string());
     }
-    if let Some(dir) = core::find_game_exe(None).and_then(|g| g.parent().map(|d| d.to_path_buf())) {
+    if let Some(dir) = game_dir {
         let mods: Vec<String> = ["dinput8.dll", "winhttp.dll", "dxgi.dll", "d3d12.dll", "version.dll"]
             .iter()
             .filter(|n| dir.join(n).is_file())
@@ -130,6 +130,6 @@ mod live {
     #[ignore]
     fn explains_real_crashes() {
         println!("{:#?}", super::randomizer("BingoRandomizer0.91.exe", 3 * 86_400));
-        println!("{:#?}", super::game(3 * 86_400));
+        println!("{:#?}", super::game(3 * 86_400, None));
     }
 }

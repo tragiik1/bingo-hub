@@ -53,5 +53,6 @@ WHAT'S INSIDE
   Data, Save Backups  Created on first run: your settings, run log and backups
   LICENSES.txt        Licences and source links for the included tools
 
-The Board, Randomizer, Debug Tool and ModEngine 2 are made by their own authors
-and are included unchanged.
+The Board, Randomizer, Debug Tool and ModEngine 2 are made by their own authors.
+They're included unchanged, except the Randomizer: weapon names from recent
+game updates were added so seeds that hand those weapons out don't crash.

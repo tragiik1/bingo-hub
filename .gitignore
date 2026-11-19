@@ -1,2 +1,5 @@
 dist/
 target/
+tools/**/bin/
+tools/**/obj/
+tools/**/extracted/
