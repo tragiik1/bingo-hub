@@ -263,8 +263,9 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
         prev_rando = rando_pid;
 
         // Separate bingo save: put the normal save back once the bingo game has closed. Also runs
-        // on start-up, so a crash or a closed hub can't leave the bingo save in place.
-        if crate::bingosave::active() {
+        // on start-up, so a crash or a closed hub can't leave the bingo save in place, and when the
+        // record of a swap was lost but the parked normal save is still there.
+        if crate::bingosave::active() || crate::bingosave::adopt_orphan() {
             if game_pid.is_some() {
                 saw_game_since_swap = true;
             } else if saw_game_since_swap || crate::bingosave::active_for().unwrap_or(0) > 90 {

@@ -28,6 +28,13 @@ pad = (-len(body)) % 4096; body += b'\0' * pad
 newoff = len(body); body += new
 newhdr = len(body)
 struct.pack_into('<qq', manifest, target - hdr, newoff, len(new))
+# The bundle ID names the folder the exe unpacks itself to (%TEMP%\.net\<app>\<id>), and an
+# existing folder is reused. Keeping the old ID would keep running the old, unpacked dll, so the
+# new build gets its own ID (same length, so the manifest layout doesn't move).
+import hashlib, base64
+old_id, _ = rstr(hdr+12); assert len(old_id) < 128
+new_id = base64.urlsafe_b64encode(hashlib.sha256(new).digest()).decode()[:len(old_id)]
+manifest[13:13+len(old_id)] = new_id.encode()
 body += manifest + tail
 struct.pack_into('<q', body, i-8, newhdr)
 open(out,'wb').write(body)

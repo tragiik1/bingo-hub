@@ -26,6 +26,13 @@ code includes the Randomizer's fingerprint). Needs Python 3 and the .NET SDK.
   crashing went from 46/100 to 0/100; seed 1712's spoiler log is byte-identical to the unpatched
   build. The unpatched exe is `Data\Randomizer backup\S2_Style_1.0.exe` (SHA-256 785FD8DC...309E).
 
+- Same day: the patched exe still crashed in the real app. The exe unpacks itself to
+  `%TEMP%\.net\S2_Style_1.0\<bundle id>` and reuses that folder, and the first repack kept the
+  original bundle ID, so it ran the old unpacked dll. `repack.py` now gives each build a new ID.
+  Installed build SHA-256 1C8DBBB7...931D. Check a new build in the real app (launch it and
+  confirm `%TEMP%\.net\S2_Style_1.0` gets a new folder holding the patched dll), not only with
+  `seedtest`, which loads the dll directly.
+
 ## The pieces
 
 - `unbundle.py` pulls `Randomizer.dll` out of the .NET single-file exe.

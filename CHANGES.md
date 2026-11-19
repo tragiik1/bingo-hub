@@ -355,3 +355,30 @@ timing window during a character load (needs an in-game check, see the fourth ro
 separate bingo save only applies to launches from the hub, not the Randomizer's Bingo! button
 (swapping files under a starting game isn't safe); fixing the Randomizer needs its closed exe
 patched (`tools/randomizer-patch`).
+
+## Eighth round: local 1.0.9 test
+
+- **A hub newer than the latest release no longer offers tool "updates"** (`update::check`). Testing
+  a local 1.0.9 build, the hub compared tools against the live 1.0.8 manifest, offered the patched
+  Randomizer as an update, and installing it put the unpatched build back (seed `noahisgoat`
+  crashed again, key 62520000). Friends are never ahead of the latest release, so this only hit
+  local builds. The patched exe was restored from `dist`.
+- Tested: seed tester against the game, `noahisgoat` and `hello125` ok on the patched build;
+  `noahisgoat` crashes on the original with the same key. `.gitignore` now covers `tools/**/out/`
+  (the tester's output holds a copy of the game's Oodle DLL and params).
+- **The patched Randomizer still crashed in the real app** (`noahisgoat`, after the restore). The
+  exe is a self-extracting .NET bundle: it unpacks to `%TEMP%\.net\S2_Style_1.0\<bundle id>` and
+  reuses that folder if it exists. `repack.py` kept the original ID, so anyone who had run the
+  Randomizer before (everyone) kept running the old dll. `repack.py` now writes a new ID derived
+  from the new dll. Rebuilt from the original exe; installed build 1C8DBBB7. Tested: launching it
+  creates a new folder holding the patched dll (7D18C3B3). `seedtest` couldn't catch this because
+  it loads the dll directly; the README now says to check the real app.
+- **A parked normal save with no journal is now put back** (`bingosave::adopt_orphan`, called from
+  the worker). Found on the user's PC: `ER0000.sl2.main` (normal save, matching `Data\Main Save`)
+  had sat in the save folder since a 14 Nov pre-1.0.8 test with no `save-swap.json`, so the hub
+  never swapped back, turning the setting off did nothing, and swap-in refused. Now a `.main` with
+  no journal gets a journal written from its own hash, and the usual swap-out runs once the game is
+  closed (stores the bingo save, recycles it from the save folder, renames `.main` back, checks the
+  hash). Tested: `swap_round_trips` covers losing the journal mid-swap. Before the fix runs on the
+  user's save, every file involved was copied to `Save Backups\2026-11-19 before putting normal
+  save back`.

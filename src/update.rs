@@ -153,8 +153,11 @@ pub fn check() -> Result<Option<Release>, String> {
 
     let hub = if is_newer(&tag, VERSION) { find(ASSET) } else { None };
 
+    // A hub newer than the latest release (a local build before it's published) carries newer
+    // tools than that release, so "updating" them would put the old ones back.
     let mut tools = Vec::new();
-    if let Some((murl, _)) = find(MANIFEST) {
+    let manifest = if is_newer(VERSION, &tag) { None } else { find(MANIFEST) };
+    if let Some((murl, _)) = manifest {
         let m = curl().args(["--max-time", "15"]).arg(&murl).output().map_err(|e| e.to_string())?;
         if m.status.success() {
             if let Ok(man) = serde_json::from_slice::<Manifest>(&m.stdout) {

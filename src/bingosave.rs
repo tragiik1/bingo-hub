@@ -191,6 +191,24 @@ pub fn swap_out() -> Result<(), String> {
     fs::remove_file(journal_path()).map_err(|e| e.to_string())
 }
 
+/// A parked normal save (ER0000.sl2.main) with no journal, so nothing would ever put it back.
+/// Writes the journal again from the parked file itself; the usual swap-out then stores the bingo
+/// save and renames the normal one back once the game is closed. Returns true if it did.
+pub fn adopt_orphan() -> bool {
+    if active() {
+        return false;
+    }
+    let Some(dir) = core::save_dir() else { return false };
+    let parked = dir.join(format!("{SAVE}.main"));
+    if !parked.is_file() {
+        return false;
+    }
+    let Ok(main_hash) = hash(&parked) else { return false };
+    // started 0: due for swap-out as soon as the game is closed.
+    let j = Journal { save_dir: dir, main_hash, started: 0 };
+    core::write_atomic(&journal_path(), serde_json::to_string_pretty(&j).unwrap()).is_ok()
+}
+
 /// Starts the next bingo game with a fresh save (old bingo save goes to the Recycle Bin).
 pub fn reset_bingo_save() -> Result<(), String> {
     if active() {
@@ -268,6 +286,21 @@ mod tests {
 
         // Unrelated files (Seamless Co-op) are never touched.
         assert_eq!(read(&other_file), "SEAMLESS");
+
+        // The journal was lost while swapped in: the parked save is found and put back.
+        assert!(!adopt_orphan(), "nothing parked, nothing to adopt");
+        swap_in().unwrap();
+        write(&live, "BINGO RUN 3");
+        fs::remove_file(journal_path()).unwrap();
+        assert!(!active());
+        assert!(adopt_orphan());
+        assert!(active());
+        swap_out().unwrap();
+        assert_eq!(read(&live), "MAIN SAVE with 10 characters");
+        assert_eq!(read(&bak), "MAIN BAK");
+        assert_eq!(read(&bingo_store().join(SAVE)), "BINGO RUN 3");
+        assert!(!saves.join("ER0000.sl2.main").exists());
+        assert!(!adopt_orphan());
 
         // Start fresh only clears the bingo store.
         reset_bingo_save().unwrap();
