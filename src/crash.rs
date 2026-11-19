@@ -21,32 +21,44 @@ struct Event {
     text: String,
 }
 
-/// Crash events from the Application log in the last `secs` seconds, newest first.
+/// Crash events from the Application log in the last `secs` seconds, newest first. Read as XML:
+/// the plain-text form's labels and messages are translated on non-English Windows, the XML
+/// field names aren't.
 fn recent_events(secs: u64) -> Vec<Event> {
     let q = format!(
         "*[System[Provider[@Name='.NET Runtime' or @Name='Application Error'] and TimeCreated[timediff(@SystemTime) <= {}]]]",
         secs * 1000
     );
     let out = Command::new("wevtutil")
-        .args(["qe", "Application", &format!("/q:{q}"), "/f:text", "/c:10", "/rd:true"])
+        .args(["qe", "Application", &format!("/q:{q}"), "/f:xml", "/c:10", "/rd:true"])
         .creation_flags(crate::sys::CREATE_NO_WINDOW)
         .output();
     let Ok(out) = out else { return vec![] };
     parse(&String::from_utf8_lossy(&out.stdout))
 }
 
-fn parse(text: &str) -> Vec<Event> {
-    text.split("Event[")
+fn unescape(s: &str) -> String {
+    s.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"").replace("&apos;", "'").replace("&amp;", "&")
+}
+
+/// Text between `start` and the next `end` after it.
+fn between<'a>(s: &'a str, start: &str, end: &str) -> Option<&'a str> {
+    let a = s.find(start)? + start.len();
+    Some(&s[a..a + s[a..].find(end)?])
+}
+
+fn parse(xml: &str) -> Vec<Event> {
+    xml.split("<Event ")
         .skip(1)
-        .map(|block| {
-            let field = |key: &str| {
-                block.lines().find_map(|l| l.trim().strip_prefix(key)).map(|v| v.trim().to_string()).unwrap_or_default()
-            };
-            let app = {
-                let a = field("Application:");
-                if a.is_empty() { field("Faulting application name:").split(',').next().unwrap_or("").trim().to_string() } else { a }
-            };
-            Event { source: field("Source:"), date: field("Date:"), app: app.to_lowercase(), exception: field("Exception Info:"), text: block.to_string() }
+        .map(|ev| {
+            let source = between(ev, "<Provider Name='", "'").unwrap_or_default().to_string();
+            let date = between(ev, "SystemTime='", "'").unwrap_or_default().to_string();
+            // Application Error has named fields; .NET Runtime has one block of English text.
+            let text = unescape(between(ev, "<Data>", "</Data>").or_else(|| between(ev, "<EventData>", "</EventData>")).unwrap_or_default());
+            let named = between(ev, "<Data Name='AppName'>", "</Data>").map(unescape);
+            let line = |key: &str| text.lines().find_map(|l| l.trim().strip_prefix(key)).map(|v| v.trim().to_string()).unwrap_or_default();
+            let app = named.unwrap_or_else(|| line("Application:")).to_lowercase();
+            Event { source, date, app, exception: line("Exception Info:"), text }
         })
         .collect()
 }
@@ -109,17 +121,21 @@ pub fn game(within_secs: u64, game_dir: Option<&std::path::Path>) -> Option<Cras
 mod tests {
     use super::*;
 
-    const SAMPLE: &str = "Event[0]\n  Source: .NET Runtime\n  Date: 2026-11-14T15:18:54.8270000Z\nDescription:\nApplication: BingoRandomizer0.91.exe\nException Info: System.Collections.Generic.KeyNotFoundException: The given key '66530000' was not present in the dictionary.\n   at Project.Tasks.Randomizer.addDescriptionString(CharaInitParam chr, Int32 id)\nEvent[1]\n  Source: Application Error\n  Date: 2026-11-14T02:04:21.0000000Z\nFaulting application name: eldenring.exe, version: 2.7.2.0, time stamp: 0x6aabf7e7\n";
+    const SAMPLE: &str = "<Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='.NET Runtime'/><EventID Qualifiers='0'>1026</EventID><TimeCreated SystemTime='2026-11-14T15:18:54.8270000Z'/></System><EventData><Data>Application: BingoRandomizer0.91.exe
+CoreCLR Version: 8.0.28
+Exception Info: System.Collections.Generic.KeyNotFoundException: The given key &apos;66530000&apos; was not present in the dictionary.
+   at Project.Tasks.Randomizer.addDescriptionString(CharaInitParam chr, Int32 id)</Data></EventData></Event><Event xmlns='http://schemas.microsoft.com/win/2004/08/events/event'><System><Provider Name='Application Error' Guid='{a0e9b465}'/><EventID>1000</EventID><TimeCreated SystemTime='2026-11-14T02:04:21.0000000Z'/></System><EventData><Data Name='AppName'>eldenring.exe</Data><Data Name='AppVersion'>2.7.2.0</Data></EventData></Event>";
 
     #[test]
     fn parses_both_kinds() {
         let ev = parse(SAMPLE);
         assert_eq!(ev.len(), 2);
         assert_eq!(ev[0].app, "bingorandomizer0.91.exe");
-        assert!(ev[0].exception.starts_with("System.Collections.Generic.KeyNotFoundException"));
+        assert!(ev[0].exception.starts_with("System.Collections.Generic.KeyNotFoundException: The given key '66530000'"));
         assert!(ev[0].text.contains("addDescriptionString"));
         assert_eq!(ev[1].source, "Application Error");
         assert_eq!(ev[1].app, "eldenring.exe");
+        assert_eq!(ev[1].date, "2026-11-14T02:04:21.0000000Z");
     }
 }
 
@@ -129,7 +145,7 @@ mod live {
     #[test]
     #[ignore]
     fn explains_real_crashes() {
-        println!("{:#?}", super::randomizer("BingoRandomizer0.91.exe", 3 * 86_400));
+        println!("{:#?}", super::randomizer("S2_Style_1.0.exe", 3 * 86_400));
         println!("{:#?}", super::game(3 * 86_400, None));
     }
 }

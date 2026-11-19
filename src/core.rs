@@ -121,14 +121,30 @@ pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
 /// The Randomizer copies the game's text into `Cache\msg` on its first run and reuses it forever.
 /// If the game has been updated since, that copy is out of date: remove it (the Randomizer makes a
 /// new one from the game on its next run). Only the Randomizer's own cache is touched.
+///
+/// Each copy is recorded in `Data\rando-text.txt` with the game version (its regulation.bin hash)
+/// it was seen with, so an update is caught by content, not just file dates. A copy the hub hasn't
+/// seen before is judged by date: older than the game's regulation.bin means stale.
 pub fn drop_stale_rando_text(game_dir: &Path) {
-    let msg = paths().rando_dir.join("Cache").join("msg");
-    let copied = mtime(&crate::randocheck::msgbnd_path());
-    let game = mtime(&game_dir.join("regulation.bin"));
-    if let (Some(copied), Some(game)) = (copied, game) {
-        if copied < game {
-            let _ = fs::remove_dir_all(&msg);
-        }
+    let msgbnd = crate::randocheck::msgbnd_path();
+    let record = paths().data_dir.join("rando-text.txt");
+    let secs = |t: SystemTime| t.duration_since(SystemTime::UNIX_EPOCH).map(|d| d.as_secs()).unwrap_or(0);
+    let (Some(copied), Some(game_time), Some(game_hash)) =
+        (mtime(&msgbnd), mtime(&game_dir.join("regulation.bin")), file_hash_hex(&game_dir.join("regulation.bin")))
+    else {
+        return;
+    };
+    let seen = fs::read_to_string(&record).ok();
+    let known = seen.as_deref().and_then(|s| s.split_once(' ')).filter(|(t, _)| t.parse() == Ok(secs(copied)));
+    let stale = match known {
+        Some((_, h)) => h.trim() != game_hash,
+        None => copied < game_time,
+    };
+    if stale {
+        let _ = fs::remove_dir_all(paths().rando_dir.join("Cache").join("msg"));
+        let _ = fs::remove_file(&record);
+    } else if known.is_none() {
+        let _ = write_atomic(&record, format!("{} {game_hash}", secs(copied)));
     }
 }
 
@@ -464,7 +480,16 @@ pub fn restore_backup(b: &Backup, keep: u32) -> Result<(), String> {
     let live = live_save().ok_or("Couldn't find your Elden Ring save folder.")?;
     create_backup("before restore", true, keep)?;
     for target in [live.clone(), live.with_extension("sl2.bak")] {
-        fs::copy(&b.path, &target).map_err(|e| e.to_string())?;
+        // Copy next to the save, check it, then rename over it, so a failed copy (disk full, a
+        // crash) never leaves a half-written save in place.
+        let tmp = target.with_extension("restoring");
+        let copied = fs::copy(&b.path, &tmp).map_err(|e| e.to_string()).and_then(|_| {
+            if same_content(&b.path, &tmp) { Ok(()) } else { Err("The copy didn't match the backup.".to_string()) }
+        });
+        if let Err(e) = copied.and_then(|_| fs::rename(&tmp, &target).map_err(|e| e.to_string())) {
+            let _ = fs::remove_file(&tmp);
+            return Err(format!("Couldn't restore: {e}. Your current save wasn't changed."));
+        }
         // Fresh timestamp so Steam Cloud treats the restored file as newest.
         if let Ok(f) = OpenOptions::new().write(true).open(&target) {
             let _ = f.set_modified(SystemTime::now());
@@ -795,7 +820,11 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
                 );
             }
             // A game update can add weapons the Randomizer can't name; seeds that hand one out crash.
-            if let Some(list) = rando_exe().and_then(|exe| crate::randocheck::missing_cached(&exe, &dir)).filter(|l| !l.is_empty()) {
+            let checked = rando_exe().filter(|_| crate::randocheck::msgbnd_path().is_file()).map(|exe| crate::randocheck::missing_cached(&exe, &dir));
+            if let Some(None) = checked {
+                add(Level::Info, "Couldn't check the Randomizer's weapon list", "This Randomizer build or game text isn't in a format the hub knows, so new-weapon crashes can't be predicted.".into(), None);
+            }
+            if let Some(list) = checked.flatten().filter(|l| !l.is_empty()) {
                 crate::randocheck::write_list(&list);
                 let names: Vec<&str> = list.iter().take(3).map(|(_, n)| n.as_str()).collect();
                 let more = if list.len() > 3 { format!(" and {} more", list.len() - 3) } else { String::new() };
@@ -886,5 +915,40 @@ pub fn when(t: NaiveDateTime) -> String {
         t.format("%-d %b, %H:%M").to_string()
     } else {
         t.format("%-d %b %Y").to_string()
+    }
+}
+
+/// Runs only against throwaway folders: `cargo test -- --ignored restore_sandbox`.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[ignore]
+    fn restore_sandbox() {
+        let sandbox = std::env::temp_dir().join("bingohub-restore-test");
+        let _ = fs::remove_dir_all(&sandbox);
+        let (saves, backups) = (sandbox.join("saves"), sandbox.join("backups"));
+        fs::create_dir_all(&saves).unwrap();
+        fs::create_dir_all(&backups).unwrap();
+        std::env::set_var("BINGOHUB_SAVE_DIR", &saves);
+        std::env::set_var("BINGOHUB_BACKUP_DIR", &backups);
+        assert_eq!(save_dir().unwrap(), saves, "must only ever touch the sandbox");
+        assert_eq!(paths().backups_dir, backups, "must only ever touch the sandbox");
+
+        let live = saves.join("ER0000.sl2");
+        fs::write(&live, "CURRENT").unwrap();
+        fs::write(saves.join("ER0000.sl2.bak"), "CURRENT BAK").unwrap();
+        let old = backups.join("2026-01-01 10-00-00 old.sl2");
+        fs::write(&old, "OLD SAVE").unwrap();
+        let b = list_backups().into_iter().find(|b| b.path == old).unwrap();
+
+        restore_backup(&b, 10).unwrap();
+        assert_eq!(fs::read_to_string(&live).unwrap(), "OLD SAVE");
+        assert_eq!(fs::read_to_string(saves.join("ER0000.sl2.bak")).unwrap(), "OLD SAVE");
+        assert!(!saves.join("ER0000.restoring").exists() && !saves.join("ER0000.sl2.restoring").exists());
+        // The save it replaced was backed up first.
+        assert!(list_backups().iter().any(|b| b.auto && b.label == "before restore" && fs::read_to_string(&b.path).unwrap() == "CURRENT"));
+        let _ = fs::remove_dir_all(&sandbox);
     }
 }

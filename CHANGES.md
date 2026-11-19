@@ -331,3 +331,27 @@ self-update (rename, deferred swap, manifest check), crash parsing, spoiler pars
 script. Known edges left alone: `restore_backup` copies straight over the live save (a "before
 restore" backup is made first); a Randomizer tool update replaces its folder, so its cache and last
 output go and everyone randomizes again (intended).
+
+## Seventh round: limitations fixed
+
+- **Crash explanations work on any Windows language** (`crash.rs`). Events are read as XML; the
+  text form's labels and the "Faulting application name" message are translated on non-English
+  Windows, so a friend on German or French Windows got no explanations. Checked against a real
+  S2 Style crash in this PC's log.
+- **Restoring a backup can't leave a half-written save** (`core::restore_backup`). It copies to
+  `ER0000.restoring`, checks the copy, then renames it over the save. Sandbox test:
+  `cargo test -- --ignored restore_sandbox`.
+- **Stale Randomizer text is caught by game version, not only by file dates**
+  (`core::drop_stale_rando_text`). Each text copy is recorded in `Data\rando-text.txt` with the
+  game's regulation.bin hash; a different game is stale. Copies the hub hasn't seen before still
+  use the date check.
+- **Setup says when the patch-day check can't run** (an Info row, no badge) instead of silently
+  showing nothing, e.g. if a future Randomizer build is packed differently.
+- Removed `tools/randomizer-patch/patcher/names.tsv`, an out-of-date list (patch.ps1 uses the list
+  the hub writes).
+
+Still limitations (not fixable here, or need the game to test): race graces read flags with a
+timing window during a character load (needs an in-game check, see the fourth round); the
+separate bingo save only applies to launches from the hub, not the Randomizer's Bingo! button
+(swapping files under a starting game isn't safe); fixing the Randomizer needs its closed exe
+patched (`tools/randomizer-patch`).
