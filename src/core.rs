@@ -719,6 +719,22 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
     let ver = |p: &Path| sys::file_version(p).unwrap_or_else(|| "Installed".into());
     let plural = |n: usize, w: &str| format!("{n} {w}{}", if n == 1 { "" } else { "s" });
 
+    // Can the hub write and rename in its own folder? Windows' Controlled Folder Access (and
+    // some antivirus) blocks unknown apps from this, which breaks settings, backups and updates.
+    let probe = p.data_dir.join(".write-test");
+    let renamed = p.data_dir.join(".write-test2");
+    let writable = fs::write(&probe, b"ok").is_ok() && fs::rename(&probe, &renamed).is_ok();
+    let _ = fs::remove_file(&probe);
+    let _ = fs::remove_file(&renamed);
+    if !writable {
+        add(
+            Level::Bad,
+            "Windows is blocking Bingo Hub from saving files",
+            "Usually Controlled Folder Access. Move this folder to e.g. C:\\Games, or allow Bingo Hub under Ransomware protection.".into(),
+            Some(("Open Windows Security", Fix::OpenUrl("windowsdefender://ransomwareprotection/".into()))),
+        );
+    }
+
     if p.board_exe.is_file() {
         add(Level::Ok, "Bingo Board", ver(&p.board_exe), None);
     } else {

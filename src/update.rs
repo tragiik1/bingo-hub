@@ -244,15 +244,23 @@ pub fn install_tools(tools: &[Component]) -> Result<Vec<String>, String> {
         }
         let target = root.join(&c.folder);
         if c.merge {
-            copy_tree(&fresh, &target).map_err(|e| format!("Couldn't update {}: {e}", c.name))?;
+            let copied = copy_tree(&fresh, &target).is_ok()
+                || Command::new("cmd")
+                    .creation_flags(crate::sys::CREATE_NO_WINDOW)
+                    .raw_arg(format!("/s /c \"xcopy /e /y /i /q \"{}\" \"{}\" >nul\"", fresh.display(), target.display()))
+                    .status()
+                    .is_ok_and(|s| s.success());
+            if !copied {
+                return Err(format!("Couldn't update {}. Windows blocked writing to the folder.", c.name));
+            }
         } else {
             let old = root.join(format!("{}.old", c.folder));
             let _ = fs::remove_dir_all(&old);
             if target.exists() {
-                fs::rename(&target, &old).map_err(|_| format!("Couldn't replace {}. Close anything using it and try again.", c.name))?;
+                move_path(&target, &old).map_err(|_| format!("Couldn't replace {}. Close anything using it and try again.", c.name))?;
             }
-            if let Err(e) = fs::rename(&fresh, &target) {
-                let _ = fs::rename(&old, &target);
+            if let Err(e) = move_path(&fresh, &target) {
+                let _ = move_path(&old, &target);
                 return Err(format!("Couldn't replace {}: {e}", c.name));
             }
             let _ = fs::remove_dir_all(&old);
@@ -275,13 +283,70 @@ pub fn install_hub(url: &str, size: u64) -> Result<(), String> {
         return Err("The download was damaged. Try again.".into());
     }
     let _ = fs::remove_file(&old);
-    fs::rename(&exe, &old).map_err(|e| format!("Couldn't replace Bingo Hub: {e}"))?;
-    if let Err(e) = fs::rename(&new, &exe) {
-        let _ = fs::rename(&old, &exe);
-        return Err(format!("Couldn't replace Bingo Hub: {e}"));
+    let swapped = fs::rename(&exe, &old).is_ok() && {
+        if fs::rename(&new, &exe).is_ok() {
+            true
+        } else {
+            let _ = fs::rename(&old, &exe);
+            false
+        }
+    };
+    if swapped {
+        Command::new(&exe).arg("--updated").current_dir(exe.parent().unwrap()).spawn().map_err(|e| e.to_string())?;
+        return Ok(());
     }
-    Command::new(&exe).arg("--updated").current_dir(exe.parent().unwrap()).spawn().map_err(|e| e.to_string())?;
+    // Windows refused (Controlled Folder Access, or antivirus holding the running exe).
+    // Hand the swap to the command shell, which those trust, to finish once we've closed.
+    deferred_swap(&exe, &new)
+}
+
+/// Writes a small batch script that waits for this process to exit, moves `new` over `exe`
+/// (retrying while anything still holds it) and starts the hub again.
+fn deferred_swap(exe: &Path, new: &Path) -> Result<(), String> {
+    let pid = std::process::id();
+    let (exe_s, new_s) = (exe.display().to_string(), new.display().to_string());
+    // Windows tools by full path, so nothing else on PATH can stand in for them.
+    let sys32 = std::env::var("SystemRoot").unwrap_or_else(|_| r"C:\Windows".into()) + r"\System32";
+    let script = format!(
+        "@echo off\r\n\
+         for /l %%i in (1,1,30) do (\r\n\
+           \"{sys32}\\tasklist.exe\" /fi \"PID eq {pid}\" | \"{sys32}\\find.exe\" \"{pid}\" >nul || goto swap\r\n\
+           \"{sys32}\\ping.exe\" -n 2 127.0.0.1 >nul\r\n\
+         )\r\n\
+         :swap\r\n\
+         for /l %%i in (1,1,15) do (\r\n\
+           move /y \"{new_s}\" \"{exe_s}\" >nul 2>&1 && goto run\r\n\
+           \"{sys32}\\ping.exe\" -n 2 127.0.0.1 >nul\r\n\
+         )\r\n\
+         start \"\" \"{exe_s}\"\r\n\
+         goto end\r\n\
+         :run\r\n\
+         start \"\" \"{exe_s}\" --updated\r\n\
+         :end\r\n\
+         (goto) 2>nul & del \"%~f0\"\r\n"
+    );
+    let path = std::env::temp_dir().join("bingo-hub-update.cmd");
+    fs::write(&path, script).map_err(|e| format!("Couldn't prepare the update: {e}"))?;
+    let mut c = Command::new("cmd");
+    c.creation_flags(crate::sys::CREATE_NO_WINDOW).raw_arg(format!("/c \"{}\"", path.display()));
+    c.spawn().map_err(|e| format!("Couldn't start the update: {e}"))?;
     Ok(())
+}
+
+/// Rename that falls back to the command shell's `move` when Windows refuses the hub itself.
+fn move_path(from: &Path, to: &Path) -> std::io::Result<()> {
+    match fs::rename(from, to) {
+        Ok(()) => Ok(()),
+        Err(e) => {
+            let ok = Command::new("cmd")
+                .creation_flags(crate::sys::CREATE_NO_WINDOW)
+                .raw_arg(format!("/s /c \"move /y \"{}\" \"{}\" >nul\"", from.display(), to.display()))
+                .status()
+                .map(|s| s.success())
+                .unwrap_or(false);
+            if ok && to.exists() && !from.exists() { Ok(()) } else { Err(e) }
+        }
+    }
 }
 
 /// Removes leftovers from a previous update.
