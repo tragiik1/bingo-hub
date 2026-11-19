@@ -860,15 +860,15 @@ impl App {
         let r = ui.max_rect();
         ui.painter().vline(r.right() - 0.5, r.y_range(), Stroke::new(1.0_f32, c::DIVIDER));
         titlebar(ui, Rect::from_min_size(r.min, vec2(r.width() - 1.0, TITLEBAR_H)), false);
-        // Logo: a Tarnished resting at grace. It only moves while the hub has focus, so it never
-        // costs anything while the game is being played.
+        // Logo: a bingo card filling in. It only moves while the hub has focus, so it never costs
+        // anything while the game is being played; otherwise it rests on a finished row.
         let (ctx, painter) = (ui.ctx().clone(), ui.painter().clone());
         let (now, focused) = ctx.input(|i| (i.time, i.focused));
         if focused {
             ctx.request_repaint_after(std::time::Duration::from_millis(33));
         }
         let mark = pos2(r.left() + 16.0, r.top() + 9.0);
-        crate::art::logo(&painter, mark, 1.0, now);
+        crate::art::logo(&painter, mark, 1.0, if focused { now } else { crate::art::REST_T });
         ui::wordmark(ui, pos2(mark.x + 32.0 + 9.0, mark.y + 16.5));
 
         let mut y = r.top() + 70.0;

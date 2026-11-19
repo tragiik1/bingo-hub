@@ -1,5 +1,6 @@
-//! The logo: a hooded Tarnished kneeling with their sword planted, lit from behind by a grace.
-//! Drawn as 32x32 pixel art every frame (a few hundred rects), with soft light underneath.
+//! The logo, "Bingo of Grace": a 3x3 card fills in square by square, each one stamping down with a
+//! flash. When the middle row completes, a light runs along it and sparks fly up, then it resets.
+//! Drawn as 32x32 pixel art every frame (a few hundred quads), with soft light underneath.
 
 use std::f64::consts::PI;
 
@@ -9,45 +10,25 @@ use eframe::egui::{
 };
 
 pub const N: usize = 32;
+/// The frame shown when the hub isn't focused, and used for the app icon: the card mid-flare.
+pub const REST_T: f64 = 3.3;
 type Rgb = [u8; 3];
 
-const GOLD_DEEP: Rgb = [0x6e, 0x51, 0x26];
 const GOLD_DARK: Rgb = [0x9a, 0x7a, 0x42];
 const GOLD: Rgb = [0xce, 0xae, 0x74];
+const GOLD_LIGHT: Rgb = [0xec, 0xd3, 0x9c];
 const GLOW: Rgb = [0xff, 0xf3, 0xd2];
+const WHITE: Rgb = [0xff, 0xff, 0xff];
+const CELL: Rgb = [0x26, 0x26, 0x2c];
+const CELL_TOP: Rgb = [0x34, 0x34, 0x3c];
+const CELL_LOW: Rgb = [0x1b, 0x1b, 0x20];
 
-/// Left half of the hood, mirrored. H outline, h hood, f the shadow where a face would be.
-const HOOD: [&str; 8] = [
-    "...............H",
-    "..............Hh",
-    ".............Hhh",
-    ".............Hhf",
-    "............Hhff",
-    "............Hhff",
-    "............Hhff",
-    "............HHhf",
-];
-
-fn key(ch: u8) -> Rgb {
-    match ch {
-        b'H' => [0x14, 0x14, 0x18],
-        b'h' => [0x2a, 0x2a, 0x32],
-        b'f' => [0x08, 0x08, 0x0a],
-        b'C' => [0x1e, 0x1e, 0x24],
-        b'c' => [0x30, 0x30, 0x3a],
-        b'l' => [0x43, 0x43, 0x4f],
-        b'G' => GOLD,
-        b'g' => [0x55, 0x55, 0x5f],
-        b'S' => [0xd8, 0xd8, 0xe0],
-        _ => [0x8a, 0x8a, 0x94], // s
-    }
-}
-
-fn hash(x: i32, y: i32, z: i32) -> f64 {
-    let h = x.wrapping_mul(374_761_393).wrapping_add(y.wrapping_mul(668_265_263)).wrapping_add(z.wrapping_mul(2_147_483_647)) as u32;
-    let h = ((h ^ (h >> 13)) as i32).wrapping_mul(1_274_126_177) as u32;
-    (h ^ (h >> 16)) as f64 / 4_294_967_296.0
-}
+/// One loop of the animation, in seconds.
+const LOOP: f64 = 6.4;
+/// Which squares get marked, and when: they finish the middle row.
+const ORDER: [(usize, f64); 5] = [(7, 0.5), (3, 1.0), (1, 1.5), (5, 2.0), (4, 2.6)];
+const FLARE_START: f64 = 2.75;
+const FADE_START: f64 = 5.4;
 
 fn mix(a: Rgb, b: Rgb, t: f64) -> Rgb {
     std::array::from_fn(|i| (a[i] as f64 + (b[i] as f64 - a[i] as f64) * t).round() as u8)
@@ -82,106 +63,70 @@ impl Sprite {
             }
         });
     }
-    pub fn get(&self, x: i32, y: i32) -> Option<Px> {
-        if x < 0 || y < 0 || x >= N as i32 || y >= N as i32 { None } else { self.0[y as usize * N + x as usize] }
-    }
 }
 
-/// How bright the grace is: a slow breath with a little flicker.
-fn pulse(t: f64) -> f64 {
-    0.78 + 0.22 * (t * 2.4).sin() + 0.06 * (t * 7.3).sin()
+/// How strongly the completed row is lit at time `c` within the loop: 0 outside the flare.
+fn flare(c: f64) -> f64 {
+    if c > FLARE_START && c < FADE_START { ((c - FLARE_START) / (FADE_START - FLARE_START)).min(1.0) * PI } else { 0.0 }.sin()
 }
 
 /// The sprite at time `t` seconds.
 pub fn sprite(t: f64) -> Sprite {
-    let pulse = pulse(t);
-    let mut fig = Sprite::new();
-    for (i, row) in HOOD.iter().enumerate() {
-        for (x, ch) in row.bytes().enumerate() {
-            if ch != b'.' {
-                fig.put(x as f64, i as f64 + 2.0, key(ch), 1.0);
-                fig.put(31.0 - x as f64, i as f64 + 2.0, key(ch), 1.0);
+    let c = t.rem_euclid(LOOP);
+    let fade = if c > FADE_START { (1.0 - (c - FADE_START) / 0.6).max(0.0) } else { 1.0 };
+    let flare = flare(c);
+    let mut s = Sprite::new();
+    for i in 0..9 {
+        let (gx, gy) = (4 + (i % 3) as i32 * 9, 4 + (i / 3) as i32 * 9);
+        let since = ORDER.iter().find(|o| o.0 == i).map_or(-1.0, |o| c - o.1);
+        let marked = since >= 0.0 && fade > 0.01;
+        // A square that has just been stamped is drawn a pixel bigger, and white-hot.
+        let pop = marked && since < 0.18;
+        let (g0, g1) = if pop { (-1, 7) } else { (0, 6) };
+        for y in g0..=g1 {
+            for x in g0..=g1 {
+                if (x == g0 || x == g1) && (y == g0 || y == g1) {
+                    continue; // rounded corners
+                }
+                let mut col = if y == g0 { CELL_TOP } else if y == g1 { CELL_LOW } else { CELL };
+                if marked {
+                    let mut mc = if y == g0 || x == g0 { GOLD_LIGHT } else if y == g1 || x == g1 { GOLD_DARK } else { GOLD };
+                    if pop {
+                        mc = GLOW;
+                    }
+                    if (3..=5).contains(&i) && flare > 0.0 {
+                        // A bright band runs along the finished row.
+                        let sweep = 4.0 + (c - FLARE_START) / 1.1 * 30.0;
+                        let d = ((gx + x) as f64 - sweep).abs();
+                        mc = if d < 3.0 { mix(mc, WHITE, (1.0 - d / 3.0) * 0.9) } else { mix(mc, GOLD_LIGHT, flare * 0.5) };
+                    }
+                    col = mix(col, mc, fade);
+                }
+                s.put((gx + x) as f64, (gy + y) as f64, col, 1.0);
             }
         }
     }
-    // Cloak: rounded shoulders, widening to the ground, darker towards the hem.
-    for y in 10..=27i32 {
-        let hw = if y < 14 { [3.5, 5.5, 7.0, 8.0][(y - 10) as usize] } else { 8.4 + (y - 14) as f64 * 0.22 };
-        let (lo, hi) = ((16.0 - hw).round() as i32, (15.0 + hw).round() as i32);
-        for x in lo..=hi {
-            let dx = (x as f64 - 15.5).abs();
-            let ch = if x == lo || x == hi {
-                b'H'
-            } else if y < 12 && dx < 5.0 {
-                b'h'
-            } else if y > 22 || (y > 17 && (dx == 3.5 || dx == 7.5) && hash(x, y, 0) > 0.25) {
-                b'C'
-            } else if y > 12 && y < 18 && dx > 5.0 && dx < 7.0 {
-                b'l'
-            } else {
-                b'c'
-            };
-            fig.put(x as f64, y as f64, key(ch), 1.0);
+    // The completed row throws sparks upward.
+    if flare > 0.0 {
+        for i in 0..8 {
+            let p = ((c - FLARE_START) / 1.6 + i as f64 / 8.0).rem_euclid(1.0);
+            let x = 5.0 + i as f64 * 3.0 + (p * 6.0 + i as f64).sin() * 1.2;
+            s.put(x, 13.0 - p * 12.0, if p < 0.4 { GLOW } else { GOLD_LIGHT }, (p * PI).sin() * flare);
         }
     }
-    // The hem stirs.
-    let flap = (t * 4.0).floor() as i32;
-    for x in 6..=25 {
-        if hash(x, flap, 0) > 0.45 {
-            fig.put(x as f64, 28.0, key(b'C'), 1.0);
-        }
-    }
-    // Sword planted in front, hands on the pommel.
-    fig.put(15.0, 12.0, GOLD, 1.0);
-    fig.put(16.0, 12.0, GOLD, 1.0);
-    for y in 13..=14 {
-        for x in 14..=17 {
-            fig.put(x as f64, y as f64, key(b'g'), 1.0);
-        }
-    }
-    for x in 12..=19 {
-        fig.put(x as f64, 15.0, if x == 12 || x == 19 { GOLD_DARK } else { GOLD }, 1.0);
-    }
-    for y in 16..=27 {
-        fig.put(15.0, y as f64, key(b'S'), 1.0);
-        fig.put(16.0, y as f64, key(b's'), 1.0);
-    }
-    fig.put(15.0, 28.0, key(b's'), 1.0);
-
-    // Rim light: every edge facing out catches the gold.
-    let mut out = Sprite::new();
-    for y in 0..N as i32 {
-        for x in 0..N as i32 {
-            let Some(p) = fig.get(x, y) else { continue };
-            let mut col: Rgb = p.rgb.map(|v| v.round() as u8);
-            let edge = fig.get(x - 1, y).is_none() || fig.get(x + 1, y).is_none() || fig.get(x, y - 1).is_none();
-            if edge && y < 28 {
-                col = mix(col, GOLD, 0.62 * pulse);
-            }
-            out.put(x as f64, y as f64, col, 1.0);
-        }
-    }
-    // Ground, and embers rising past.
-    for x in 4..=27 {
-        out.put(x as f64, 29.0, GOLD_DEEP, 0.55 * (1.0 - (x as f64 - 15.5).abs() / 13.0));
-    }
-    for i in 0..6 {
-        let p = (t / 3.2 + i as f64 / 6.0).rem_euclid(1.0);
-        let side = if i % 2 == 1 { 1.0 } else { -1.0 };
-        let x = 16.0 + side * (5.0 + (i % 3) as f64 * 3.0) + (p * 8.0 + i as f64).sin() * 1.4;
-        out.put(x, 24.0 - p * 22.0, GLOW, (p * PI).sin() * 0.9);
-    }
-    out
+    s
 }
 
-/// The grace's light behind the figure: (centre, radius, colour, strength) in sprite pixels.
-pub fn glows(t: f64) -> [((f32, f32), f32, Rgb, f32); 2] {
-    let p = pulse(t) as f32;
-    [((16.0, 13.0), 17.0, [226, 186, 112], 0.55 * p), ((16.0, 10.0), 7.0, [255, 236, 190], 0.45 * p)]
+/// Light behind the card while the row is lit: (centre, radius, colour, strength) in sprite pixels.
+pub fn glows(t: f64) -> [((f32, f32), f32, Rgb, f32); 1] {
+    [((16.0, 16.0), 17.0, [236, 200, 130], 0.4 * flare(t.rem_euclid(LOOP)) as f32)]
 }
 
 /// A soft radial light: full strength in the middle, 35% halfway out, nothing at the edge.
 fn radial(painter: &Painter, c: Pos2, r: f32, rgb: Rgb, a: f32) {
+    if a <= 0.0 {
+        return;
+    }
     let col = |a: f32| Color32::from_rgba_unmultiplied(rgb[0], rgb[1], rgb[2], (a.clamp(0.0, 1.0) * 255.0) as u8);
     let mut mesh = Mesh::default();
     let seg = 48u32;
@@ -235,7 +180,7 @@ mod tests {
     #[ignore]
     fn write_icon_sprite() {
         let path = std::env::var("BINGOHUB_SPRITE_OUT").expect("set BINGOHUB_SPRITE_OUT");
-        let s = sprite(0.6);
+        let s = sprite(REST_T);
         let mut raw = Vec::with_capacity(N * N * 4);
         for p in &s.0 {
             match p {
@@ -247,9 +192,16 @@ mod tests {
     }
 
     #[test]
-    fn sprite_has_a_figure() {
-        let s = sprite(1.0);
-        assert!(s.0.iter().filter(|p| p.is_some()).count() > 300);
-        assert!(s.get(15, 20).is_some(), "the blade is drawn");
+    fn card_has_nine_squares_and_lights_the_row() {
+        let s = sprite(REST_T);
+        // Every square's centre is drawn.
+        for i in 0..9 {
+            let (x, y) = (4 + (i % 3) * 9 + 3, 4 + (i / 3) * 9 + 3);
+            assert!(s.0[y * N + x].is_some(), "square {i}");
+        }
+        // The middle square is marked (gold, not the dark cell colour) at the rest frame.
+        let mid = s.0[(4 + 9 + 3) * N + 4 + 9 + 3].unwrap();
+        assert!(mid.rgb[0] > 150.0);
+        assert!(glows(REST_T)[0].3 > 0.0);
     }
 }

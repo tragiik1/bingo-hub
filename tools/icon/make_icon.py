@@ -14,8 +14,9 @@ sprite = Image.frombytes("RGBA", (N, N), raw)
 
 BG = (22, 22, 26)
 # Same light as art::glows at the icon frame: (centre, radius, colour, strength) in sprite pixels.
-pulse = 0.78 + 0.22 * math.sin(0.6 * 2.4) + 0.06 * math.sin(0.6 * 7.3)
-GLOWS = [((16, 13), 17, (226, 186, 112), 0.55 * pulse), ((16, 10), 7, (255, 236, 190), 0.45 * pulse)]
+REST_T = 3.3
+flare = math.sin(min(1, (REST_T - 2.75) / (5.4 - 2.75)) * math.pi)
+GLOWS = [((16, 16), 17, (236, 200, 130), 0.4 * flare)]
 
 
 def glow_alpha(d, a):

@@ -399,3 +399,9 @@ patched (`tools/randomizer-patch`).
 - `ui::spinner`: a pixel ring loader (eight blocks, gold head with a fading tail). Used for "Elden Ring: Starting" on Race and the "Updating" card. Row lead `Lead::Spin`.
 - App icon rebuilt from the same sprite: `BINGOHUB_SPRITE_OUT=sprite.rgba cargo test --release art -- --ignored`, then `python tools/icon/make_icon.py sprite.rgba`. build.rs reruns when hub.ico changes.
 - Tested: sandbox launch (fake save folders), window captured with PrintWindow over 3 s: logo animates, about 0.3% of one core. The spinner wasn't seen live. All tests pass.
+
+## Tenth round: Bingo of Grace logo (1.0.12)
+
+- Logo switched to "Bingo of Grace" (`src/art.rs`): a 3x3 card fills in square by square, each stamping down with a flash; the middle row completes, a light runs along it, sparks fly up, then it resets (6.4 s loop). Animates only while the hub is focused; otherwise it rests on the lit-row frame (`art::REST_T`), which is also the icon frame.
+- Icon rebuilt with tools/icon/make_icon.py.
+- Tested: unit test for the card frame; icon checked at every size. The live in-app capture came out black because the PC was locked (LogonUI running), so the logo wasn't seen inside the running hub this time; the drawing code is unchanged from 1.0.11, which was checked.
