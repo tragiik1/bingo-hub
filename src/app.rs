@@ -1015,9 +1015,6 @@ impl App {
                         if ui::button(ui, if running { "Show" } else { "Launch" }, Kind::Primary, running || reg.is_some()).clicked() {
                             acts.push(Act::Launch);
                         }
-                        if snap.game == GameState::Modded && ui::button(ui, "Set graces", Kind::Secondary, true).clicked() {
-                            acts.push(Act::ApplyGraces);
-                        }
                     });
                 });
 
@@ -1416,7 +1413,7 @@ impl App {
                     Status::Idle => "Set automatically on new characters, from the name screen on".to_string(),
                     Status::Waiting => "Waiting for a character".to_string(),
                     Status::Set => "Set for this character".to_string(),
-                    Status::Skipped(n) => format!("Left alone: this character already has {n} graces. Set graces applies them anyway."),
+                    Status::Skipped(n) => format!("Left alone: this character already has {n} graces. Set graces asks before changing it."),
                     Status::Error(e) => e.clone(),
                 };
                 let hotkey = match snap.hotkey {

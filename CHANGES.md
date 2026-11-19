@@ -47,7 +47,7 @@ requires a **bingo launch** (`GameState::Modded`: ModEngine 2 loaded, EAC off), 
 | --- | --- | --- |
 | Automatic, separate bingo save active | 40 or fewer graces lit (`FRESH_LIMIT`, unchanged) | Left alone |
 | Automatic, any other save | 3 or fewer graces lit (`NEW_LIMIT`, new) | Left alone |
-| Set graces button / Ctrl+F9 | 40 or fewer graces lit | Asks for confirmation, then forces |
+| Set graces button / Ctrl+F9 | Same limit as automatic (40 on the bingo save, 3 elsewhere) | Asks for confirmation, then forces |
 
 Why `NEW_LIMIT = 3`: a brand-new character (name screen onwards) has no graces lit, so it passes.
 Any real playthrough has more than the 1–3 tutorial graces, so it's never touched automatically.
@@ -87,7 +87,7 @@ otherwise; before, failed writes were silently reported as success).
     already skips identical auto backups, so there's no duplicate.
   - `Snapshot.hotkey` carries the hotkey state so the UI repaints when it changes.
 - `src/app.rs`
-  - Race page: **Set graces** button next to Show while a bingo game runs. The status line
+  - Race page: the status line
     shows "race graces set" or "Ctrl+F9 in game sets race graces".
   - `graces_result` handles button and hotkey results: toast on success. A character with many
     graces gets a confirm (`Confirmed::ForceGraces(pid)`, and it checks the same game is still
@@ -253,3 +253,37 @@ to their source. Adding both (README and the package) would fix it.
   safe.
 - A configurable hotkey. Ctrl+F9 is only held while a bingo game runs, and the UI says if it's
   taken. Configurability can come later if someone actually hits a conflict.
+
+## Fourth round: review fixes, updater fallback, licences
+
+- **Set graces / Ctrl+F9 use the automatic limit** (`graces::apply_now`): 40 on the separate bingo
+  save, 3 elsewhere, and the hub asks before going past it. Before, one Ctrl+F9 press on a real
+  character with up to 40 graces cleared them without asking.
+- **Set graces button removed from the Race page.** It made the manual fallback a main control,
+  which the owner asked not to do. It's still in Setup, and the Race status line mentions Ctrl+F9.
+- **Self-update fallback** (`update.rs`, `core.rs`): if Windows refuses to replace the running
+  exe ("Access is denied"), a small script swaps it after the hub exits and restarts it. Setup
+  also warns when Windows blocks the hub from writing files.
+- **Licences**: `package/LICENSES.txt` (shipped in the zip) lists each tool's licence and source,
+  with the full GPL-3.0 and MIT texts. READMEs said "Randomizer 0.91"; fixed.
+- Tested here: release build with zero warnings, `cargo test`, and the sandboxed save swap test.
+  Still not run in game.
+
+### Randomizer crash: cause found
+
+Not the shop code. `S2_Style_1.0.exe` (its build paths name the project `EquipmentRandomizerER`)
+names starting weapons in `addDescriptionString` from a hardcoded table
+(`Project.Settings.Equipment.EquipmentNameList`), not the game's text. The game's latest patch
+added weapons that are in the starting pool but not in that table (Ritual Thrusting Shield,
+Idus Sword, Reed Great Katana, Hefty Scimitar, Reverse-Bladed Sword, Silver Grooved Shield, Golden
+Order Flail), so any seed that rolls one crashes: 46 of 100 seeds when run against the current
+game files with S2's own code (the harness reproduced the real Randomizer's spoiler log exactly).
+Fix: add the missing names to that table. The table is only used for description text, so working
+seeds randomize identically and crashing seeds start working. Not done yet.
+
+### Open concerns from the review (need the game to check)
+
+- A grace check during a character load could read the flags half-loaded and add the 11 graces
+  to a real character. Checking in-game play time (GameDataMan) instead of the grace count would
+  close this, the title-screen write and the "real character with 3 or fewer graces" case.
+- The go-online warning shows on every normal launch after a race until the save is played.

@@ -27,7 +27,7 @@ RACE GRACES
   save: from the name screen (where you set the keepsake) or right after you
   press Finish. Windows plays a sound when it's done. No Cheat Engine needed.
   Characters you've already played are never changed automatically.
-  If it didn't happen, press Ctrl+F9 in game, or Set graces on the Race page.
+  If it didn't happen, press Ctrl+F9 in game, or Set graces on the Setup page.
 
 
 SAVES
@@ -47,10 +47,11 @@ UPDATES
 WHAT'S INSIDE
   Bingo Hub.exe       The hub
   Bingo Board         EldenBingo, the lobby board and map
-  Bingo Randomizer    Bingo Randomizer 0.91 with ModEngine 2
+  Bingo Randomizer    Bingo Randomizer (S2 Style 1.0) with ModEngine 2
   Debug Tool          Elden Ring Debug Tool, for practice only
   Boards              Bingo Brawlers goal lists
   Data, Save Backups  Created on first run: your settings, run log and backups
+  LICENSES.txt        Licences and source links for the included tools
 
 The Board, Randomizer, Debug Tool and ModEngine 2 are made by their own authors
 and are included unchanged.

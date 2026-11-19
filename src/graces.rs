@@ -8,7 +8,7 @@
 //!
 //! Only used on bingo launches (ModEngine 2 loaded, EAC off). Automatic setting never touches a
 //! character that has been played (see NEW_LIMIT / FRESH_LIMIT), so a normal playthrough can't be
-//! wiped by accident; the manual button and hotkey ask before going past FRESH_LIMIT.
+//! wiped by accident; the manual button and hotkey ask before going past that limit.
 
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -391,9 +391,12 @@ impl Game {
     }
 }
 
-/// One-shot apply for the button and hotkey. `force` skips the fresh-character check.
+/// One-shot apply for the button and hotkey. Without `force` it uses the same limit as automatic
+/// setting, so one key press can't wipe a real character on the normal save; past the limit the
+/// hub asks first. `force` skips the check.
 pub fn apply_now(pid: u32, force: bool) -> Result<Outcome, String> {
-    Ok(Game::open(pid)?.apply(if force { None } else { Some(FRESH_LIMIT) }))
+    let limit = if crate::bingosave::active() { FRESH_LIMIT } else { NEW_LIMIT };
+    Ok(Game::open(pid)?.apply(if force { None } else { Some(limit) }))
 }
 
 #[cfg(test)]

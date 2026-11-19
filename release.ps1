@@ -43,6 +43,7 @@ New-Item -ItemType Directory $stage | Out-Null
 Copy-Item $exe "$stage\Bingo Hub.exe"
 Copy-Item $exe "$dist\Bingo-Hub.exe"
 Copy-Item "$src\package\README.txt" "$stage\README.txt"
+Copy-Item "$src\package\LICENSES.txt" "$stage\LICENSES.txt"
 
 # The original tools, minus logs, caches and randomizer output.
 robocopy "$tools\Bingo Board" "$stage\Bingo Board" /E /NFL /NDL /NJH /NJS /NP | Out-Null
