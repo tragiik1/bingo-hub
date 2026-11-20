@@ -474,5 +474,20 @@ pub fn wordmark(ui: &Ui, left_center: egui::Pos2) {
         TextFormat { font_id: FontId::new(15.0, FontFamily::Name("serif".into())), color: c::TEXT, extra_letter_spacing: 2.2, ..Default::default() },
     );
     let g = ui.fonts_mut(|f| f.layout_job(job));
-    ui.painter().galley(pos2(left_center.x, left_center.y - g.size().y / 2.0), g, c::TEXT);
+    // Centre the letters themselves, not the line box: the serif's tall ascent would otherwise sit
+    // the capitals visibly lower than whatever they're lined up with.
+    let (mut top, mut bottom) = (f32::MAX, f32::MIN);
+    for row in &g.rows {
+        for gl in &row.row.glyphs {
+            let y = row.pos.y + gl.pos.y + gl.uv_rect.offset.y;
+            if gl.uv_rect.size.y > 0.0 {
+                top = top.min(y);
+                bottom = bottom.max(y + gl.uv_rect.size.y);
+            }
+        }
+    }
+    let ink_mid = if top < bottom { (top + bottom) / 2.0 } else { g.size().y / 2.0 };
+    let ppp = ui.ctx().pixels_per_point();
+    let y = ((left_center.y - ink_mid) * ppp).round() / ppp;
+    ui.painter().galley(pos2(left_center.x, y), g, c::TEXT);
 }

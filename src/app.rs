@@ -869,7 +869,7 @@ impl App {
         }
         let mark = pos2(r.left() + 16.0, r.top() + 9.0);
         crate::art::logo(&painter, mark, 1.0, if focused { now } else { crate::art::REST_T });
-        ui::wordmark(ui, pos2(mark.x + 32.0 + 9.0, mark.y + 16.5));
+        ui::wordmark(ui, pos2(mark.x + 32.0 + 9.0, mark.y + 16.0));
 
         let mut y = r.top() + 70.0;
         for pg in Page::ALL {
