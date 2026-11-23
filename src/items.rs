@@ -126,7 +126,17 @@ mod tests {
     fn bingo_picks_are_real_weapons() {
         for p in picks() {
             let i = info(p).unwrap_or_else(|| panic!("{p} isn't in items.tsv"));
-            assert!(!matches!(i.kind, "Sorcery" | "Incantation"), "{p} is a spell");
+            // Classes never roll spells, catalysts, greatbows or Remembrance shop weapons.
+            assert!(!matches!(i.kind, "Sorcery" | "Incantation" | "Glintstone Staff" | "Sacred Seal" | "Greatbow"), "{p} can't be a class weapon");
+            const REMEMBRANCE: &[&str] = &[
+                "Sword Lance", "Reverse-Bladed Sword", "Axe of Godrick", "Grafted Dragon", "Starscourge Greatsword", "Lion Greatbow",
+                "Morgott's Cursed Sword", "Blasphemous Blade", "Hand of Malenia", "Mohgwyn's Sacred Spear", "Maliketh's Black Blade",
+                "Axe of Godfrey", "Dragon King's Cragblade", "Carian Regal Scepter", "Giant's Red Braid", "Winged Greathorn",
+                "Marika's Hammer", "Sacred Relic Sword", "Bastard's Stars", "Rellana's Twin Blades", "Putrescence Cleaver",
+                "Poleblade of the Bud", "Greatsword of Damnation", "Shadow Sunflower Blossom", "Spear of the Impaler",
+                "Staff of the Great Beyond", "Gazing Finger", "Greatsword of Radahn (Lord)", "Greatsword of Radahn (Light)",
+            ];
+            assert!(!REMEMBRANCE.contains(&p), "{p} is a Remembrance weapon; classes never get it");
         }
         assert!(bingo_pick("Wing of Astel") && !bingo_pick("Club"));
     }

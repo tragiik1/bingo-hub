@@ -458,3 +458,14 @@ patched (`tools/randomizer-patch`).
   delete it.
 - Tested: `cargo test`. Not looked at on screen; no screenshots were taken because they pull the
   owner out of the game.
+
+## Fourteenth round: Bingo pick list reworked (unreleased)
+
+- The owner questioned some picks (Coded Sword: holy-only, late, weak early; dropped). The
+  decompiled `randomizeStartingClassParams` shows classes never roll staves, seals, greatbows or
+  Remembrance shop weapons (shop rows 101895-101948), so 10 entries could never show on a class card
+  (Blasphemous Blade, Morgott's Cursed Sword, Hand of Malenia, Rellana's Twin Blades, Meteorite
+  Staff...). Weapons that need far more stats than a race reaches (Ruins Greatsword, Grafted Blade
+  Greatsword, Bolt of Gransax, Dark Moon Greatsword...) were dropped too.
+- The new list has 21 weapons, all four great katanas among them. A test rejects spells, catalysts,
+  greatbows and Remembrance weapons.

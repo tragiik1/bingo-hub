@@ -1,6 +1,14 @@
-# Weapons shown with a "Bingo pick" tag on the Classes page: ones the group rates for races
-# (strong skill or fast boss kills early). One name per line, exactly as the game spells it.
-# Edit freely; names that don't match a weapon fail the tests.
+# Weapons shown with a "BINGO PICK" tag on the Classes page. One name per line, exactly as the game
+# spells it; a test fails if a name isn't a real weapon.
+#
+# Only weapons a starting class can actually roll belong here. The Randomizer never gives a class a
+# staff, seal, greatbow or anything from the Remembrance shop (Blasphemous Blade, Morgott's Cursed
+# Sword, Hand of Malenia, Rellana's Twin Blades...), so those are left out.
+#
+# Picked for a 45-minute race: strong early with few upgrades, usually through the weapon skill.
+# Sources: the owner's group (Wing of Astel, Stormhawk Axe, Bloodhound's Fang, great katanas),
+# glitchless speedrun routes (Bloodhound's Fang, Sword of Night and Flame, Death's Poker), and
+# early/mid-game somber and DLC weapon guides (2025-2026).
 
 # Base game
 Wing of Astel
@@ -9,34 +17,20 @@ Bloodhound's Fang
 Moonveil
 Rivers of Blood
 Sword of Night and Flame
-Dark Moon Greatsword
-Blasphemous Blade
-Coded Sword
-Golden Order Greatsword
-Godslayer's Greatsword
-Ruins Greatsword
-Morgott's Cursed Sword
-Eleonora's Poleblade
-Bolt of Gransax
-Vyke's War Spear
-Mohgwyn's Sacred Spear
-Siluria's Tree
-Nagakiba
 Reduvia
-Hand of Malenia
-Sacred Relic Sword
-Dragon King's Cragblade
-Grafted Blade Greatsword
-Gargoyle's Blackblade
-Meteorite Staff
-Lusat's Glintstone Staff
-Carian Regal Scepter
+Winged Scythe
+Icerind Hatchet
+Death's Poker
+Godslayer's Greatsword
 
 # Shadow of the Erdtree
-Milady
-Rellana's Twin Blades
-Star-Lined Sword
+Great Katana
 Dragon-Hunter's Great Katana
 Rakshasa's Great Katana
-Ancient Meteoric Ore Greatsword
-Bloodfiend's Sacred Spear
+Reed Great Katana
+Milady
+Backhand Blade
+Euporia
+Anvil Hammer
+Bloodfiend's Arm
+Star-Lined Sword
