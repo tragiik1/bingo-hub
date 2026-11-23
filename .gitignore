@@ -4,3 +4,4 @@ tools/**/bin/
 tools/**/obj/
 tools/**/extracted/
 tools/**/out/
+assets/icons.bin

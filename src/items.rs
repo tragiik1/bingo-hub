@@ -1,0 +1,121 @@
+//! What the Classes page knows about an item: its type, how it upgrades and its icon.
+//! Built from the game files by tools/item-icons (assets/items.tsv, assets/icons.bin).
+
+use std::collections::HashMap;
+use std::sync::{Mutex, OnceLock};
+
+use eframe::egui::{self, ColorImage, TextureHandle, TextureOptions};
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Upgrade {
+    None,
+    Smithing,
+    Somber,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct Info {
+    /// "Katana", "Sorcery", "Arrow"...
+    pub kind: &'static str,
+    pub upgrade: Upgrade,
+    pub icon: u32,
+}
+
+static TABLE: &str = include_str!("../assets/items.tsv");
+/// Empty when the build had no assets/icons.bin (it's game art, so it isn't in git).
+static ICONS: &[u8] = include_bytes!(concat!(env!("OUT_DIR"), "/icons.bin"));
+
+fn table() -> &'static HashMap<&'static str, Info> {
+    static T: OnceLock<HashMap<&'static str, Info>> = OnceLock::new();
+    T.get_or_init(|| {
+        let mut m = HashMap::new();
+        for line in TABLE.lines() {
+            let mut p = line.split('\t');
+            let (Some(name), Some(kind), Some(up), Some(icon)) = (p.next(), p.next(), p.next(), p.next()) else { continue };
+            let upgrade = match up {
+                "smithing" => Upgrade::Smithing,
+                "somber" => Upgrade::Somber,
+                _ => Upgrade::None,
+            };
+            m.entry(name).or_insert(Info { kind, upgrade, icon: icon.trim().parse().unwrap_or(0) });
+        }
+        m
+    })
+}
+
+/// The spoiler names items as the game does; ammo and a few weapons carry a " +0" suffix.
+pub fn info(name: &str) -> Option<Info> {
+    let t = table();
+    t.get(name).or_else(|| t.get(name.trim_end_matches(" +0"))).copied()
+}
+
+fn icon_png(id: u32) -> Option<&'static [u8]> {
+    static INDEX: OnceLock<HashMap<u32, (usize, usize)>> = OnceLock::new();
+    let index = INDEX.get_or_init(|| {
+        let mut m = HashMap::new();
+        let rd = |o: usize| ICONS.get(o..o + 4).map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]) as usize);
+        if ICONS.get(..4) != Some(b"BHIC") {
+            return m;
+        }
+        let n = rd(4).unwrap_or(0);
+        let mut off = 8 + 8 * n;
+        for i in 0..n {
+            let (Some(id), Some(len)) = (rd(8 + 8 * i), rd(12 + 8 * i)) else { break };
+            m.insert(id as u32, (off, len));
+            off += len;
+        }
+        m
+    });
+    let &(o, l) = index.get(&id)?;
+    ICONS.get(o..o + l)
+}
+
+fn decode(png_bytes: &[u8]) -> Option<ColorImage> {
+    let mut dec = png::Decoder::new(std::io::Cursor::new(png_bytes));
+    dec.set_transformations(png::Transformations::EXPAND | png::Transformations::STRIP_16);
+    let mut r = dec.read_info().ok()?;
+    let mut buf = vec![0; r.output_buffer_size()?];
+    let f = r.next_frame(&mut buf).ok()?;
+    let px = &buf[..f.buffer_size()];
+    let rgba: Vec<u8> = match f.color_type {
+        png::ColorType::Rgba => px.to_vec(),
+        png::ColorType::Rgb => px.chunks_exact(3).flat_map(|c| [c[0], c[1], c[2], 255]).collect(),
+        png::ColorType::GrayscaleAlpha => px.chunks_exact(2).flat_map(|c| [c[0], c[0], c[0], c[1]]).collect(),
+        png::ColorType::Grayscale => px.iter().flat_map(|&g| [g, g, g, 255]).collect(),
+        png::ColorType::Indexed => return None,
+    };
+    Some(ColorImage::from_rgba_unmultiplied([f.width as usize, f.height as usize], &rgba))
+}
+
+/// The item's icon as a texture, decoded the first time it's asked for.
+pub fn texture(ctx: &egui::Context, icon: u32) -> Option<TextureHandle> {
+    static CACHE: OnceLock<Mutex<HashMap<u32, Option<TextureHandle>>>> = OnceLock::new();
+    let mut cache = CACHE.get_or_init(Default::default).lock().ok()?;
+    cache
+        .entry(icon)
+        .or_insert_with(|| decode(icon_png(icon)?).map(|img| ctx.load_texture(format!("item-{icon}"), img, TextureOptions::LINEAR)))
+        .clone()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn knows_weapons_and_spells() {
+        let moonveil = info("Moonveil").unwrap();
+        assert_eq!((moonveil.kind, moonveil.upgrade), ("Katana", Upgrade::Somber));
+        assert_eq!(info("Uchigatana").unwrap().upgrade, Upgrade::Smithing);
+        assert_eq!(info("Glintstone Arc").unwrap().kind, "Sorcery");
+        assert_eq!(info("Dueling Shield +0").unwrap().kind, "Thrusting Shield");
+    }
+
+    #[test]
+    fn icons_decode_when_bundled() {
+        if ICONS.is_empty() {
+            return;
+        }
+        let img = decode(icon_png(info("Moonveil").unwrap().icon).unwrap()).unwrap();
+        assert_eq!(img.size, [96, 96]);
+    }
+}

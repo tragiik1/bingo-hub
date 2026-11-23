@@ -7,6 +7,7 @@ mod classes;
 mod core;
 mod crash;
 mod graces;
+mod items;
 mod randocheck;
 mod sys;
 mod ui;

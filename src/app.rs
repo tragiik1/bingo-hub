@@ -128,6 +128,13 @@ struct Practice {
     marked: Vec<bool>,
 }
 
+#[derive(Default)]
+struct Spoiler {
+    open: bool,
+    query: String,
+    groups: std::collections::HashSet<String>,
+}
+
 pub struct App {
     shared: Arc<Shared>,
     tx: Sender<Msg>,
@@ -152,6 +159,8 @@ pub struct App {
     upd: Upd,
     prev_game: GameState,
     show_dismissed: bool,
+    /// Classes page spoiler: closed every time the hub starts, so nobody sees it by accident.
+    spoiler: Spoiler,
     /// Started right after a hub update: finish any tool updates without asking again.
     auto_tools: bool,
 }
@@ -189,6 +198,7 @@ impl App {
             upd: Upd::Idle,
             prev_game: GameState::NotRunning,
             show_dismissed: false,
+            spoiler: Spoiler::default(),
             auto_tools: args.iter().any(|a| a == "--updated"),
         };
         if args.iter().any(|a| a == "--updated") {
@@ -1062,19 +1072,22 @@ impl App {
                 let stale = snap.rando_run.as_ref().is_some_and(|r| r.seed != sp.seed);
                 ui::sub(ui, &format!("Seed \"{}\"{}", sp.seed, if stale { "   ·   from an earlier randomize" } else { "" }));
                 ui.add_space(20.0);
-                let gap = 12.0;
+                let gap = 14.0;
                 let w = ((ui.available_width() - gap) / 2.0).floor();
                 for pair in sp.classes.chunks(2) {
+                    // Both cards in a row get the same number of item slots, so they line up.
+                    let slots = pair.iter().map(|c| c.items.len()).max().unwrap_or(0);
                     ui.horizontal_top(|ui| {
                         ui.spacing_mut().item_spacing.x = gap;
                         for class in pair {
-                            ui.allocate_ui_with_layout(vec2(w, 0.0), Layout::top_down(Align::Min), |ui| {
-                                ui.set_width(w);
-                                class_card(ui, class);
-                            });
+                            class_card(ui, class, w, slots);
                         }
                     });
                     ui.add_space(gap);
+                }
+                if !sp.swaps.is_empty() {
+                    ui.add_space(10.0);
+                    spoiler(ui, &sp.swaps, &mut self.spoiler);
                 }
             });
         });
@@ -1689,41 +1702,189 @@ fn run_form(ui: &mut Ui, run: &mut Run, date: &mut String, width: f32) {
     ui::field(ui, "run_notes", &mut run.notes, "", width, 400);
 }
 
-fn class_card(ui: &mut Ui, class: &crate::classes::Class) {
+const SOMBER: Color32 = Color32::from_rgb(178, 156, 236);
+const SMITHING: Color32 = Color32::from_rgb(196, 200, 210);
+
+/// One starting class laid out like a character sheet: name, starting gear, then attributes.
+fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) {
+    const PAD: f32 = 18.0;
+    const TOP: f32 = 18.0 + 24.0 + 10.0;
+    const ITEM_H: f32 = 60.0;
+    const ICON: f32 = 48.0;
+    const STAT_H: f32 = 30.0;
+    let stat_rows = class.stats.len().div_ceil(4).max(1);
+    let h = TOP + slots as f32 * ITEM_H + 12.0 + 14.0 + stat_rows as f32 * STAT_H + 12.0;
+    let (rect, _) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
+    if !ui.is_rect_visible(rect) {
+        return;
+    }
+    let p = ui.painter().clone();
+    p.rect_filled(rect, 10.0, c::SURFACE);
+    p.rect_stroke(rect, 10.0, Stroke::new(1.0_f32, c::BORDER), StrokeKind::Inside);
+
+    let left = rect.left() + PAD;
+    let right = rect.right() - PAD;
+    let name_font = egui::FontId::new(18.0, egui::FontFamily::Name("sb".into()));
+    p.text(pos2(left, rect.top() + 30.0), Align2::LEFT_CENTER, &class.name, name_font, c::TEXT);
+
+    for (n, it) in class.items.iter().enumerate() {
+        let info = crate::items::info(&it.name);
+        let row = Rect::from_min_size(pos2(left, rect.top() + TOP + n as f32 * ITEM_H), vec2(right - left, ITEM_H));
+        let icon = Rect::from_min_size(pos2(left, row.center().y - ICON / 2.0), vec2(ICON, ICON));
+        p.rect_filled(icon, 8.0, c::RAISED);
+        if let Some(tex) = info.and_then(|i| crate::items::texture(ui.ctx(), i.icon)) {
+            p.image(tex.id(), icon.shrink(2.0), Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
+        }
+
+        // Upgrade tag on the right; spells and ammo have none.
+        let tag = info.and_then(|i| match i.upgrade {
+            crate::items::Upgrade::Somber => Some(("Somber", SOMBER)),
+            crate::items::Upgrade::Smithing => Some(("Smithing", SMITHING)),
+            crate::items::Upgrade::None => None,
+        });
+        let mut text_right = right;
+        if let Some((label, col)) = tag {
+            let g = ui::galley(ui, label, egui::FontId::new(12.0, egui::FontFamily::Name("sb".into())), col);
+            let pill = Rect::from_min_size(pos2(right - g.size().x - 20.0, row.center().y - 11.0), vec2(g.size().x + 20.0, 22.0));
+            p.rect_filled(pill, 11.0, col.gamma_multiply(0.13));
+            p.galley(pill.center() - g.size() / 2.0, g, col);
+            text_right = pill.left() - 12.0;
+        }
+
+        let x = icon.right() + 14.0;
+        let name = ui::truncated(ui, &it.name, ui::body(), c::TEXT, text_right - x);
+        p.galley(pos2(x, row.center().y - 19.0), name, c::TEXT);
+        let mut meta = info.map(|i| i.kind.to_string()).unwrap_or_default();
+        if let Some(n) = it.count {
+            meta = if meta.is_empty() { format!("×{n}") } else { format!("{meta}   ×{n}") };
+        }
+        let mut job = egui::text::LayoutJob::default();
+        job.append(&meta, 0.0, egui::TextFormat::simple(ui::small(), c::MUTED));
+        if let Some(l) = it.level {
+            let sep = if meta.is_empty() { "" } else { "   ·   " };
+            job.append(&format!("{sep}Lv {l} to wield"), 0.0, egui::TextFormat::simple(ui::small(), c::WARN));
+        }
+        job.wrap = egui::text::TextWrapping::truncate_at_width((text_right - x).max(1.0));
+        let g = ui.fonts_mut(|f| f.layout_job(job));
+        p.galley(pos2(x, row.center().y + 3.0), g, c::MUTED);
+    }
+    let y = rect.top() + TOP + slots as f32 * ITEM_H + 12.0;
+    p.hline(left..=right, y, Stroke::new(1.0_f32, c::DIVIDER));
+
+    let short = |k: &str| match k {
+        "Vigor" => "VIG",
+        "Mind" => "MND",
+        "Endurance" => "END",
+        "Strength" => "STR",
+        "Dexterity" => "DEX",
+        "Intelligence" => "INT",
+        "Faith" => "FAI",
+        "Arcane" => "ARC",
+        _ => "",
+    };
+    let gap = 8.0;
+    let cell_w = ((right - left) - gap * 3.0) / 4.0;
+    for (i, (k, v)) in class.stats.iter().enumerate() {
+        let min = pos2(left + (i % 4) as f32 * (cell_w + gap), y + 14.0 + (i / 4) as f32 * STAT_H);
+        let cell = Rect::from_min_size(min, vec2(cell_w, STAT_H - 6.0));
+        p.rect_filled(cell, 6.0, c::BG);
+        p.text(pos2(cell.left() + 10.0, cell.center().y), Align2::LEFT_CENTER, short(k), ui::small(), c::FAINT);
+        p.text(pos2(cell.right() - 10.0, cell.center().y), Align2::RIGHT_CENTER, v.to_string(), ui::strong(), c::TEXT);
+    }
+}
+
+/// The seed's swap lists, closed until someone asks for them.
+fn spoiler(ui: &mut Ui, swaps: &[crate::classes::Swaps], st: &mut Spoiler) {
+    let total: usize = swaps.iter().map(|g| g.pairs.len()).sum();
     ui::card(ui, |ui| {
-        ui.add_space(10.0);
+        let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 58.0), Sense::click());
+        let hover = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.09);
+        if hover > 0.0 {
+            ui.painter().rect_filled(rect.shrink(3.0), 7.0, Color32::TRANSPARENT.lerp_to_gamma(c::RAISED, hover));
+        }
+        let x = rect.left() + 18.0;
+        ui::text_at(ui, pos2(x, rect.top() + 20.0), Align2::LEFT_CENTER, "Spoiler", ui::strong(), c::TEXT);
+        let sub = format!("{total} weapon and spell swaps for this seed");
+        ui::text_at(ui, pos2(x, rect.top() + 39.0), Align2::LEFT_CENTER, &sub, ui::small(), c::MUTED);
+        let col = c::MUTED.lerp_to_gamma(c::TEXT, hover);
+        ui::text_at(ui, pos2(rect.right() - 40.0, rect.center().y), Align2::RIGHT_CENTER, if st.open { "Hide" } else { "Show" }, ui::btn_font(), col);
+        chevron(ui, pos2(rect.right() - 24.0, rect.center().y), st.open, col);
+        if resp.on_hover_cursor(CursorIcon::PointingHand).clicked() {
+            st.open = !st.open;
+            if !st.open {
+                st.query.clear();
+                st.groups.clear();
+            }
+        }
+        if !st.open {
+            return;
+        }
+
+        ui.add_space(4.0);
         ui.horizontal(|ui| {
-            ui.add_space(18.0);
-            ui.vertical(|ui| {
-                ui.label(egui::RichText::new(&class.name).font(ui::strong()).color(c::TEXT));
-                ui.add_space(6.0);
-                for it in &class.items {
-                    let mut job = egui::text::LayoutJob::default();
-                    job.append(&it.name, 0.0, egui::TextFormat::simple(ui::body(), c::TEXT));
-                    if let Some(n) = it.count {
-                        job.append(&format!("  ×{n}"), 0.0, egui::TextFormat::simple(ui::small(), c::MUTED));
-                    }
-                    if let Some(l) = it.level {
-                        job.append(&format!("   needs lv {l}"), 0.0, egui::TextFormat::simple(ui::small(), c::WARN));
-                    }
-                    ui.label(job);
-                }
-                ui.add_space(8.0);
-                let short = |k: &str| match k {
-                    "Vigor" => "VIG", "Mind" => "MND", "Endurance" => "END", "Strength" => "STR",
-                    "Dexterity" => "DEX", "Intelligence" => "INT", "Faith" => "FAI", "Arcane" => "ARC",
-                    _ => "",
-                };
-                for row in class.stats.chunks(4) {
-                    let mut job = egui::text::LayoutJob::default();
-                    for (k, v) in row {
-                        job.append(short(k), 0.0, egui::TextFormat::simple(ui::small(), c::FAINT));
-                        job.append(&format!(" {v:<3}   "), 0.0, egui::TextFormat::simple(ui::small(), c::TEXT));
-                    }
-                    ui.label(job);
-                }
-            });
+            ui.add_space(16.0);
+            let w = ui.available_width() - 16.0;
+            ui::field(ui, "spoiler_find", &mut st.query, "Find an item", w, 60);
         });
         ui.add_space(10.0);
+        let q = st.query.trim().to_lowercase();
+        let mut shown = 0;
+        for g in swaps {
+            let pairs: Vec<&(String, String)> =
+                g.pairs.iter().filter(|(a, b)| q.is_empty() || a.to_lowercase().contains(&q) || b.to_lowercase().contains(&q)).collect();
+            if pairs.is_empty() {
+                continue;
+            }
+            shown += 1;
+            // While searching, every group with a match is open.
+            let open = !q.is_empty() || st.groups.contains(&g.group);
+            let (row, resp) = ui.allocate_exact_size(vec2(ui.available_width(), 42.0), Sense::click());
+            let hover = ui.ctx().animate_bool_with_time(resp.id, resp.hovered(), 0.09);
+            ui.painter().hline(row.x_range().shrink(16.0), row.top(), Stroke::new(1.0_f32, c::DIVIDER));
+            let col = c::MUTED.lerp_to_gamma(c::TEXT, if open { 1.0 } else { hover });
+            ui::text_at(ui, pos2(row.left() + 18.0, row.center().y), Align2::LEFT_CENTER, &g.group, ui::body(), col);
+            ui::text_at(ui, pos2(row.right() - 40.0, row.center().y), Align2::RIGHT_CENTER, &pairs.len().to_string(), ui::small(), c::FAINT);
+            chevron(ui, pos2(row.right() - 24.0, row.center().y), open, col);
+            if resp.on_hover_cursor(CursorIcon::PointingHand).clicked() && q.is_empty() && !st.groups.remove(&g.group) {
+                st.groups.insert(g.group.clone());
+            }
+            if !open {
+                continue;
+            }
+            // Two columns of "vanilla → now".
+            const LINE: f32 = 26.0;
+            let col_gap = 32.0;
+            let cw = (ui.available_width() - 36.0 - col_gap) / 2.0;
+            let half = pairs.len().div_ceil(2);
+            let (area, _) = ui.allocate_exact_size(vec2(ui.available_width(), half as f32 * LINE + 12.0), Sense::hover());
+            let aw = (cw - 28.0) / 2.0;
+            for (i, (a, b)) in pairs.iter().enumerate() {
+                let x = area.left() + 18.0 + if i < half { 0.0 } else { cw + col_gap };
+                let cy = area.top() + (i % half) as f32 * LINE + LINE / 2.0;
+                let ga = ui::truncated(ui, a, ui::small(), c::MUTED, aw);
+                ui.painter().galley(pos2(x, cy - ga.size().y / 2.0), ga, c::MUTED);
+                ui::text_at(ui, pos2(x + aw + 14.0, cy), Align2::CENTER_CENTER, "→", ui::small(), c::FAINT);
+                let gb = ui::truncated(ui, b, ui::small(), c::TEXT, aw);
+                ui.painter().galley(pos2(x + aw + 28.0, cy - gb.size().y / 2.0), gb, c::TEXT);
+            }
+        }
+        if shown == 0 {
+            ui.horizontal(|ui| {
+                ui.add_space(18.0);
+                ui::sub(ui, "Nothing matches.");
+            });
+            ui.add_space(14.0);
+        }
     });
+}
+
+fn chevron(ui: &Ui, center: egui::Pos2, open: bool, col: Color32) {
+    let s = Stroke::new(1.6_f32, col);
+    let pts = if open {
+        [center + vec2(-4.5, -2.0), center + vec2(0.0, 2.5), center + vec2(4.5, -2.0)]
+    } else {
+        [center + vec2(-2.0, -4.5), center + vec2(2.5, 0.0), center + vec2(-2.0, 4.5)]
+    };
+    ui.painter().line_segment([pts[0], pts[1]], s);
+    ui.painter().line_segment([pts[1], pts[2]], s);
 }

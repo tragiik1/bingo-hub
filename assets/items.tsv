@@ -1,0 +1,738 @@
+Unarmed			0
+Dagger	Dagger	smithing	10000
+Black Knife	Dagger	somber	10001
+Parrying Dagger	Dagger	smithing	10002
+Miséricorde	Dagger	smithing	10003
+Reduvia	Dagger	somber	10004
+Crystal Knife	Dagger	smithing	10005
+Celebrant's Sickle	Dagger	smithing	10006
+Glintstone Kris	Dagger	somber	10007
+Scorpion's Stinger	Dagger	somber	10008
+Great Knife	Dagger	smithing	10009
+Wakizashi	Dagger	smithing	10010
+Cinquedea	Dagger	somber	10011
+Ivory Sickle	Dagger	smithing	10013
+Bloodstained Dagger	Dagger	smithing	10014
+Erdsteel Dagger	Dagger	smithing	10015
+Blade of Calling	Dagger	somber	10016
+Main-gauche	Dagger	smithing	12200
+Fire Knight Shortsword	Dagger	smithing	12201
+Longsword	Straight Sword	smithing	10040
+Short Sword	Straight Sword	smithing	10041
+Broadsword	Straight Sword	smithing	10042
+Lordsworn's Straight Sword	Straight Sword	smithing	10044
+Weathered Straight Sword	Straight Sword	smithing	10045
+Ornamental Straight Sword	Straight Sword	somber	10046
+Golden Epitaph	Straight Sword	somber	10047
+Nox Flowing Sword	Curved Sword	somber	10048
+Inseparable Sword	Greatsword	somber	10049
+Coded Sword	Straight Sword	somber	10051
+Sword of Night and Flame	Straight Sword	somber	10053
+Crystal Sword	Straight Sword	somber	10054
+Carian Knight's Sword	Straight Sword	somber	10057
+Sword of St. Trina	Straight Sword	somber	10058
+Miquellan Knight's Sword	Straight Sword	somber	10059
+Cane Sword	Straight Sword	smithing	10060
+Regalia of Eochaid	Straight Sword	somber	10061
+Noble's Slender Sword	Straight Sword	smithing	10062
+Warhawk's Talon	Straight Sword	smithing	10063
+Lazuli Glintstone Sword	Straight Sword	somber	10064
+Rotten Crystal Sword	Straight Sword	somber	10065
+Star-Lined Sword	Katana	somber	12203
+Carian Sorcery Sword	Thrusting Sword	smithing	12213
+Stone-Sheathed Sword	Straight Sword	somber	12204
+Sword of Light	Straight Sword	somber	12205
+Sword of Darkness	Straight Sword	somber	12206
+Bastard Sword	Greatsword	smithing	10080
+Forked Greatsword	Greatsword	smithing	10081
+Iron Greatsword	Greatsword	smithing	10082
+Lordsworn's Greatsword	Greatsword	smithing	10083
+Knight's Greatsword	Greatsword	smithing	10084
+Flamberge	Greatsword	smithing	10085
+Ordovis's Greatsword	Greatsword	somber	10086
+Alabaster Lord's Sword	Greatsword	somber	10087
+Banished Knight's Greatsword	Greatsword	smithing	10088
+Dark Moon Greatsword	Greatsword	somber	10089
+Sacred Relic Sword	Greatsword	somber	10090
+Helphen's Steeple	Greatsword	somber	10093
+Blasphemous Blade	Greatsword	somber	10094
+Marais Executioner's Sword	Greatsword	somber	10095
+Sword of Milos	Greatsword	somber	10096
+Golden Order Greatsword	Greatsword	somber	10097
+Claymore	Greatsword	smithing	10098
+Gargoyle's Greatsword	Greatsword	smithing	10099
+Death's Poker	Greatsword	somber	10100
+Gargoyle's Blackblade	Greatsword	somber	10101
+Greatsword of Damnation	Greatsword	somber	12207
+Lizard Greatsword	Greatsword	smithing	12208
+Greatsword of Solitude	Greatsword	somber	12209
+Leontiel's Greatsword	Greatsword	somber	12401
+Greatsword	Colossal Sword	smithing	10120
+Watchdog's Greatsword	Colossal Sword	smithing	10121
+Maliketh's Black Blade	Colossal Sword	somber	10122
+Troll's Golden Sword	Colossal Sword	smithing	10123
+Zweihander	Colossal Sword	smithing	10124
+Starscourge Greatsword	Colossal Sword	somber	10125
+Royal Greatsword	Colossal Sword	somber	10126
+Godslayer's Greatsword	Colossal Sword	somber	10127
+Ruins Greatsword	Colossal Sword	somber	10128
+Grafted Blade Greatsword	Colossal Sword	somber	10130
+Troll Knight's Sword	Colossal Sword	somber	10132
+Ancient Meteoric Ore Greatsword	Colossal Sword	somber	12210
+Fire Knight's Greatsword	Colossal Sword	smithing	12211
+Greatsword of Radahn (Lord)	Colossal Sword	somber	12212
+Moonrithyll's Knight Sword	Colossal Sword	somber	10132
+Greatsword of Radahn (Light)	Colossal Sword	somber	12212
+Estoc	Thrusting Sword	smithing	10160
+Cleanrot Knight's Sword	Thrusting Sword	smithing	10161
+Rapier	Thrusting Sword	smithing	10162
+Rogier's Rapier	Thrusting Sword	smithing	10163
+Antspur Rapier	Thrusting Sword	smithing	10164
+Frozen Needle	Thrusting Sword	somber	10165
+Noble's Estoc	Thrusting Sword	smithing	10166
+Bloody Helice	Heavy Thrusting Sword	somber	10200
+Godskin Stitcher	Heavy Thrusting Sword	smithing	10201
+Great Épée	Heavy Thrusting Sword	smithing	10202
+Dragon King's Cragblade	Heavy Thrusting Sword	somber	10204
+Queelign's Greatsword	Heavy Thrusting Sword	smithing	12215
+Falchion	Curved Sword	smithing	10240
+Beastman's Curved Sword	Curved Sword	smithing	10241
+Shotel	Curved Sword	smithing	10242
+Shamshir	Curved Sword	smithing	10243
+Bandit's Curved Sword	Curved Sword	smithing	10244
+Magma Blade	Curved Sword	somber	10245
+Flowing Curved Sword	Curved Sword	smithing	10246
+Wing of Astel	Curved Sword	somber	10247
+Scavenger's Curved Sword	Curved Sword	smithing	10248
+Eclipse Shotel	Curved Sword	somber	10250
+Serpent-God's Curved Sword	Curved Sword	smithing	10251
+Mantis Blade	Curved Sword	smithing	10252
+Scimitar	Curved Sword	smithing	10254
+Grossmesser	Curved Sword	smithing	10255
+Spirit Sword	Curved Sword	somber	12216
+Falx	Curved Sword	somber	12217
+Dancing Blade of Ranah	Curved Sword	somber	12218
+Horned Warrior's Sword	Curved Sword	somber	12219
+Onyx Lord's Greatsword	Curved Greatsword	somber	10280
+Dismounter	Curved Greatsword	smithing	10281
+Bloodhound's Fang	Curved Greatsword	somber	10282
+Magma Wyrm's Scalesword	Curved Greatsword	somber	10283
+Zamor Curved Sword	Curved Greatsword	somber	10289
+Omen Cleaver	Curved Greatsword	smithing	10284
+Monk's Flameblade	Curved Greatsword	smithing	10285
+Beastman's Cleaver	Curved Greatsword	smithing	10286
+Morgott's Cursed Sword	Curved Greatsword	somber	10288
+Putrescence Cleaver	Greataxe	somber	12220
+Freyja's Greatsword	Curved Greatsword	smithing	12221
+Horned Warrior's Greatsword	Curved Greatsword	somber	12222
+Hefty Scimitar	Curved Greatsword	smithing	12400
+Uchigatana	Katana	smithing	10320
+Nagakiba	Katana	smithing	10321
+Hand of Malenia	Katana	somber	10322
+Meteoric Ore Blade	Katana	somber	10323
+Rivers of Blood	Katana	somber	10324
+Moonveil	Katana	somber	10326
+Dragonscale Blade	Katana	somber	10327
+Serpentbone Blade	Katana	smithing	10328
+Sword of Night	Katana	somber	12223
+Twinblade	Twinblade	smithing	10360
+Godskin Peeler	Twinblade	smithing	10361
+Twinned Knight Swords	Twinblade	smithing	10362
+Eleonora's Poleblade	Twinblade	somber	10364
+Gargoyle's Twinblade	Twinblade	smithing	10367
+Gargoyle's Black Blades	Twinblade	somber	10368
+Euporia	Twinblade	somber	12224
+Black Steel Twinblade	Twinblade	smithing	12225
+Mace	Hammer	smithing	10400
+Club	Hammer	smithing	10401
+Curved Club	Hammer	smithing	10402
+Warpick	Hammer	smithing	10403
+Morning Star	Hammer	smithing	10404
+Varré's Bouquet	Hammer	somber	10405
+Spiked Club	Hammer	smithing	10406
+Hammer	Hammer	smithing	10407
+Monk's Flamemace	Hammer	smithing	10408
+Envoy's Horn	Hammer	somber	10409
+Scepter of the All-Knowing	Hammer	somber	10410
+Nox Flowing Hammer	Hammer	somber	10411
+Ringed Finger	Hammer	somber	10412
+Stone Club	Hammer	smithing	10413
+Marika's Hammer	Hammer	somber	10414
+Flowerstone Gavel	Hammer	somber	12226
+Large Club	Great Hammer	smithing	10440
+Greathorn Hammer	Great Hammer	smithing	10441
+Battle Hammer	Great Hammer	smithing	10442
+Great Mace	Great Hammer	smithing	10443
+Curved Great Club	Great Hammer	smithing	10444
+Celebrant's Skull	Great Hammer	smithing	10445
+Pickaxe	Great Hammer	smithing	10446
+Beastclaw Greathammer	Great Hammer	somber	10447
+Envoy's Long Horn	Great Hammer	somber	10448
+Cranial Vessel Candlestand	Great Hammer	somber	10449
+Great Stars	Great Hammer	smithing	10450
+Brick Hammer	Great Hammer	smithing	10451
+Devourer's Scepter	Great Hammer	somber	10452
+Rotten Battle Hammer	Great Hammer	smithing	10453
+Anvil Hammer	Colossal Weapon	somber	12228
+Black Steel Greathammer	Great Hammer	smithing	12229
+Bloodfiend's Arm	Colossal Weapon	smithing	12230
+Nightrider Flail	Flail	smithing	10480
+Flail	Flail	smithing	10481
+Family Heads	Flail	somber	10482
+Bastard's Stars	Flail	somber	10483
+Chainlink Flail	Flail	smithing	10484
+Serpent Flail	Flail	somber	12231
+Golden Order Flail	Flail	somber	12402
+Battle Axe	Axe	smithing	10520
+Forked Hatchet	Axe	smithing	10521
+Hand Axe	Axe	smithing	10522
+Jawbone Axe	Axe	smithing	10523
+Iron Cleaver	Axe	smithing	10524
+Ripple Blade	Axe	smithing	10525
+Celebrant's Cleaver	Axe	smithing	10526
+Icerind Hatchet	Axe	somber	10527
+Highland Axe	Axe	smithing	10529
+Sacrificial Axe	Axe	smithing	10530
+Rosus' Axe	Axe	somber	10531
+Stormhawk Axe	Axe	somber	10533
+Death Knight's Twin Axes	Axe	somber	12233
+Messmer Soldier's Axe	Axe	smithing	12234
+Forked-Tongue Hatchet	Axe	smithing	12236
+Greataxe	Greataxe	smithing	10560
+Warped Axe	Axe	smithing	10561
+Great Omenkiller Cleaver	Greataxe	smithing	10562
+Crescent Moon Axe	Greataxe	smithing	10563
+Axe of Godrick	Greataxe	somber	10564
+Longhaft Axe	Greataxe	smithing	10565
+Rusted Anchor	Greataxe	smithing	10566
+Executioner's Greataxe	Greataxe	smithing	10568
+Winged Greathorn	Greataxe	somber	10571
+Butchering Knife	Greataxe	smithing	10572
+Gargoyle's Great Axe	Greataxe	smithing	10573
+Gargoyle's Black Axe	Greataxe	somber	10574
+Death Knight's Longhaft Axe	Greataxe	somber	12237
+Bonny Butchering Knife	Greataxe	somber	10572
+Short Spear	Spear	smithing	10600
+Spear	Spear	smithing	10601
+Crystal Spear	Spear	somber	10602
+Clayman's Harpoon	Spear	smithing	10603
+Cleanrot Spear	Spear	somber	10604
+Partisan	Spear	smithing	10605
+Celebrant's Rib-Rake	Spear	smithing	10606
+Pike	Spear	smithing	10607
+Torchpole	Spear	smithing	10608
+Bolt of Gransax	Spear	somber	10609
+Cross-Naginata	Spear	smithing	10611
+Death Ritual Spear	Spear	somber	10612
+Inquisitor's Girandole	Spear	somber	10613
+Spiked Spear	Spear	smithing	10614
+Iron Spear	Spear	smithing	10615
+Rotten Crystal Spear	Spear	somber	10616
+Swift Spear	Spear	smithing	12239
+Bloodfiend's Fork	Spear	smithing	12240
+Bloodfiend's Sacred Spear	Great Spear	somber	12241
+Mohgwyn's Sacred Spear	Great Spear	somber	10641
+Siluria's Tree	Great Spear	somber	10642
+Serpent-Hunter	Great Spear		10643
+Vyke's War Spear	Great Spear	somber	10645
+Lance	Great Spear	smithing	10646
+Treespear	Great Spear	smithing	10647
+Spear of the Impaler	Great Spear	somber	12242
+Barbed Staff-Spear	Great Spear	somber	12244
+Halberd	Halberd	smithing	10680
+Pest's Glaive	Halberd	smithing	10681
+Lucerne	Halberd	smithing	10682
+Banished Knight's Halberd	Halberd	smithing	10683
+Commander's Standard	Halberd	somber	10684
+Nightrider Glaive	Halberd	smithing	10685
+Ripple Crescent Halberd	Halberd	smithing	10686
+Vulgar Militia Saw	Halberd	smithing	10687
+Golden Halberd	Halberd	somber	10688
+Glaive	Halberd	smithing	10689
+Loretta's War Sickle	Halberd	somber	10690
+Guardian's Swordspear	Halberd	smithing	10691
+Vulgar Militia Shotel	Halberd	smithing	10693
+Dragon Halberd	Halberd	somber	10694
+Gargoyle's Halberd	Halberd	smithing	10695
+Gargoyle's Black Halberd	Halberd	somber	10696
+Spirit Glaive	Halberd	somber	12245
+Poleblade of the Bud	Halberd	somber	12246
+Scythe	Reaper	smithing	10720
+Grave Scythe	Reaper	smithing	10721
+Halo Scythe	Reaper	somber	10722
+Winged Scythe	Reaper	somber	10726
+Obsidian Lamina	Reaper	somber	12247
+Whip	Whip	smithing	10760
+Thorned Whip	Whip	smithing	10762
+Magma Whip Candlestick	Whip	somber	10763
+Hoslow's Petal Whip	Whip	smithing	10765
+Giant's Red Braid	Whip	somber	10766
+Urumi	Whip	smithing	10767
+Tooth Whip	Whip	somber	12248
+Caestus	Fist	smithing	10800
+Spiked Caestus	Fist	smithing	10801
+Grafted Dragon	Fist	somber	10806
+Iron Ball	Fist	smithing	10807
+Star Fist	Fist	smithing	10808
+Katar	Fist	smithing	10809
+Clinging Bone	Fist	somber	10810
+Veteran's Prosthesis	Fist	somber	10811
+Cipher Pata	Fist	somber	10812
+Pata	Fist	smithing	12250
+Poisoned Hand	Fist	somber	12251
+Madding Hand	Fist	somber	12252
+Golem Fist	Fist	smithing	12253
+Hookclaws	Claw	smithing	10840
+Venomous Fang	Claw	smithing	10841
+Bloodhound Claws	Claw	smithing	10842
+Raptor Talons	Claw	smithing	10843
+Claws of Night	Claw	somber	12255
+Prelate's Inferno Crozier	Colossal Weapon	smithing	10880
+Watchdog's Staff	Colossal Weapon	somber	10881
+Great Club	Colossal Weapon	smithing	10882
+Envoy's Greathorn	Colossal Weapon	somber	10883
+Duelist Greataxe	Colossal Weapon	smithing	10884
+Axe of Godfrey	Colossal Weapon	somber	10885
+Dragon Greatclaw	Colossal Weapon	somber	10886
+Staff of the Avatar	Colossal Weapon	somber	10887
+Fallingstar Beast Jaw	Colossal Weapon	somber	10888
+Ghiza's Wheel	Colossal Weapon	somber	10890
+Giant-Crusher	Colossal Weapon	smithing	10891
+Golem's Halberd	Colossal Weapon	smithing	10892
+Troll's Hammer	Colossal Weapon	smithing	10893
+Rotten Staff	Colossal Weapon	somber	10894
+Rotten Greataxe	Colossal Weapon	smithing	10895
+Devonia's Hammer	Colossal Weapon	somber	12256
+Shadow Sunflower Blossom	Colossal Weapon	somber	12257
+Gazing Finger	Colossal Weapon	somber	12258
+Torch	Torch	smithing	10920
+Steel-Wire Torch	Torch	smithing	10922
+St. Trina's Torch	Torch	somber	10924
+Ghostflame Torch	Torch	smithing	10926
+Beast-Repellent Torch	Torch	smithing	10927
+Sentry's Torch	Torch	somber	10928
+Buckler	Small Shield	smithing	12000
+Perfumer's Shield	Small Shield	smithing	12001
+Man-Serpent's Shield	Small Shield	smithing	12002
+Rickety Shield	Small Shield	smithing	12003
+Pillory Shield	Small Shield	smithing	12004
+Beastman's Jar-Shield	Medium Shield	smithing	12006
+Red Thorn Roundshield	Small Shield	smithing	12007
+Scripture Wooden Shield	Small Shield	smithing	12008
+Riveted Wooden Shield	Small Shield	smithing	12009
+Blue-White Wooden Shield	Small Shield	smithing	12010
+Rift Shield	Small Shield	smithing	12011
+Iron Roundshield	Small Shield	smithing	12012
+Gilded Iron Shield	Small Shield	smithing	12013
+Ice Crest Shield	Small Shield	smithing	12014
+Smoldering Shield	Small Shield	smithing	12015
+Spiralhorn Shield	Small Shield	smithing	12019
+Coil Shield	Small Shield	somber	12020
+Kite Shield	Medium Shield	smithing	12040
+Marred Leather Shield	Medium Shield	smithing	12041
+Marred Wooden Shield	Medium Shield	smithing	12042
+Banished Knight's Shield	Medium Shield	smithing	12043
+Albinauric Shield	Medium Shield	smithing	12044
+Sun Realm Shield	Medium Shield	smithing	12045
+Silver Mirrorshield	Medium Shield	somber	12046
+Round Shield	Medium Shield	smithing	12047
+Scorpion Kite Shield	Medium Shield	smithing	12048
+Twinbird Kite Shield	Medium Shield	smithing	12049
+Blue-Gold Kite Shield	Medium Shield	smithing	12050
+Brass Shield	Medium Shield	smithing	12051
+Great Turtle Shell	Medium Shield	smithing	12052
+Shield of the Guilty	Small Shield	smithing	12053
+Carian Knight's Shield	Medium Shield	smithing	12055
+Large Leather Shield	Medium Shield	smithing	12059
+Horse Crest Wooden Shield	Medium Shield	smithing	12060
+Candletree Wooden Shield	Medium Shield	smithing	12061
+Flame Crest Wooden Shield	Medium Shield	smithing	12062
+Hawk Crest Wooden Shield	Medium Shield	smithing	12063
+Beast Crest Heater Shield	Medium Shield	smithing	12064
+Red Crest Heater Shield	Medium Shield	smithing	12065
+Blue Crest Heater Shield	Medium Shield	smithing	12066
+Eclipse Crest Heater Shield	Medium Shield	smithing	12067
+Inverted Hawk Heater Shield	Medium Shield	smithing	12068
+Heater Shield	Medium Shield	smithing	12069
+Black Leather Shield	Medium Shield	smithing	12070
+Messmer Soldier Shield	Medium Shield	smithing	12284
+Wolf Crest Shield	Medium Shield	smithing	12285
+Serpent Crest Shield	Medium Shield	smithing	12286
+Golden Lion Shield	Medium Shield	somber	12287
+Silver Grooved Shield	Medium Shield	smithing	12407
+Dragon Towershield	Greatshield	smithing	12080
+Distinguished Greatshield	Greatshield	smithing	12081
+Crucible Hornshield	Greatshield	somber	12082
+Dragonclaw Shield	Greatshield	somber	12083
+Briar Greatshield	Greatshield	smithing	12084
+Erdtree Greatshield	Greatshield	somber	12086
+Golden Beast Crest Shield	Greatshield	smithing	12087
+Jellyfish Shield	Greatshield	somber	12090
+Fingerprint Stone Shield	Greatshield	smithing	12091
+Icon Shield	Greatshield	somber	12092
+One-Eyed Shield	Greatshield	somber	12093
+Visage Shield	Greatshield	somber	12094
+Spiked Palisade Shield	Greatshield	smithing	12095
+Manor Towershield	Greatshield	smithing	12097
+Crossed-Tree Towershield	Greatshield	smithing	12098
+Inverted Hawk Towershield	Greatshield	smithing	12099
+Ant's Skull Plate	Greatshield	somber	12100
+Redmane Greatshield	Greatshield	smithing	12101
+Eclipse Crest Greatshield	Greatshield	smithing	12102
+Cuckoo Greatshield	Greatshield	smithing	12103
+Golden Greatshield	Greatshield	smithing	12104
+Gilded Greatshield	Greatshield	smithing	12105
+Haligtree Crest Greatshield	Greatshield	smithing	12106
+Wooden Greatshield	Greatshield	smithing	12107
+Lordsworn's Shield	Greatshield	smithing	12108
+Black Steel Greatshield	Greatshield	smithing	12288
+Verdigris Greatshield	Greatshield	somber	12289
+Glintstone Staff	Glintstone Staff	smithing	11200
+Crystal Staff	Glintstone Staff	somber	11201
+Gelmir Glintstone Staff	Glintstone Staff	smithing	11202
+Demi-Human Queen's Staff	Glintstone Staff	smithing	11203
+Carian Regal Scepter	Glintstone Staff	somber	11204
+Digger's Staff	Glintstone Staff	smithing	11205
+Astrologer's Staff	Glintstone Staff	smithing	11206
+Carian Glintblade Staff	Glintstone Staff	smithing	11208
+Prince of Death's Staff	Glintstone Staff	smithing	11209
+Albinauric Staff	Glintstone Staff	smithing	11210
+Academy Glintstone Staff	Glintstone Staff	smithing	11212
+Carian Glintstone Staff	Glintstone Staff	smithing	11211
+Azur's Glintstone Staff	Glintstone Staff	somber	11214
+Lusat's Glintstone Staff	Glintstone Staff	somber	11215
+Meteorite Staff	Glintstone Staff		11216
+Staff of the Guilty	Glintstone Staff	smithing	11217
+Rotten Crystal Staff	Glintstone Staff	somber	11218
+Staff of Loss	Glintstone Staff	smithing	11219
+Staff of the Great Beyond	Glintstone Staff	somber	12290
+Finger Seal	Sacred Seal	smithing	11240
+Godslayer's Seal	Sacred Seal	smithing	11241
+Giant's Seal	Sacred Seal	smithing	11242
+Gravel Stone Seal	Sacred Seal	smithing	11243
+Clawmark Seal	Sacred Seal	smithing	11244
+Golden Order Seal	Sacred Seal	somber	11247
+Erdtree Seal	Sacred Seal	somber	11246
+Dragon Communion Seal	Sacred Seal	somber	11248
+Frenzied Flame Seal	Sacred Seal	somber	11249
+Shortbow	Light Bow	smithing	11000
+Misbegotten Shortbow	Light Bow	smithing	11001
+Red Branch Shortbow	Light Bow	smithing	11002
+Harp Bow	Light Bow	somber	11003
+Composite Bow	Light Bow	smithing	11005
+Bone Bow	Light Bow	smithing	12295
+Longbow	Bow	smithing	11040
+Albinauric Bow	Bow	smithing	11041
+Horn Bow	Bow	smithing	11042
+Erdtree Bow	Bow	somber	11043
+Serpent Bow	Bow	somber	11044
+Pulley Bow	Bow	somber	11046
+Black Bow	Bow	somber	11047
+Ansbach's Longbow	Bow	somber	12296
+Lion Greatbow	Greatbow	somber	11080
+Golem Greatbow	Greatbow	somber	11081
+Erdtree Greatbow	Greatbow	somber	11083
+Greatbow	Greatbow	smithing	11084
+Igon's Greatbow	Greatbow	smithing	12297
+Soldier's Crossbow	Crossbow	smithing	11120
+Light Crossbow	Crossbow	smithing	11121
+Heavy Crossbow	Crossbow	smithing	11122
+Pulley Crossbow	Crossbow	somber	11123
+Full Moon Crossbow	Crossbow	somber	11124
+Arbalest	Crossbow	smithing	11125
+Crepus's Black-Key Crossbow	Crossbow	somber	11128
+Repeating Crossbow	Crossbow	somber	12298
+Spread Crossbow	Crossbow	smithing	12299
+Hand Ballista	Ballista	smithing	11160
+Jar Cannon	Ballista	somber	11161
+Arrow	Arrow		17000
+Fire Arrow	Arrow		17001
+Serpent Arrow	Arrow		17002
+Bone Arrow (Fletched)	Arrow		17003
+St. Trina's Arrow	Arrow		17004
+Shattershard Arrow (Fletched)	Arrow		17018
+Rainbow Stone Arrow (Fletched)	Arrow		17020
+Golden Arrow	Arrow		17009
+Dwelling Arrow	Arrow		17010
+Bone Arrow	Arrow		17011
+Firebone Arrow (Fletched)	Arrow		17012
+Firebone Arrow	Arrow		17013
+Poisonbone Arrow (Fletched)	Arrow		17014
+Poisonbone Arrow	Arrow		17015
+Sleepbone Arrow (Fletched)	Arrow		17016
+Sleepbone Arrow	Arrow		17017
+Stormwing Bone Arrow	Arrow		17035
+Lightningbone Arrow (Fletched)	Arrow		17022
+Lightningbone Arrow	Arrow		17023
+Rainbow Stone Arrow	Arrow		17021
+Shattershard Arrow	Arrow		17019
+Spiritflame Arrow	Arrow		17024
+Magicbone Arrow (Fletched)	Arrow		17025
+Magicbone Arrow	Arrow		17026
+Haligbone Arrow (Fletched)	Arrow		17027
+Haligbone Arrow	Arrow		17028
+Bloodbone Arrow (Fletched)	Arrow		17029
+Bloodbone Arrow	Arrow		17030
+Coldbone Arrow (Fletched)	Arrow		17031
+Coldbone Arrow	Arrow		17032
+Rotbone Arrow (Fletched)	Arrow		17033
+Rotbone Arrow	Arrow		17034
+Great Arrow	Greatarrow		17100
+Golem's Great Arrow	Greatarrow		17101
+Golden Great Arrow	Greatarrow		17102
+Golem's Magic Arrow	Greatarrow		17103
+Radahn's Spear	Greatarrow		17105
+Bone Great Arrow (Fletched)	Greatarrow		17104
+Bone Great Arrow	Greatarrow		17106
+Bolt	Bolt		17200
+Lightning Bolt	Bolt		17201
+Perfumer's Bolt	Bolt		17202
+Black-Key Bolt	Bolt		17212
+Burred Bolt	Bolt		17204
+Meteor Bolt	Bolt		17211
+Explosive Bolt	Bolt		17205
+Golden Bolt	Bolt		17213
+Lordsworn's Bolt	Bolt		17210
+Bone Bolt	Bolt		17214
+Firebone Bolt	Bolt		17215
+Lightningbone Bolt	Bolt		17224
+Magicbone Bolt	Bolt		17216
+Haligbone Bolt	Bolt		17217
+Poisonbone Bolt	Bolt		17218
+Bloodbone Bolt	Bolt		17219
+Coldbone Bolt	Bolt		17220
+Rotbone Bolt	Bolt		17221
+Sleepbone Bolt	Bolt		17222
+Flaming Bolt	Bolt		17223
+Ballista Bolt	Ballista Bolt		17207
+Lightning Greatbolt	Ballista Bolt		17208
+Explosive Greatbolt	Ballista Bolt		17209
+Bone Ballista Bolt	Ballista Bolt		17300
+Sword Lance	Ballista Bolt		17301
+Dryleaf Arts	Hand-to-Hand Art	smithing	12260
+Dane's Footwork	Hand-to-Hand Art	smithing	12261
+Dueling Shield	Thrusting Shield	smithing	12267
+Carian Thrusting Shield	Thrusting Shield	smithing	12268
+Ritual Thrusting Shield	Thrusting Shield	smithing	12404
+Backhand Blade	Backhand Blade	smithing	12271
+Curseblade's Cirque	Backhand Blade	somber	12273
+Reverse-Bladed Sword	Backhand Blade	smithing	12403
+Great Katana	Great Katana	smithing	12274
+Dragon-Hunter's Great Katana	Great Katana	somber	12275
+Rakshasa's Great Katana	Great Katana	somber	12276
+Reed Great Katana	Great Katana	smithing	12405
+Milady	Light Greatsword	smithing	12277
+Leda's Sword	Light Greatsword	somber	12278
+Rellana's Twin Blades	Light Greatsword	somber	12279
+Idus Sword	Light Greatsword	smithing	12406
+Beast Claw	Beast Claw	smithing	12280
+Red Bear's Claw	Beast Claw	somber	12281
+Glintstone Pebble	Sorcery		6000
+Great Glintstone Shard	Sorcery		6015
+Swift Glintstone Shard	Sorcery		6001
+Glintstone Cometshard	Sorcery		6002
+Comet	Sorcery		6003
+Shard Spiral	Sorcery		6004
+Glintstone Stars	Sorcery		6010
+Star Shower	Sorcery		6016
+Crystal Barrage	Sorcery		6009
+Glintstone Arc	Sorcery		6014
+Cannon of Haima	Sorcery		6017
+Crystal Burst	Sorcery		6006
+Shatter Earth	Sorcery		6018
+Rock Blaster	Sorcery		6019
+Gavel of Haima	Sorcery		6020
+Terra Magica	Sorcery		6103
+Starlight	Sorcery		6102
+Comet Azur	Sorcery		6012
+Founding Rain of Stars	Sorcery		6021
+Stars of Ruin	Sorcery		6022
+Glintblade Phalanx	Sorcery		6005
+Carian Phalanx	Sorcery		6023
+Greatblade Phalanx	Sorcery		6024
+Rennala's Full Moon	Sorcery		6007
+Ranni's Dark Moon	Sorcery		6025
+Magic Downpour	Sorcery		6011
+Loretta's Greatbow	Sorcery		6013
+Loretta's Mastery	Sorcery		6026
+Magic Glintblade	Sorcery		6027
+Glintstone Icecrag	Sorcery		6028
+Zamor Ice Storm	Sorcery		6029
+Freezing Mist	Sorcery		6030
+Carian Greatsword	Sorcery		6050
+Adula's Moonblade	Sorcery		6031
+Carian Slicer	Sorcery		6051
+Carian Piercer	Sorcery		6052
+Scholar's Armament	Sorcery		6100
+Scholar's Shield	Sorcery		6101
+Lucidity	Sorcery		6032
+Frozen Armament	Sorcery		6507
+Shattering Crystal	Sorcery		6033
+Crystal Release	Sorcery		6034
+Crystal Torrent	Sorcery		6035
+Ambush Shard	Sorcery		6036
+Night Shard	Sorcery		6037
+Night Comet	Sorcery		6038
+Thops's Barrier	Sorcery		6039
+Carian Retaliation	Sorcery		6040
+Eternal Darkness	Sorcery		6041
+Unseen Blade	Sorcery		6702
+Unseen Form	Sorcery		6704
+Meteorite	Sorcery		6070
+Meteorite of Astel	Sorcery		6042
+Rock Sling	Sorcery		6071
+Gravity Well	Sorcery		6043
+Collapsing Stars	Sorcery		6044
+Magma Shot	Sorcery		6205
+Gelmir's Fury	Sorcery		6212
+Roiling Magma	Sorcery		6213
+Rykard's Rancor	Sorcery		6045
+Briars of Sin	Sorcery		6046
+Briars of Punishment	Sorcery		6047
+Rancorcall	Sorcery		6048
+Ancient Death Rancor	Sorcery		6049
+Explosive Ghostflame	Sorcery		6053
+Fia's Mist	Sorcery		6054
+Tibia's Summons	Sorcery		6099
+Death Lightning	Incantation		6104
+Oracle Bubbles	Sorcery		6607
+Great Oracular Bubble	Sorcery		6608
+Catch Flame	Incantation		6200
+O, Flame!	Incantation		6201
+Flame Sling	Incantation		6202
+Flame, Fall Upon Them	Incantation		6206
+Whirl, O Flame!	Incantation		6209
+Flame, Cleanse Me	Incantation		6303
+Flame, Grant Me Strength	Incantation		6308
+Flame, Protect Me	Incantation		6309
+Giantsflame Take Thee	Incantation		6204
+Flame of the Fell God	Incantation		6207
+Burn, O Flame!	Incantation		6211
+Black Flame	Incantation		6203
+Surge, O Flame!	Incantation		6208
+Scouring Black Flame	Incantation		6210
+Black Flame Ritual	Incantation		6214
+Black Flame Blade	Incantation		6306
+Black Flame's Protection	Incantation		6310
+Noble Presence	Incantation		6055
+Bloodflame Talons	Incantation		6056
+Bloodboon	Incantation		6254
+Bloodflame Blade	Incantation		6307
+Barrier of Gold	Incantation		6311
+Protection of the Erdtree	Incantation		6255
+Rejection	Incantation		6250
+Wrath of Gold	Incantation		6251
+Urgent Heal	Incantation		6300
+Heal	Incantation		6301
+Great Heal	Incantation		6505
+Lord's Heal	Incantation		6506
+Erdtree Heal	Incantation		6302
+Blessing's Boon	Incantation		6304
+Blessing of the Erdtree	Incantation		6305
+Cure Poison	Incantation		6057
+Lord's Aid	Incantation		6058
+Flame Fortification	Incantation		6707
+Magic Fortification	Incantation		6708
+Lightning Fortification	Incantation		6709
+Divine Fortification	Incantation		6710
+Lord's Divine Fortification	Incantation		6711
+Night Maiden's Mist	Sorcery		6253
+Assassin's Approach	Incantation		6312
+Shadow Bait	Incantation		6313
+Darkness	Incantation		6059
+Golden Vow	Incantation		6504
+Discus of Light	Incantation		6252
+Triple Rings of Light	Incantation		6061
+Radagon's Rings of Light	Incantation		6062
+Elden Stars	Incantation		6063
+Law of Regression	Incantation		6064
+Immutable Shield	Incantation		6065
+Litany of Proper Death	Incantation		6256
+Law of Causality	Incantation		6066
+Order's Blade	Incantation		6067
+Order Healing	Incantation		6068
+Bestial Sling	Incantation		6400
+Stone of Gurranq	Incantation		6401
+Gurranq's Beast Claw	Incantation		6403
+Bestial Vitality	Incantation		6500
+Bestial Constitution	Incantation		6503
+Lightning Spear	Incantation		6406
+Ancient Dragons' Lightning Strike	Incantation		6069
+Lightning Strike	Incantation		6408
+Frozen Lightning Spear	Incantation		6072
+Honed Bolt	Incantation		6073
+Ancient Dragons' Lightning Spear	Incantation		6074
+Fortissax's Lightning Spear	Incantation		6075
+Lansseax's Glaive	Incantation		6076
+Electrify Armament	Incantation		6077
+Vyke's Dragonbolt	Incantation		6078
+Dragonbolt Blessing	Incantation		6079
+Dragonfire	Incantation		6080
+Agheel's Flame	Incantation		6081
+Magma Breath	Incantation		6082
+Theodorix's Magma	Incantation		6105
+Dragonice	Incantation		6083
+Borealis's Mist	Incantation		6084
+Rotten Breath	Incantation		6085
+Ekzykes's Decay	Incantation		6086
+Glintstone Breath	Incantation		6087
+Smarag's Glintstone Breath	Incantation		6088
+Placidusax's Ruin	Incantation		6089
+Dragonclaw	Incantation		6090
+Dragonmaw	Incantation		6091
+Greyoll's Roar	Incantation		6092
+Pest Threads	Incantation		6609
+Swarm of Flies	Incantation		6611
+Poison Mist	Incantation		6610
+Poison Armament	Incantation		6612
+Scarlet Aeonia	Incantation		6713
+Inescapable Frenzy	Incantation		6094
+The Flame of Frenzy	Incantation		6095
+Unendurable Frenzy	Incantation		6096
+Frenzied Burst	Incantation		6097
+Howl of Shabriri	Incantation		6098
+Aspects of the Crucible: Tail	Incantation		6613
+Aspects of the Crucible: Horns	Incantation		6614
+Aspects of the Crucible: Breath	Incantation		6615
+Black Blade	Incantation		6712
+Fire's Deadly Sin	Incantation		6060
+Golden Lightning Fortification	Incantation		6706
+Miriam's Vanishing	Sorcery		6800
+Glintblade Trio	Sorcery		6878
+Rellana's Twin Moons	Sorcery		6801
+Glintstone Nail	Sorcery		6803
+Glintstone Nails	Sorcery		6804
+Blades of Stone	Sorcery		6805
+Gravitational Missile	Sorcery		6806
+Mantle of Thorns	Sorcery		6807
+Impenetrable Thorns	Sorcery		6808
+Rings of Spectral Light	Sorcery		6809
+Vortex of Putrescence	Sorcery		6810
+Mass of Purtrescence	Sorcery		6811
+Heal From Afar	Incantation		6851
+Aspect of the Crucible: Thorns	Incantation		6852
+Aspect of the Crucible: Bloom	Incantation		6853
+Minor Erdtree	Incantation		6854
+Land of Shadow	Incantation		6855
+Wrath from Afar	Incantation		6856
+Light of Miquella	Incantation		6857
+Multilayered Ring of Light	Incantation		6858
+Roar of Rugalea	Incantation		6859
+Knight's Lightning Spear	Incantation		6860
+Dragonbolt of Florissax	Incantation		6861
+Electrocharge	Incantation		6862
+Ghostflame Breath	Incantation		6865
+Rotten Butterflies	Incantation		6866
+Pest-Thread Spears	Incantation		6867
+Midra's Flame of Frenzy	Incantation		6868
+Fleeting Microcosm	Sorcery		6812
+Cherishing Fingers	Sorcery		6813
+Watchful Spirit	Incantation		6869
+Golden Arcs	Incantation		6870
+Giant Golden Arc	Incantation		6871
+Spira	Incantation		6872
+Divine Beast Tornado	Incantation		6873
+Divine Bird Feathers	Incantation		6874
+Fire Serpent	Incantation		6875
+Rain of Fire	Incantation		6876
+Messmer's Orb	Incantation		6877

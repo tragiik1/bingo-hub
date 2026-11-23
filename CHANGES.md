@@ -418,3 +418,28 @@ patched (`tools/randomizer-patch`).
 - Before the release, the hub on this PC saw the Randomizer as changed and offered the
   released (2-stone) build as an update. 1.0.14 ships the 1-stone build.
 
+
+## Twelfth round: Classes page cards, Somber/Smithing tags, hidden spoiler (unreleased)
+
+- The user asked for the Classes page to show whether each weapon is Somber or Smithing, look like
+  a proper class sheet with weapon pictures, and hide the bottom section, which showed the whole
+  seed spoiler (it read as cheating).
+- The bottom section was a bug: `classes::parse` kept reading after the classes and turned the
+  Randomizer's "Item Replacements" / "Shop Replacements" lists into a fake class. Those lists are
+  now parsed separately (`Spoiler::swaps`, grouped as Weapons, each merchant, Remembrance, Dragon
+  Communion; no-op swaps and empty groups dropped). They appear in a collapsed "Spoiler" card with a
+  search field and collapsible groups. It is closed every time the hub starts.
+- Class cards: each item has its icon, type ("Katana", "Sorcery"), ammo count, "Lv X to wield"
+  and a Somber/Smithing tag. Stats go in a 4×2 grid, and both cards in a row line up.
+  The item list also splits "Surge, O Flame!" correctly now, since that name has a comma.
+- Data: `tools/item-icons/make.ps1` reads the installed game with the Randomizer's own libraries
+  and writes `assets/items.tsv` (name, type, upgrade, icon id; committed) and `assets/icons.bin`
+  (734 icons, 96px palette PNGs, ~3.3 MB). icons.bin is game art, so it's gitignored. build.rs
+  embeds it, or embeds nothing, in which case the cards show without pictures. Upgrade type comes
+  from EquipMtrlSetParam (stones 10100-10109 = Smithing, 10160-10169 = Somber): 276 Smithing,
+  186 Somber, and Meteorite Staff and Serpent-Hunter can't be upgraded. Re-run it after a game patch adds
+  weapons.
+- Tested: `cargo test` (includes a check that every item in the current seed's log is in
+  items.tsv, and that icons decode). Screenshots of the page and of the spoiler opening looked
+  right. Not checked visually: an opened swap group and the search filter.
+- The hub exe grows by ~3.4 MB.
