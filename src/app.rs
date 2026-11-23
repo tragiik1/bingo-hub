@@ -1128,12 +1128,13 @@ impl App {
     // ------------------------------------------------------------ classes
 
     fn classes_page(&mut self, ui: &mut Ui, snap: &Snapshot) {
-        let mut area = egui::ScrollArea::vertical().id_salt("classes").auto_shrink([false, false]);
+        let area = egui::ScrollArea::vertical().id_salt("classes").auto_shrink([false, false]);
         // Debug builds only: BINGOHUB_SCROLL=n opens the page scrolled down, for screenshots.
         #[cfg(debug_assertions)]
-        if let Some(n) = std::env::var("BINGOHUB_SCROLL").ok().and_then(|v| v.parse::<f32>().ok()) {
-            area = area.vertical_scroll_offset(n);
-        }
+        let area = match std::env::var("BINGOHUB_SCROLL").ok().and_then(|v| v.parse::<f32>().ok()) {
+            Some(n) => area.vertical_scroll_offset(n),
+            None => area,
+        };
         area.show(ui, |ui| {
             page_area(ui, Some(1000.0), |ui| {
                 ui::title(ui, "Classes");
