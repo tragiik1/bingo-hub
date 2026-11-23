@@ -1807,7 +1807,7 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
     let name_font = egui::FontId::new(18.0, egui::FontFamily::Name("sb".into()));
     p.text(pos2(left, rect.top() + 30.0), Align2::LEFT_CENTER, &class.name, name_font, c::TEXT);
 
-    const NUM_W: f32 = 54.0;
+    const NUM_W: f32 = 62.0;
     let tag_w = ui::galley(ui, "Smithing", tag_font(), c::TEXT).size().x + 20.0;
     let stats = class_stats(class);
     // Which spell tools the class starts with.
@@ -2004,7 +2004,7 @@ impl ItemDetail {
                 return Some((s.to_string(), "SCALING", col));
             }
             if a.total > 0 {
-                return Some((a.total.to_string(), if a.two_handed && !self.bow { "2H ATTACK" } else { "ATTACK" }, col));
+                return Some((a.total.to_string(), if a.two_handed && !self.bow { "TWO-HANDED" } else { "ATTACK" }, col));
             }
         }
         let s = self.spell?;
@@ -2075,7 +2075,7 @@ fn item_detail(ui: &Ui, d: &ItemDetail, name: &str, pos: egui::Pos2) {
                 .corner_radius(8.0)
                 .inner_margin(egui::Margin::symmetric(16, 14))
                 .show(ui, |ui| {
-                    ui.set_width(268.0);
+                    ui.set_width(296.0);
                     ui.label(egui::RichText::new(name).font(ui::strong()).color(c::TEXT));
                     ui.add_space(8.0);
                     let (line, _) = ui.allocate_exact_size(vec2(ui.available_width(), 1.0), Sense::hover());
@@ -2089,6 +2089,9 @@ fn item_detail(ui: &Ui, d: &ItemDetail, name: &str, pos: egui::Pos2) {
                                 parts.push((format!("{} FP", w.skill_fp), c::MUTED));
                             }
                             row(ui, "Skill", &parts);
+                        }
+                        if a.two_handed && !d.bow {
+                            row(ui, "Grip", &[("Two-handed".into(), c::TEXT), (format!("Str {} to one-hand", w.req[0]), c::MUTED)]);
                         }
                         if let Some(s) = a.spell_scaling {
                             row(ui, if w.sorcery { "Sorcery" } else { "Incantations" }, &[(format!("{s} scaling"), c::TEXT)]);

@@ -507,3 +507,9 @@ patched (`tools/randomizer-patch`).
   mouse or takes focus. Release builds don't have it.
 - Tested: `cargo test`, and screenshots of the Classes page (top, lower cards, the hover card on a
   weapon and on a seal) taken that way. Not seen: the stuck-game row on the Race page.
+
+## Sixteenth round: clearer two-handed attack (unreleased)
+
+- "2H ATTACK" wasn't clear to the owner. A weapon the class can only wield two-handed now reads
+  "TWO-HANDED" under its number, and the hover card has a Grip line: "Two-handed · Str 13 to
+  one-hand". The number column is a little wider (62px) to fit the label. Checked on screen.
