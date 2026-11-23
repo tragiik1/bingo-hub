@@ -1,7 +1,7 @@
 <#
-  Rebuilds assets\items.tsv and assets\icons.bin (the Classes page's weapon types, Somber/Smithing
-  tags and icons) from the installed game. Run it after a game patch adds weapons or spells, then
-  rebuild the hub.
+  Rebuilds assets\items.tsv, assets\weapons.tsv and assets\icons.bin (the Classes page's weapon
+  types, Somber/Smithing tags, attack ratings, skills and icons) from the installed game. Run it
+  after a game patch changes weapons or spells, then rebuild the hub.
 
     .\make.ps1                       finds the game the same way the hub does (Steam)
     .\make.ps1 -Game 'D:\...\Game'   or point it at the Game folder

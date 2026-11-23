@@ -185,6 +185,28 @@ pub fn focus_pid(pid: u32) -> bool {
     true
 }
 
+/// True if the process has a visible top-level window (minimised counts).
+pub fn has_window(pid: u32) -> bool {
+    !find_window(pid, None).is_null()
+}
+
+/// Ends a process. Only used on a game left running with no window, after the user agrees.
+pub fn end_process(pid: u32) -> Result<(), String> {
+    unsafe {
+        let h = OpenProcess(PROCESS_TERMINATE, 0, pid);
+        if h.is_null() {
+            return Err(if GetLastError() == ERROR_ACCESS_DENIED {
+                "Windows wouldn't let the hub close it. If Elden Ring or Steam runs as administrator, close it from Task Manager.".into()
+            } else {
+                "It has already closed.".into()
+            });
+        }
+        let ok = TerminateProcess(h, 1) != 0;
+        CloseHandle(h);
+        if ok { Ok(()) } else { Err("Windows wouldn't let the hub close it. Close it from Task Manager.".into()) }
+    }
+}
+
 pub fn focus_titled(title: &str) {
     let h = find_window(0, Some(title));
     if !h.is_null() {
@@ -441,4 +463,21 @@ pub fn save_file(owner: isize, title: &str, filter: &[(&str, &str)], default_nam
         return None;
     }
     Some(PathBuf::from(from_wide(&buf)))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn closes_a_windowless_process() {
+        let sys = PathBuf::from(std::env::var_os("WINDIR").unwrap()).join("System32");
+        let mut child = Command::new(sys.join("PING.EXE")).args(["-n", "30", "127.0.0.1"]).creation_flags(CREATE_NO_WINDOW).spawn().unwrap();
+        let pid = child.id();
+        assert!(!has_window(pid));
+        end_process(pid).unwrap();
+        let status = child.wait().unwrap();
+        assert_eq!(status.code(), Some(1));
+        assert!(end_process(pid).is_err());
+    }
 }

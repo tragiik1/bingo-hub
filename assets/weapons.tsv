@@ -1,0 +1,708 @@
+W	Unarmed	Kick		Strike	20	0	0	0	0	50	50	0	0	0	0	0	0	0	0	0	0	0	0	0	10	10	0	0	10000	0	0	0	0	0	0	0	0	0	0
+W	Dagger	Quickstep	3	Slash / Pierce	74	0	0	0	0	35	65	0	0	0	5	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Black Knife	Blade of Death	25	Slash / Pierce	66	0	0	0	65	10	55	0	35	0	8	12	0	18	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Parrying Dagger	Parry		Slash / Pierce	75	0	0	0	0	16	76	0	0	0	5	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Miséricorde	Quickstep	3	Slash / Pierce	92	0	0	0	0	15	50	0	0	0	7	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Reduvia	Reduvia Blood Blade	6	Slash / Pierce	79	0	0	0	0	10	40	0	0	55	5	13	0	0	13	7	0	0	0	0	6	6	6	6	10013	0	0	50	0	0	0	0	0	0	0
+W	Crystal Knife	Quickstep	3	Slash / Pierce	82	53	0	0	0	40	25	50	0	0	8	12	9	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Celebrant's Sickle	Quickstep	3	Slash / Pierce	79	0	0	0	0	15	67	0	0	0	6	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Glintstone Kris	Glintstone Dart	10	Slash / Pierce	57	68	0	0	0	10	45	40	0	0	5	12	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Scorpion's Stinger	Repeating Thrust	7	Slash / Pierce	79	0	0	0	0	30	70	0	0	0	6	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	50	0	0	0	0	0	0	0	0
+W	Great Knife	Quickstep	3	Slash / Pierce	75	0	0	0	0	5	80	0	0	0	6	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	38	0	0	0	0	0	0	0
+W	Wakizashi	Quickstep	3	Slash / Pierce	94	0	0	0	0	34	45	0	0	0	9	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	38	0	0	0	0	0	0	0
+W	Cinquedea	Quickstep	3	Slash / Pierce	98	0	0	0	0	57	17	0	0	0	10	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ivory Sickle	Quickstep	3	Slash / Pierce	60	60	0	0	0	23	59	40	0	0	6	11	13	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bloodstained Dagger	Quickstep	3	Slash / Pierce	81	0	0	0	0	70	20	0	0	0	9	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	38	0	0	0	0	0	0	0
+W	Erdsteel Dagger	Quickstep	3	Slash / Pierce	67	0	0	0	0	30	30	0	30	0	7	12	0	14	0	0	0	0	0	0	6	6	6	6	12000	0	0	0	0	0	0	0	0	0	0
+W	Blade of Calling	Blade of Gold	17	Slash / Pierce	71	0	0	0	43	25	38	0	75	0	6	13	0	15	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Main-gauche	Parry		Slash / Pierce	79	0	0	0	0	30	60	0	0	0	7	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Fire Knight Shortsword	Quickstep	3	Slash / Pierce	75	0	22	0	0	30	50	0	30	0	8	13	0	12	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Longsword	Square Off	6/8	Standard / Pierce	110	0	0	0	0	50	33	0	0	0	10	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Short Sword	Kick		Standard / Pierce	102	0	0	0	0	37	48	0	0	0	8	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Broadsword	Square Off	6/8	Standard / Pierce	117	0	0	0	0	55	22	0	0	0	10	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lordsworn's Straight Sword	Square Off	6/8	Standard / Pierce	115	0	0	0	0	36	36	0	0	0	10	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Weathered Straight Sword	Square Off	6/8	Standard / Pierce	103	0	0	0	0	34	44	0	0	0	7	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ornamental Straight Sword	Golden Tempering	24	Standard / Pierce	101	0	0	0	0	20	55	0	0	0	10	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Golden Epitaph	Last Rites	25	Standard / Pierce	85	0	0	0	85	30	30	0	38	0	12	10	0	14	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Nox Flowing Sword	Flowing Form	9	Slash	112	0	0	0	0	20	50	0	0	0	8	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Inseparable Sword	Sacred Blade	19	Standard / Pierce	98	0	0	0	98	27	27	0	60	0	18	18	0	20	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Coded Sword	Unblockable Blade	18	Standard / Pierce	0	0	0	0	85	0	0	0	95	0	0	0	0	20	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sword of Night and Flame	Night-and-Flame Stance	26/32	Standard / Pierce	87	56	56	0	0	14	14	50	50	0	12	12	24	24	0	0	4	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Crystal Sword	Spinning Slash	6	Standard / Pierce	106	68	0	0	0	45	15	32	0	0	13	10	15	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Carian Knight's Sword	Carian Grandeur	26	Standard / Pierce	88	88	0	0	0	35	26	32	0	0	10	10	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sword of St. Trina	Mists of Slumber	20	Standard / Pierce	107	32	0	0	0	28	40	20	0	0	10	12	14	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	66	0	0	0	0	0
+W	Miquellan Knight's Sword	Sacred Blade	19	Standard / Pierce	105	0	0	0	68	29	29	0	20	0	11	11	0	16	0	0	4	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Cane Sword	Square Off	6/8	Standard / Pierce	96	0	0	0	0	20	55	0	0	0	8	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Regalia of Eochaid	Eochaid's Dancing Blade	15	Standard / Pierce	89	57	0	0	0	15	37	0	0	37	12	18	0	0	15	7	4	0	0	0	6	6	6	6	10100	0	0	0	0	0	0	0	0	0	0
+W	Noble's Slender Sword	Square Off	6/8	Standard / Pierce	101	0	0	0	0	12	70	0	0	0	8	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Warhawk's Talon	Spinning Slash	6	Standard / Pierce	101	0	0	0	0	28	60	0	0	0	10	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lazuli Glintstone Sword	Glintstone Pebble	8	Standard / Pierce	79	94	0	0	0	38	15	30	0	0	8	9	13	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rotten Crystal Sword	Spinning Slash	6	Standard / Pierce	102	66	0	0	0	44	15	32	0	0	13	10	15	0	0	0	4	0	0	0	6	6	6	6	10000	0	50	0	0	0	0	0	0	0	0
+W	Star-Lined Sword	Onze's Line of Stars	10	Slash / Pierce	82	82	0	0	0	15	75	30	0	0	10	23	21	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	0	0	0
+W	Carian Sorcery Sword	Impaling Thrust	9	Standard / Pierce	38	69	0	0	0	10	39	47	0	0	10	19	16	0	0	0	4	0	0	0	6	6	6	6	20010800	0	0	0	0	0	0	0	0	1	0
+W	Stone-Sheathed Sword	Square Off	6/8	Strike	89	0	0	0	0	65	30	0	0	0	16	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sword of Light	Light	30	Standard / Pierce	93	0	0	0	93	35	20	0	23	0	14	11	0	24	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sword of Darkness	Darkness	30	Standard / Pierce	93	0	0	0	93	35	20	0	23	0	14	11	0	24	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bastard Sword	Stamp (Upward Cut)	5	Standard / Pierce	138	0	0	0	0	55	27	0	0	0	16	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Forked Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	124	0	0	0	0	35	50	0	0	0	14	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Iron Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	149	0	0	0	0	65	10	0	0	0	18	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lordsworn's Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	136	0	0	0	0	43	37	0	0	0	16	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Knight's Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	141	0	0	0	0	33	44	0	0	0	16	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Flamberge	Stamp (Upward Cut)	5	Standard / Pierce	129	0	0	0	0	27	60	0	0	0	15	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Ordovis's Greatsword	Ordovis's Vortex	15	Standard / Pierce	107	0	0	0	69	79	10	0	35	0	25	13	0	15	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Alabaster Lord's Sword	Alabaster Lords' Pull	15	Standard / Pierce	128	38	0	0	0	58	20	30	0	0	16	12	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Banished Knight's Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	142	0	0	0	0	44	36	0	0	0	17	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dark Moon Greatsword	Moonlight Greatsword	32	Standard / Pierce	82	98	0	0	0	25	25	70	0	0	16	11	38	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	55	0	0	0	0	0	0
+W	Sacred Relic Sword	Wave of Gold	42	Standard / Pierce	118	0	0	0	76	15	56	0	36	0	14	24	0	22	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Helphen's Steeple	Ruinous Ghostflame	20	Standard / Pierce	101	101	0	0	0	35	10	50	0	0	19	10	22	0	0	0	4	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Blasphemous Blade	Taker's Flames	30	Standard / Pierce	121	0	78	0	0	35	35	0	50	0	22	15	0	21	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Marais Executioner's Sword	Eochaid's Dancing Blade	15	Standard / Pierce	94	61	0	0	0	63	7	0	0	30	24	14	0	0	23	7	4	0	0	0	6	6	6	6	10100	0	0	0	0	0	0	0	0	0	0
+W	Sword of Milos	Shriek of Milos	30	Standard / Pierce	141	0	0	0	0	34	47	0	0	0	15	19	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Golden Order Greatsword	Establish Order	20	Standard / Pierce	86	0	0	0	103	10	30	0	64	0	16	21	0	28	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Claymore	Lion's Claw	20	Standard / Pierce	138	0	0	0	0	49	34	0	0	0	16	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gargoyle's Greatsword	Vacuum Slice	14	Standard / Pierce	133	0	0	0	0	76	5	0	0	0	18	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Death's Poker	Ghostflame Ignition	15	Standard / Pierce	123	36	0	0	0	35	50	20	0	0	15	17	11	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	65	0	0	0	0	0	0
+W	Gargoyle's Blackblade	Corpse Wax Cutter	16	Standard / Pierce	102	0	0	0	122	40	15	0	30	0	18	10	0	22	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greatsword of Damnation	Golden Crux	21	Standard / Pierce	123	0	0	0	79	38	21	0	25	0	20	15	0	20	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lizard Greatsword	Stamp (Upward Cut)	5	Strike / Pierce	140	0	0	0	0	28	48	0	0	0	12	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greatsword of Solitude	Solitary Moon Slash	12	Standard / Pierce	120	0	0	0	0	95	15	0	0	0	27	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Leontiel's Greatsword	Muleta	10/13	Standard / Pierce	130	0	0	0	0	20	68	0	0	0	13	26	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	164	0	0	0	0	61	18	0	0	0	31	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Watchdog's Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	142	0	0	0	0	85	6	0	0	0	30	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Maliketh's Black Blade	Destined Death	40	Standard / Pierce	127	0	0	0	82	62	15	0	50	0	34	12	0	20	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Troll's Golden Sword	Troll's Roar	22	Standard / Pierce	155	0	0	0	0	53	30	0	0	0	29	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Zweihander	Stamp (Upward Cut)	5	Standard / Pierce	141	0	0	0	0	38	53	0	0	0	19	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Starscourge Greatsword	Starcaller Cry	20	Standard / Pierce	129	83	0	0	0	52	28	20	0	0	38	12	15	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Royal Greatsword	Wolf's Assault	20	Standard / Pierce	112	134	0	0	0	37	15	40	0	0	26	18	22	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Godslayer's Greatsword	The Queen's Black Flame	15	Standard / Pierce	119	0	77	0	0	31	56	0	40	0	20	22	0	20	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ruins Greatsword	Wave of Destruction	25	Standard / Pierce	124	37	0	0	0	105	0	20	0	0	50	0	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Grafted Blade Greatsword	Oath of Vengeance	20	Standard / Pierce	162	0	0	0	0	63	19	0	0	0	40	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Troll Knight's Sword	Troll's Roar	22	Standard / Pierce	124	80	0	0	0	45	45	30	0	0	20	14	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ancient Meteoric Ore Greatsword	White Light Charge	10	Standard / Pierce	154	46	0	0	0	50	5	0	0	26	35	10	0	0	19	0	0	0	0	0	6	6	6	6	10100	0	0	0	0	0	0	0	0	0	0
+W	Fire Knight's Greatsword	Stamp (Upward Cut)	5	Standard / Pierce	147	0	44	0	0	28	47	0	25	0	22	18	0	12	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greatsword of Radahn (Lord)	Promised Consort	20	Standard / Pierce	127	82	0	0	0	45	36	20	0	0	32	24	15	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Moonrithyll's Knight Sword	Tremendous Phalanx	16	Standard / Pierce	124	80	0	0	0	45	45	30	0	0	20	14	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greatsword of Radahn (Light)	Lightspeed Slash	32	Standard / Pierce	127	82	0	0	0	45	36	20	0	0	32	24	15	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Estoc	Impaling Thrust	9	Standard / Pierce	107	0	0	0	0	14	60	0	0	0	11	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Cleanrot Knight's Sword	Impaling Thrust	9	Standard / Pierce	109	0	0	0	0	45	30	0	0	0	11	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rapier	Impaling Thrust	9	Standard / Pierce	96	0	0	0	0	20	60	0	0	0	7	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rogier's Rapier	Repeating Thrust	7	Standard / Pierce	93	0	0	0	0	15	76	0	0	0	8	17	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Antspur Rapier	Impaling Thrust	9	Standard / Pierce	98	0	0	0	0	36	50	0	0	0	10	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	55	0	0	0	0	0	0	0	0
+W	Frozen Needle	Impaling Thrust	9	Standard / Pierce	99	0	0	0	0	20	50	0	0	0	11	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	60	0	0	0	0	0	0
+W	Noble's Estoc	Impaling Thrust	9	Standard / Pierce	104	0	0	0	0	37	37	0	0	0	9	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bloody Helice	Dynast's Finesse	5	Standard / Pierce	121	0	0	0	0	10	35	0	0	50	16	19	0	0	17	7	0	0	0	0	6	6	6	6	10013	0	0	55	0	0	0	0	0	0	0
+W	Godskin Stitcher	Impaling Thrust	9	Standard / Pierce	127	0	0	0	0	42	42	0	0	0	14	17	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Great Épée	Impaling Thrust	9	Standard / Pierce	124	0	0	0	0	38	47	0	0	0	15	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dragon King's Cragblade	Thundercloud Form	28	Standard / Pierce	92	0	0	59	0	23	57	0	0	0	18	37	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Queelign's Greatsword	Impaling Thrust	9	Standard / Pierce	122	0	36	0	0	30	45	0	25	0	14	18	0	12	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Falchion	Spinning Slash	6	Slash	109	0	0	0	0	44	44	0	0	0	9	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Beastman's Curved Sword	Spinning Slash	6	Slash	113	0	0	0	0	65	18	0	0	0	13	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Shotel	Spinning Slash	6	Slash	96	0	0	0	0	18	58	0	0	0	9	19	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Shamshir	Spinning Slash	6	Slash	108	0	0	0	0	36	50	0	0	0	7	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bandit's Curved Sword	Spinning Slash	6	Slash	118	0	0	0	0	35	48	0	0	0	11	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Magma Blade	Magma Shower	12	Slash	96	0	62	0	0	45	31	0	40	0	9	15	0	16	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Flowing Curved Sword	Spinning Slash	6	Slash	109	0	0	0	0	25	55	0	0	0	9	17	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Wing of Astel	Nebula	20	Slash	65	78	0	0	0	10	45	55	0	0	7	17	20	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Scavenger's Curved Sword	Spinning Slash	6	Slash	105	0	0	0	0	40	50	0	0	0	9	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	0	0	0
+W	Eclipse Shotel	Death Flare	16	Slash	77	0	0	0	77	20	35	0	45	0	10	25	0	30	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Serpent-God's Curved Sword	Spinning Slash	6	Slash	113	0	0	0	0	55	20	0	0	0	13	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Mantis Blade	Spinning Slash	6	Slash	112	0	0	0	0	36	48	0	0	0	10	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Scimitar	Spinning Slash	6	Slash	106	0	0	0	0	25	57	0	0	0	7	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Grossmesser	Spinning Slash	6	Slash	115	0	0	0	0	47	36	0	0	0	14	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spirit Sword	Rancor Slash	12	Slash	92	59	0	0	0	10	40	40	0	0	8	16	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Falx	Revenger's Blade	15	Slash	107	0	0	0	0	30	50	0	0	0	12	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	1	0	0
+W	Dancing Blade of Ranah	Unending Dance	2	Slash	88	0	0	0	0	0	95	0	0	0	9	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Horned Warrior's Sword	Horn Calling	17	Slash	108	0	0	0	0	29	44	0	24	0	11	14	0	14	0	0	0	0	0	0	6	6	6	6	12000	0	0	0	0	0	0	0	1	0	0
+W	Onyx Lord's Greatsword	Onyx Lords' Repulsion	27	Slash	118	76	0	0	0	50	10	50	0	0	20	16	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dismounter	Spinning Slash	6	Slash	138	0	0	0	0	47	37	0	0	0	19	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bloodhound's Fang	Bloodhound's Finesse	8	Slash	141	0	0	0	0	41	60	0	0	0	18	17	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Magma Wyrm's Scalesword	Magma Guillotine	20	Slash	114	0	74	0	0	60	25	0	55	0	24	15	0	18	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Zamor Curved Sword	Zamor Ice Storm	15	Slash	130	0	0	0	0	40	50	0	0	0	16	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	65	0	0	0	0	0	0
+W	Omen Cleaver	Spinning Slash	6	Slash	142	0	0	0	0	44	43	0	0	0	19	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Monk's Flameblade	Spinning Slash	6	Slash	134	0	0	0	0	37	52	0	0	0	18	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Beastman's Cleaver	Spinning Slash	6	Slash	143	0	0	0	0	76	0	0	0	0	25	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Morgott's Cursed Sword	Cursed-Blood Slice	20	Slash	120	0	0	0	0	15	60	0	0	30	14	35	0	0	17	7	0	0	0	0	6	6	6	6	10013	0	0	60	0	0	0	0	0	0	0
+W	Putrescence Cleaver	Spinning Guillotine	12	Slash	141	42	0	0	0	45	10	0	0	35	28	10	0	0	15	0	4	0	0	0	6	6	6	6	10100	0	0	0	55	0	0	0	0	0	0
+W	Freyja's Greatsword	Spinning Slash	6	Slash	146	0	0	0	0	60	10	0	0	0	25	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Horned Warrior's Greatsword	Horn Calling: Storm	22	Slash	130	0	0	0	0	51	25	0	25	0	19	16	0	13	0	0	0	0	0	0	6	6	6	6	12000	0	0	0	0	0	0	0	0	0	0
+W	Hefty Scimitar	Spinning Slash	6	Slash	135	0	0	0	0	52	32	0	0	0	13	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Uchigatana	Unsheathe	10/15	Slash / Pierce	115	0	0	0	0	36	55	0	0	0	11	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	0	0	0
+W	Nagakiba	Unsheathe	10/15	Slash / Pierce	115	0	0	0	0	27	60	0	0	0	18	22	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	0	0	0
+W	Hand of Malenia	Waterfowl Dance	12	Slash / Pierce	117	0	0	0	0	5	75	0	0	0	16	48	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Meteoric Ore Blade	Gravitas	13	Slash / Pierce	112	72	0	0	0	45	17	36	0	0	15	14	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Rivers of Blood	Corpse Piler	17	Slash / Pierce	76	0	76	0	0	10	50	0	0	33	12	18	0	0	20	7	0	4	0	0	6	6	6	6	10100	0	0	50	0	0	0	0	0	0	0
+W	Moonveil	Transient Moonlight	15/20	Slash / Pierce	73	87	0	0	0	12	50	60	0	0	12	18	23	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Dragonscale Blade	Ice Lightning Sword	25	Slash / Pierce	110	0	0	0	0	30	60	0	0	0	12	20	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Serpentbone Blade	Double Slash	6	Slash / Pierce	120	0	0	0	0	10	75	0	0	0	11	22	0	0	0	0	0	0	0	0	6	6	6	6	10000	66	0	0	0	0	0	0	0	0	0
+W	Sword of Night	Witching Hour Slash	21	Slash / Pierce	110	33	0	0	0	0	63	0	0	0	11	20	0	0	0	0	4	0	0	0	6	6	6	6	20010000	0	0	45	0	0	0	0	0	0	0
+W	Twinblade	Spinning Slash	6	Standard / Pierce	119	0	0	0	0	35	43	0	0	0	10	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Godskin Peeler	Black Flame Tornado	30	Standard / Pierce	121	0	0	0	0	19	60	0	0	0	17	22	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Twinned Knight Swords	Spinning Slash	6	Standard / Pierce	122	0	0	0	0	54	24	0	0	0	16	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Eleonora's Poleblade	Bloodblade Dance	11	Standard / Pierce	72	0	72	0	0	10	40	0	0	30	12	21	0	0	19	7	0	4	0	0	6	6	6	6	10100	0	0	55	0	0	0	0	0	0	0
+W	Gargoyle's Twinblade	Spinning Slash	6	Standard / Pierce	123	0	0	0	0	66	10	0	0	0	18	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gargoyle's Black Blades	Spinning Slash	6	Standard / Pierce	81	0	0	0	97	66	10	0	25	0	18	15	0	22	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Euporia	Euporia Vortex	28	Standard / Pierce	84	0	0	0	100	25	25	0	50	0	16	16	0	24	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Black Steel Twinblade	Spinning Slash	6	Standard / Pierce	112	0	0	0	33	25	55	0	30	0	18	15	0	13	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Mace	Kick		Strike	115	0	0	0	0	55	35	0	0	0	12	7	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Club	Barbaric Roar	16	Strike	103	0	0	0	0	75	0	0	0	0	10	0	0	0	0	7	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Curved Club	Barbaric Roar	16	Strike	114	0	0	0	0	62	20	0	0	0	11	7	0	0	0	7	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Warpick	Kick		Pierce	108	0	0	0	0	41	41	0	0	0	11	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Morning Star	Kick		Strike	118	0	0	0	0	47	37	0	0	0	12	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Varré's Bouquet	Blood Tax	14	Strike	46	0	0	0	0	10	40	0	0	65	8	16	0	0	24	7	0	0	0	0	6	6	6	6	10013	0	0	65	0	0	0	0	0	0	0
+W	Spiked Club	Barbaric Roar	16	Strike	114	0	0	0	0	54	42	0	0	0	12	7	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Hammer	Kick		Strike	124	0	0	0	0	60	25	0	0	0	14	7	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Monk's Flamemace	Kick		Strike	126	0	0	0	0	20	60	0	0	0	13	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Envoy's Horn	Oracular Bubble	6	Strike	96	0	0	0	62	37	44	0	37	0	10	12	0	16	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Scepter of the All-Knowing	Knowledge Above All	35	Strike / Pierce	99	64	0	0	0	20	47	47	0	0	12	18	21	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Nox Flowing Hammer	Flowing Form	16	Strike	122	0	0	0	0	69	20	0	0	0	17	7	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ringed Finger	Claw Flick	14	Strike	121	0	0	0	0	60	25	0	0	0	15	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Stone Club	Kick		Strike	122	0	0	0	0	75	15	0	0	0	16	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Marika's Hammer	Gold Breaker	26	Strike	101	0	0	0	65	55	31	0	40	0	20	12	0	19	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Flowerstone Gavel	Flower Dragonbolt	18	Pierce	121	0	0	0	0	39	25	0	0	39	14	8	0	0	15	0	0	0	0	0	6	6	6	6	15000	0	0	0	0	0	0	0	0	0	0
+W	Large Club	Barbaric Roar	16	Strike	131	0	0	0	0	74	0	0	0	0	22	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greathorn Hammer	Barbaric Roar	16	Strike	134	0	0	0	0	55	39	0	0	0	22	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Battle Hammer	Braggart's Roar	16	Strike	131	0	0	0	0	79	14	0	0	0	26	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Great Mace	Endure	9	Strike	134	0	0	0	0	80	0	0	0	0	28	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Curved Great Club	Barbaric Roar	16	Strike	145	0	0	0	0	49	35	0	0	0	24	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Celebrant's Skull	Barbaric Roar	16	Strike	138	0	0	0	0	42	42	0	0	0	18	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Pickaxe	Endure	9	Pierce	144	0	0	0	0	55	25	0	0	0	22	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Beastclaw Greathammer	Regal Beastclaw	20	Strike	116	0	0	0	75	43	38	0	30	0	20	10	0	18	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Envoy's Long Horn	Bubble Shower	16	Strike	120	0	0	0	78	38	27	0	60	0	23	11	0	18	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Cranial Vessel Candlestand	Surge of Faith	15	Strike	98	0	98	0	0	55	15	0	55	0	26	8	0	22	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Great Stars	Endure	9	Strike	135	0	0	0	0	53	37	0	0	0	22	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Brick Hammer	Barbaric Roar	16	Strike	122	0	0	0	0	96	0	0	0	0	31	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Devourer's Scepter	Devourer of Worlds	35	Strike	112	0	69	0	0	48	48	0	37	0	24	20	0	25	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rotten Battle Hammer	Braggart's Roar	16	Strike	126	0	0	0	0	79	15	0	0	0	26	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	65	0	0	0	0	0	0	0	0
+W	Anvil Hammer	Smithing Art Spears	18	Strike	131	0	85	0	0	65	10	10	30	0	39	10	11	20	0	0	0	0	0	0	6	6	6	6	20010100	0	0	0	0	0	0	0	0	0	0
+W	Black Steel Greathammer	Endure	9	Strike	140	0	0	0	42	65	5	0	35	0	25	11	0	17	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bloodfiend's Arm	Endure	9	Strike	147	0	0	0	0	43	10	0	0	43	28	11	0	0	16	0	0	0	0	0	6	6	6	6	20010600	0	0	0	0	0	0	0	0	0	0
+W	Nightrider Flail	Spinning Chain	8	Strike	115	0	0	0	0	21	66	0	0	0	10	24	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Flail	Spinning Chain	8	Strike	112	0	0	0	0	34	52	0	0	0	10	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Family Heads	Familial Rancor	25	Strike	90	58	0	0	0	20	80	20	0	0	8	18	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bastard's Stars	Nebula	25	Strike	68	81	0	0	0	10	35	80	0	0	8	22	22	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Chainlink Flail	Spinning Chain	8	Strike	112	0	0	0	0	78	13	0	0	0	18	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Serpent Flail	Flare, O Serpent	8	Strike	77	0	92	0	0	5	45	0	50	0	10	24	0	21	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Golden Order Flail	Causality's Wrath	24	Strike	75	0	0	0	92	10	15	0	65	0	9	16	0	26	0	0	0	0	0	0	6	6	6	6	19000	0	0	0	0	0	0	0	0	0	0
+W	Battle Axe	Wild Strikes	2	Standard	128	0	0	0	0	48	33	0	0	0	12	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Forked Hatchet	Quickstep	3	Standard / Pierce	113	0	0	0	0	29	60	0	0	0	9	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Hand Axe	Quickstep	3	Standard	117	0	0	0	0	30	55	0	0	0	9	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Jawbone Axe	Wild Strikes	2	Strike	130	0	0	0	0	60	22	0	0	0	14	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Iron Cleaver	Wild Strikes	2	Standard	125	0	0	0	0	74	18	0	0	0	15	7	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ripple Blade	Wild Strikes	2	Standard	75	0	0	0	0	0	0	0	0	158	11	11	0	0	20	7	0	0	0	0	10	10	10	10	10013	0	0	0	0	0	0	0	0	0	0
+W	Celebrant's Cleaver	Wild Strikes	2	Standard	125	0	0	0	0	49	32	0	0	0	12	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Icerind Hatchet	Hoarfrost Stomp	10	Standard	115	0	0	0	0	20	60	0	0	0	11	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	65	0	0	0	0	0	0
+W	Highland Axe	War Cry	16	Standard	128	0	0	0	0	42	36	0	0	0	12	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sacrificial Axe	Wild Strikes	2	Standard	133	0	0	0	0	46	32	0	0	0	16	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rosus' Axe	Rosus's Summons	15	Standard	112	72	0	0	0	50	22	45	0	0	18	10	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Stormhawk Axe	Thunderstorm	19	Standard	136	0	0	0	0	44	34	0	0	0	19	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Death Knight's Twin Axes	Blinkbolt: Twinaxe	8	Standard	101	0	0	65	0	42	27	0	35	0	14	12	0	16	0	0	0	0	0	0	6	6	6	6	20010300	0	0	0	0	0	0	0	1	0	0
+W	Messmer Soldier's Axe	War Cry	16	Standard	133	0	0	0	0	41	41	0	0	0	14	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Forked-Tongue Hatchet	Dragonform Flame	14	Standard / Pierce	125	0	0	0	0	33	45	0	0	0	10	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Greataxe	Barbaric Roar	16	Standard	151	0	0	0	0	55	31	0	0	0	30	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Warped Axe	War Cry	16	Standard	124	0	0	0	0	85	0	0	0	0	24	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Great Omenkiller Cleaver	Wild Strikes	2	Standard	142	0	0	0	0	55	35	0	0	0	23	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Crescent Moon Axe	War Cry	16	Standard	146	0	0	0	0	39	49	0	0	0	25	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Axe of Godrick	I Command Thee, Kneel!	15	Standard	142	0	0	0	0	48	40	0	0	0	34	22	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Longhaft Axe	War Cry	16	Standard	146	0	0	0	0	50	39	0	0	0	24	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rusted Anchor	Barbaric Roar	16	Pierce	147	0	0	0	0	68	14	0	0	0	26	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Executioner's Greataxe	War Cry	16	Standard	150	0	0	0	0	64	12	0	0	0	34	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Winged Greathorn	Soul Stifler	12	Standard	130	0	0	0	0	50	50	0	0	0	30	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Butchering Knife	Barbaric Roar	16	Standard	134	0	0	0	0	15	73	0	0	0	16	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gargoyle's Great Axe	War Cry	16	Standard	123	0	0	0	0	84	7	0	0	0	24	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gargoyle's Black Axe	War Cry	16	Standard	100	0	0	0	120	47	10	0	30	0	24	8	0	22	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Death Knight's Longhaft Axe	Blinkbolt: Long-hafted Axe	8	Standard	113	0	0	73	0	55	10	0	30	0	23	10	0	18	0	0	0	0	0	0	6	6	6	6	20010300	0	0	0	0	0	0	0	0	0	0
+W	Bonny Butchering Knife	Hone Blade	16	Standard	134	0	0	0	0	60	30	0	0	0	16	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Short Spear	Impaling Thrust	9	Pierce	112	0	0	0	0	33	44	0	0	0	10	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spear	Impaling Thrust	9	Pierce	114	0	0	0	0	20	55	0	0	0	12	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Crystal Spear	Impaling Thrust	9	Pierce	110	33	0	0	0	21	51	20	0	0	10	16	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Clayman's Harpoon	Impaling Thrust	9	Pierce	99	64	0	0	0	50	15	30	0	0	12	10	12	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Cleanrot Spear	Sacred Phalanx	12	Pierce	102	0	0	0	66	35	35	0	25	0	16	16	0	14	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Partisan	Impaling Thrust	9	Slash / Pierce	123	0	0	0	0	41	29	0	0	0	15	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Celebrant's Rib-Rake	Barbaric Roar	16	Pierce	109	0	0	0	0	20	57	0	0	0	8	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Pike	Charge Forth	16	Pierce	115	0	0	0	0	49	30	0	0	0	20	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Torchpole	Charge Forth	16	Pierce	104	0	31	0	0	41	41	0	0	0	14	15	0	0	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bolt of Gransax	Ancient Lightning Spear	24	Pierce	98	0	0	63	0	30	40	0	0	0	20	40	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Cross-Naginata	Impaling Thrust	9	Slash / Pierce	122	0	0	0	0	25	60	0	0	0	16	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Death Ritual Spear	Spearcall Ritual	20	Pierce	99	64	0	0	0	23	53	30	0	0	14	20	18	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Inquisitor's Girandole	Charge Forth	16	Pierce	102	0	66	0	0	35	35	0	50	0	18	15	0	16	0	0	0	4	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Spiked Spear	Impaling Thrust	9	Strike / Pierce	120	0	0	0	0	37	37	0	0	0	14	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Iron Spear	Charge Forth	16	Pierce	114	0	0	0	0	44	33	0	0	0	13	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rotten Crystal Spear	Charge Forth	16	Pierce	104	31	0	0	0	21	51	20	0	0	10	16	16	0	0	0	4	0	0	0	6	6	6	6	10000	0	55	0	0	0	0	0	0	0	0
+W	Swift Spear	Impaling Thrust	9	Standard / Pierce	99	0	0	0	0	0	70	0	0	0	10	26	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bloodfiend's Fork	Barbaric Roar	16	Standard / Pierce	103	0	0	0	0	45	5	0	0	30	14	8	0	0	13	0	0	0	0	0	6	6	6	6	20010600	0	0	50	0	0	0	0	0	0	0
+W	Bloodfiend's Sacred Spear	Bloodfiends' Bloodboon	20	Standard / Pierce	115	0	0	0	0	20	4	0	0	75	22	12	0	0	13	0	0	0	0	0	6	6	6	6	15000	0	0	55	0	0	0	0	0	0	0
+W	Mohgwyn's Sacred Spear	Bloodboon Ritual	20	Pierce	96	0	62	0	0	40	15	0	0	40	24	14	0	0	27	7	0	4	0	0	6	6	6	6	10100	0	0	55	0	0	0	0	0	0	0
+W	Siluria's Tree	Siluria's Woe	25	Pierce	90	0	0	0	90	58	15	0	45	0	27	13	0	20	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Serpent-Hunter	Great-Serpent Hunt	10	Pierce	111	0	0	0	0	95	5	0	0	0	0	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Vyke's War Spear	Frenzyflame Thrust	14	Pierce	103	0	66	0	0	20	60	0	40	0	16	20	0	18	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	65	0	0	0	0
+W	Lance	Charge Forth	16	Pierce	123	0	0	0	0	50	40	0	0	0	20	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Treespear	Sacred Order	18	Pierce	122	0	0	0	79	25	44	0	30	0	15	22	0	18	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spear of the Impaler	Messmer's Assault	15	Standard / Pierce	85	0	102	0	0	5	60	0	40	0	14	35	0	18	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Barbed Staff-Spear	Jori's Inquisition	6	Standard / Pierce	86	0	0	0	86	15	23	0	80	0	14	18	0	22	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Halberd	Charge Forth	16	Standard / Pierce	125	0	0	0	0	54	38	0	0	0	14	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Pest's Glaive	Spinning Slash	6	Slash / Pierce	120	0	0	0	0	36	59	0	0	0	13	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lucerne	Charge Forth	16	Pierce	121	0	0	0	0	30	60	0	0	0	15	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Banished Knight's Halberd	Charge Forth	16	Standard / Pierce	125	0	0	0	0	40	52	0	0	0	14	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Commander's Standard	Rallying Standard	30	Standard / Pierce	138	0	0	0	0	55	30	0	0	0	24	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Nightrider Glaive	Spinning Slash	6	Slash / Pierce	129	0	0	0	0	79	5	0	0	0	26	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ripple Crescent Halberd	Spinning Slash	6	Standard / Pierce	86	0	0	0	0	0	0	0	0	135	12	12	0	0	20	7	0	0	0	0	10	10	10	10	10013	0	0	0	0	0	0	0	0	0	0
+W	Vulgar Militia Saw	Spinning Slash	6	Standard / Pierce	126	0	0	0	0	35	56	0	0	0	15	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Golden Halberd	Golden Vow	40	Standard / Pierce	134	0	0	0	87	50	15	0	32	0	30	14	0	12	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Glaive	Spinning Slash	6	Slash / Pierce	132	0	0	0	0	45	43	0	0	0	18	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Loretta's War Sickle	Loretta's Slash	14	Slash / Pierce	110	71	0	0	0	36	45	40	0	0	20	15	20	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Guardian's Swordspear	Spinning Slash	6	Standard / Pierce	139	0	0	0	0	5	64	0	0	0	17	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Vulgar Militia Shotel	Spinning Slash	6	Standard / Pierce	121	0	0	0	0	10	80	0	0	0	14	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dragon Halberd	Spinning Slash	17	Standard / Pierce	135	0	0	0	0	51	35	0	0	0	22	10	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gargoyle's Halberd	Spinning Slash	6	Standard / Pierce	131	0	0	0	0	74	10	0	0	0	26	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gargoyle's Black Halberd	Spinning Slash	6	Standard / Pierce	103	0	0	0	123	47	15	0	25	0	26	10	0	22	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spirit Glaive	Rancor Slash	12	Slash / Pierce	121	36	0	0	0	30	48	30	0	0	14	17	16	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Poleblade of the Bud	Romina's Purification	24	Slash / Pierce	131	0	0	0	0	5	25	0	0	50	14	22	0	0	20	0	0	0	0	0	6	6	6	6	15000	0	55	0	0	0	0	0	0	0	0
+W	Scythe	Spinning Slash	6	Slash	125	0	0	0	0	23	65	0	0	0	14	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Grave Scythe	Spinning Slash	6	Slash	144	0	0	0	0	42	30	0	0	0	17	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Halo Scythe	Miquella's Ring of Light	11	Slash	118	0	0	0	76	28	42	0	20	0	13	16	0	15	0	0	0	0	0	4	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Winged Scythe	Angel's Wings	17	Slash	87	0	0	0	104	20	35	0	45	0	16	16	0	24	0	0	0	0	0	4	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Obsidian Lamina	Dynastic Sickleplay	7	Slash	120	0	0	0	0	10	60	0	0	25	12	25	0	0	17	0	0	0	0	0	6	6	6	6	15000	0	0	55	0	0	0	0	0	0	0
+W	Whip	Kick		Strike	103	0	0	0	0	34	45	0	0	0	8	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Thorned Whip	Kick		Strike	105	0	0	0	0	20	60	0	0	0	8	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Magma Whip Candlestick	Sea of Magma	5	Strike	74	0	74	0	0	20	50	0	38	0	8	16	0	18	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Hoslow's Petal Whip	Kick		Strike	113	0	0	0	0	28	43	0	0	0	10	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Giant's Red Braid	Flame Dance	25	Strike	84	0	54	0	0	55	25	0	50	0	18	12	0	21	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Urumi	Kick		Slash	101	0	0	0	0	15	70	0	0	0	10	19	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Tooth Whip	Painful Strike	16	Strike	109	0	0	0	0	15	58	0	0	0	10	24	0	0	0	0	0	0	0	0	6	6	6	6	10000	66	0	0	0	0	0	0	0	0	0
+W	Caestus	Endure	9	Strike	90	0	0	0	0	48	43	0	0	0	8	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Spiked Caestus	Endure	9	Strike	91	0	0	0	0	48	43	0	0	0	8	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	1	0	0
+W	Grafted Dragon	Bear Witness!	20	Strike	89	0	57	0	0	40	25	0	30	0	20	14	0	16	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Iron Ball	Endure	9	Strike	101	0	0	0	0	56	20	0	0	0	11	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Star Fist	Endure	9	Strike	105	0	0	0	0	56	17	0	0	0	12	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	1	0	0
+W	Katar	Impaling Thrust	9	Slash / Pierce	97	0	0	0	0	30	45	0	0	0	8	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Clinging Bone	Lifesteal Fist	14	Slash / Pierce	80	24	0	0	0	10	65	0	0	35	8	22	0	0	16	7	4	0	0	0	6	6	6	6	10100	0	0	0	0	0	0	0	1	0	0
+W	Veteran's Prosthesis	Storm Kick	10	Slash / Pierce	83	0	0	53	0	42	33	0	0	0	15	12	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Cipher Pata	Unblockable Blade	17	Slash / Pierce	0	0	0	0	85	0	0	0	80	0	0	0	0	30	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Pata	Impaling Thrust	9	Standard / Pierce	104	0	0	0	0	27	42	0	0	0	11	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Poisoned Hand	Poison Spear-Hand Strike	13	Strike	76	0	0	0	0	10	0	0	0	80	8	8	0	0	28	0	0	0	0	0	15	15	15	15	15000	60	0	0	0	0	0	0	1	0	0
+W	Madding Hand	Madding Spear-Hand Strike	13	Strike	53	0	63	0	0	33	17	17	17	0	8	8	13	20	0	0	0	0	0	0	15	15	15	15	20010400	0	0	0	0	0	55	0	1	0	0
+W	Golem Fist	Endure	9	Strike	110	0	0	0	0	60	5	5	5	0	24	8	11	11	0	0	0	0	0	0	6	6	6	6	20010100	0	0	0	0	0	0	0	1	0	0
+W	Hookclaws	Quickstep	3	Slash / Pierce	93	0	0	0	0	22	60	0	0	0	8	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	60	0	0	0	0	1	0	0
+W	Venomous Fang	Quickstep	3	Slash / Pierce	97	0	0	0	0	38	50	0	0	0	9	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	72	0	0	0	0	0	0	1	0	0
+W	Bloodhound Claws	Bloodhound's Step	5	Slash / Pierce	99	0	0	0	0	43	35	0	0	0	10	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	60	0	0	0	0	1	0	0
+W	Raptor Talons	Quickstep	3	Slash / Pierce	86	0	0	0	0	10	72	0	0	0	6	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	60	0	0	0	0	1	0	0
+W	Claws of Night	Scattershot Throw	11	Slash / Pierce	79	51	0	0	0	0	71	0	0	0	8	20	0	0	0	0	0	0	0	0	6	6	6	6	20010000	0	0	45	0	0	0	0	1	0	0
+W	Prelate's Inferno Crozier	Prelate's Charge	7	Strike	156	0	0	0	0	76	10	0	0	0	45	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Watchdog's Staff	Sorcery of the Crozier	15	Strike	165	0	0	0	0	48	30	0	0	0	34	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Great Club	Golden Land	16	Strike	154	0	0	0	46	81	0	0	20	0	35	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Envoy's Greathorn	Great Oracular Bubble	16	Strike	121	0	0	0	78	48	48	0	30	0	28	12	0	24	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Duelist Greataxe	Endure	9	Standard	170	0	0	0	0	17	58	0	0	0	30	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Axe of Godfrey	Regal Roar	25	Standard	165	0	0	0	0	47	30	0	0	0	42	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dragon Greatclaw	Endure	9	Standard	120	0	0	78	0	45	35	0	0	0	30	14	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Staff of the Avatar	Erdtree Slam	19	Strike	113	0	0	0	73	84	20	0	50	0	34	8	0	24	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Fallingstar Beast Jaw	Gravity Bolt	13	Pierce	131	85	0	0	0	41	41	20	0	0	34	12	20	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ghiza's Wheel	Spinning Wheel	3	Standard	156	0	0	0	0	42	42	0	0	0	28	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	70	0	0	0	0	0	0	0
+W	Giant-Crusher	Endure	9	Strike	155	0	0	0	0	86	0	0	0	0	60	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Golem's Halberd	Charge Forth	16	Standard / Pierce	158	0	0	0	0	58	26	0	0	0	36	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Troll's Hammer	Troll's Roar	22	Strike	153	0	45	0	0	70	15	0	25	0	28	8	0	10	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rotten Staff	Erdtree Slam	19	Strike	165	0	0	0	0	53	20	0	0	0	34	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	75	0	0	0	0	0	0	0	0
+W	Rotten Greataxe	Endure	9	Standard	162	0	0	0	0	17	60	0	0	0	30	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	65	0	0	0	0	0	0	0	0
+W	Devonia's Hammer	Devonia's Vortex	16	Strike	147	0	0	0	44	70	20	0	35	0	30	13	0	19	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Shadow Sunflower Blossom	Shadow Sunflower Headbutt	16	Strike	114	0	0	0	114	45	5	0	55	0	24	8	0	25	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gazing Finger	Kowtower's Resentment	31	Strike	133	86	0	0	0	66	0	30	10	0	20	8	20	14	0	0	0	0	0	0	6	6	6	6	20010700	0	0	0	0	0	0	0	0	0	0
+W	Torch	Torch Attack		Strike	54	0	97	0	0	50	35	0	0	0	5	5	0	0	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Steel-Wire Torch	Firebreather	8	Strike	61	0	109	0	0	35	65	0	0	0	10	8	0	0	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	St. Trina's Torch	Fires of Slumber	15	Strike	51	0	91	0	0	15	25	0	45	0	10	10	0	14	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	72	0	0	0	0	0
+W	Ghostflame Torch	Torch Attack		Strike	50	90	0	0	0	20	20	45	0	0	10	10	14	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	65	0	0	0	0	0	0
+W	Beast-Repellent Torch	Torch Attack		Strike	58	0	104	0	0	61	18	0	0	0	12	8	0	0	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sentry's Torch	Torch Attack		Strike	56	0	0	0	100	25	10	0	47	0	15	8	0	15	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Buckler	Buckler Parry		Strike	68	0	0	0	0	10	30	0	0	0	8	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Perfumer's Shield	Parry		Strike	67	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Man-Serpent's Shield			Strike	70	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rickety Shield	Parry		Strike	70	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Pillory Shield			Strike	71	0	0	0	0	24	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Beastman's Jar-Shield			Strike	71	0	0	0	0	24	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Red Thorn Roundshield	Parry		Strike	70	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Scripture Wooden Shield	Parry		Strike	70	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Riveted Wooden Shield	Parry		Strike	72	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Blue-White Wooden Shield			Strike	72	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rift Shield	Parry		Strike	70	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Iron Roundshield			Strike	74	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gilded Iron Shield	Parry		Strike	74	0	0	0	0	24	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ice Crest Shield			Strike	74	0	0	0	0	24	0	0	0	0	9	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Smoldering Shield	Shield Bash	10	Strike	58	0	37	0	0	24	0	0	40	0	10	9	0	12	0	0	0	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spiralhorn Shield	Parry		Strike	75	0	0	0	0	24	0	0	0	0	8	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	0	0	0
+W	Coil Shield	Viper Bite	8	Strike	92.4	0	0	0	0	24	0	0	0	0	10	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	72	0	0	0	0	0	0	0	0	0
+W	Kite Shield			Strike	78	0	0	0	0	40	0	0	0	0	12	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Marred Leather Shield			Strike	75	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Marred Wooden Shield			Strike	76	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Banished Knight's Shield			Strike	81	0	0	0	0	40	0	0	0	0	14	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Albinauric Shield	Parry		Strike	78	0	0	0	0	40	0	0	0	0	11	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Sun Realm Shield	Parry		Strike	74	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Silver Mirrorshield			Strike	70.8	45.6	0	0	0	40	0	30	0	0	12	10	10	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Round Shield	Parry		Strike	76	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Scorpion Kite Shield	Parry		Strike	78	0	0	0	0	40	0	0	0	0	12	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Twinbird Kite Shield			Strike	78	0	0	0	0	40	0	0	0	0	12	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Blue-Gold Kite Shield	Parry		Strike	80	0	0	0	0	40	0	0	0	0	12	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Brass Shield			Strike	84	0	0	0	0	40	0	0	0	0	16	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Great Turtle Shell	Barricade Shield	12	Strike	81	0	0	0	0	40	0	0	0	0	14	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Shield of the Guilty	Shield Bash	10	Strike	75	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	50	0	0	0	0	0	0	0
+W	Carian Knight's Shield			Strike	63	40	0	0	0	40	0	30	0	0	10	10	15	0	0	0	4	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Large Leather Shield	Parry		Strike	75	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Horse Crest Wooden Shield			Strike	76	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Candletree Wooden Shield	Parry		Strike	76	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Flame Crest Wooden Shield	Parry		Strike	76	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Hawk Crest Wooden Shield	Parry		Strike	76	0	0	0	0	40	0	0	0	0	8	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Beast Crest Heater Shield	Parry		Strike	77	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Red Crest Heater Shield	Parry		Strike	77	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Blue Crest Heater Shield	Parry		Strike	77	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Eclipse Crest Heater Shield			Strike	77	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Inverted Hawk Heater Shield	Parry		Strike	77	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Heater Shield	Parry		Strike	77	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Black Leather Shield			Strike	75	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Messmer Soldier Shield			Strike	80	0	0	0	0	40	0	0	0	0	10	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Wolf Crest Shield			Strike	82	0	0	0	0	40	0	0	0	0	12	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Serpent Crest Shield			Strike	82	0	0	0	0	40	0	0	0	0	12	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Golden Lion Shield	Roaring Bash	12	Strike	97.2	0	0	0	0	60	0	0	0	0	11	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Silver Grooved Shield			Strike	61	0	0	0	0	40	0	0	0	0	9	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dragon Towershield	Shield Bash	10	Strike	115	0	0	0	0	50	0	0	0	0	30	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Distinguished Greatshield			Strike	112	0	0	0	0	50	0	0	0	0	32	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Crucible Hornshield	Shield Bash	10	Strike	147.6	0	0	0	0	50	0	0	0	0	26	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dragonclaw Shield	Shield Bash	10	Strike	118.8	0	0	76.8	0	40	20	0	0	0	28	12	0	0	0	0	0	0	4	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Briar Greatshield	Shield Bash	10	Strike	98	0	0	0	0	50	0	0	0	0	21	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	70	0	0	0	0	0	0	0
+W	Erdtree Greatshield	Golden Retaliation	4	Strike	120	0	0	0	78	50	0	0	30	0	30	0	0	12	0	0	0	0	0	4	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Golden Beast Crest Shield			Strike	104	0	0	0	0	50	0	0	0	0	24	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Jellyfish Shield	Contagious Fury	9	Strike	123.6	0	0	0	0	50	0	0	0	0	20	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Fingerprint Stone Shield	Shield Bash	10	Strike	139	0	0	0	0	50	0	0	0	0	48	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	70	0	0	0	0
+W	Icon Shield			Strike	133.2	0	0	0	0	50	0	0	0	0	22	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	One-Eyed Shield	Flame Spit	28	Strike	175.2	0	0	0	0	50	0	0	0	0	36	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Visage Shield	Tongues of Fire	5	Strike	186	0	0	0	0	50	0	0	0	0	44	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spiked Palisade Shield	Shield Bash	10	Strike	116	0	0	0	0	50	0	0	0	0	20	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	70	0	0	0	0	0	0	0
+W	Manor Towershield	Shield Bash	10	Strike	111	0	0	0	0	50	0	0	0	0	30	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Crossed-Tree Towershield	Shield Bash	10	Strike	111	0	0	0	0	50	0	0	0	0	30	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Inverted Hawk Towershield	Shield Bash	10	Strike	111	0	0	0	0	50	0	0	0	0	30	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ant's Skull Plate	Shield Bash	10	Strike	136.8	0	0	0	0	50	0	0	0	0	28	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	90	0	0	0	0	0	0	0	0	0
+W	Redmane Greatshield			Strike	108	0	0	0	0	50	0	0	0	0	30	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Eclipse Crest Greatshield			Strike	110	0	0	0	0	50	0	0	0	0	32	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Cuckoo Greatshield			Strike	110	0	0	0	0	50	0	0	0	0	32	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Golden Greatshield			Strike	113	0	0	0	0	50	0	0	0	0	34	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Gilded Greatshield			Strike	115	0	0	0	0	50	0	0	0	0	36	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Haligtree Crest Greatshield			Strike	116	0	0	0	0	50	0	0	0	0	36	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Wooden Greatshield			Strike	95	0	0	0	0	50	0	0	0	0	14	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lordsworn's Shield	Shield Bash	10	Strike	99	0	0	0	0	50	0	0	0	0	16	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Black Steel Greatshield	Shield Bash	10	Strike	119	0	0	0	0	50	0	0	0	0	35	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Verdigris Greatshield	Moore's Charge	16	Strike	194.4	0	0	0	0	50	0	0	0	0	49	0	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Glintstone Staff			Strike	25	0	0	0	0	12	0	85	0	0	6	0	10	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Crystal Staff			Strike	31	0	0	0	0	25	0	94	0	0	8	0	48	0	0	15	15	15	15	15	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Gelmir Glintstone Staff			Strike	29	0	0	0	0	12	0	40	40	0	6	0	14	14	0	12	12	12	12	12	6	6	6	6	20010	0	0	0	0	0	0	0	0	1	0
+W	Demi-Human Queen's Staff			Strike	31	0	0	0	0	25	0	75	0	0	6	0	10	0	0	14	14	14	14	14	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Carian Regal Scepter	Spinning Weapon	20	Strike	24	0	0	0	0	12	10	96	0	0	8	10	60	0	0	15	15	15	15	15	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Digger's Staff			Strike	38	0	0	0	0	25	0	76	0	0	8	0	12	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Astrologer's Staff			Strike	25	0	0	0	0	12	0	89	0	0	7	0	16	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Carian Glintblade Staff			Strike	22	0	0	0	0	12	10	88	0	0	6	12	22	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Prince of Death's Staff			Strike	25	0	0	0	0	12	0	58	58	0	6	0	18	18	0	15	15	15	15	15	6	6	6	6	20010	0	0	0	0	0	0	0	0	1	0
+W	Albinauric Staff			Strike	17	0	0	0	0	12	0	30	0	70	6	0	10	0	12	12	12	12	12	12	11	11	11	11	20030	0	0	0	0	0	0	0	0	1	0
+W	Academy Glintstone Staff			Strike	25	0	0	0	0	12	0	91	0	0	6	0	28	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Carian Glintstone Staff			Strike	25	0	0	0	0	12	0	85	0	0	6	8	24	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Azur's Glintstone Staff			Strike	24	0	0	0	0	25	0	92	0	0	10	0	52	0	0	15	15	15	15	15	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Lusat's Glintstone Staff			Strike	24	0	0	0	0	25	0	110	0	0	10	0	52	0	0	15	15	15	15	15	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Meteorite Staff			Strike	39	0	0	0	0	25	0	192	0	0	6	0	18	0	0	16	16	16	16	16	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Staff of the Guilty			Strike	38	0	0	0	0	25	0	0	76	0	8	0	0	12	0	16	16	16	16	16	6	6	6	6	20020	0	0	45	0	0	0	0	0	1	0
+W	Rotten Crystal Staff			Strike	42	0	0	0	0	25	0	93	0	0	8	0	48	0	0	15	15	15	15	15	6	6	6	6	20000	0	50	0	0	0	0	0	0	1	0
+W	Staff of Loss			Strike	22	0	0	0	0	12	10	84	0	0	6	12	14	0	0	15	15	15	15	15	6	6	6	6	20000	0	0	0	0	0	0	0	0	1	0
+W	Staff of the Great Beyond			Strike	27	0	0	0	0	12	0	46	46	0	7	0	25	25	0	12	12	12	12	12	6	6	6	6	20010	0	0	0	0	0	0	0	0	1	1
+W	Finger Seal			Strike	25	0	0	0	0	15	0	0	83	0	4	0	0	10	0	16	16	16	16	16	6	6	6	6	30000	0	0	0	0	0	0	0	0	0	1
+W	Godslayer's Seal			Strike	25	0	0	0	0	15	0	0	85	0	4	0	0	27	0	16	16	16	16	16	6	6	6	6	30000	0	0	0	0	0	0	0	0	0	1
+W	Giant's Seal			Strike	25	0	0	0	0	15	0	0	77	0	4	0	0	14	0	16	16	16	16	16	6	6	6	6	30000	0	0	0	0	0	0	0	0	0	1
+W	Gravel Stone Seal			Strike	25	0	0	0	0	15	0	0	81	0	4	0	0	18	0	16	16	16	16	16	6	6	6	6	30000	0	0	0	0	0	0	0	0	0	1
+W	Clawmark Seal			Strike	31	0	0	0	0	40	0	0	40	0	4	0	0	10	0	12	12	12	12	12	6	6	6	6	30020	0	0	0	0	0	0	0	0	0	1
+W	Golden Order Seal			Strike	24	0	0	0	0	0	0	53	53	0	0	0	17	17	0	12	12	12	12	12	6	6	6	6	30010	0	0	0	0	0	0	0	0	0	1
+W	Erdtree Seal			Strike	25	0	0	0	15	0	0	0	89	0	0	0	0	40	0	15	15	15	15	15	6	6	6	6	30000	0	0	0	0	0	0	0	0	0	1
+W	Dragon Communion Seal			Strike	25	0	0	0	0	0	0	0	30	75	0	0	0	10	10	12	12	12	12	12	11	11	11	11	30030	0	0	0	0	0	0	0	0	0	1
+W	Frenzied Flame Seal			Strike	25	0	0	0	0	20	20	20	40	0	0	0	0	0	0	12	12	12	12	12	6	6	6	6	30040	0	0	0	0	0	55	0	0	0	1
+W	Shortbow	Barrage	2		65	0	0	0	0	17	17	0	0	0	8	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Misbegotten Shortbow	Barrage	2		68	0	0	0	0	26	14	0	0	0	16	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Red Branch Shortbow	Barrage	2		65	0	0	0	0	14	26	0	0	0	8	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Harp Bow	Barrage	2		62	0	0	0	0	12	15	0	0	0	9	9	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Composite Bow	Mighty Shot	6		65	0	0	0	0	15	28	0	0	0	15	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Bone Bow	Rancor Shot	3		66	0	0	0	0	18	22	0	0	0	8	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Longbow	Mighty Shot	6		80	0	0	0	0	20	26	0	0	0	9	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Albinauric Bow	Mighty Shot	6		82	0	0	0	0	15	35	0	0	0	7	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Horn Bow	Mighty Shot	6		65	30	0	0	0	21	26	10	0	0	10	14	12	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Erdtree Bow	Mighty Shot	6		40	0	0	0	50	12	15	0	30	0	8	12	0	14	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Serpent Bow	Mighty Shot	6		75	0	0	0	0	15	30	0	0	30	8	15	0	0	11	0	0	0	0	0	5	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Pulley Bow	Mighty Shot	6		77	0	0	0	0	27	27	0	0	0	11	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Black Bow	Barrage	2		70	0	0	0	0	18	26	0	0	0	9	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ansbach's Longbow	Fan Shot	12		74	0	0	0	0	20	25	0	0	0	9	43	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Lion Greatbow	Radahn's Rain	32		120	0	0	0	0	30	25	0	0	0	22	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Golem Greatbow	Through and Through	9		130	0	0	0	0	45	20	0	0	0	24	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Erdtree Greatbow	Through and Through	9		60	0	0	0	65	20	15	0	30	0	20	14	0	14	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Greatbow	Through and Through	9		125	0	0	0	0	30	30	0	0	0	20	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Igon's Greatbow	Through and Through	9		120	0	0	0	0	48	7	0	0	0	23	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Soldier's Crossbow	Kick			54	0	0	0	0	0	0	0	0	0	10	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Light Crossbow	Kick			58.5	0	0	0	0	0	0	0	0	0	12	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Heavy Crossbow	Kick			64.8	0	0	0	0	0	0	0	0	0	14	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Pulley Crossbow	Kick			65	0	0	0	0	0	0	0	0	0	16	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Full Moon Crossbow	Kick			50	50	0	0	0	0	0	0	0	0	10	10	14	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Arbalest	Kick			69.3	0	0	0	0	0	0	0	0	0	18	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Crepus's Black-Key Crossbow	Kick			68	0	0	0	0	0	0	0	0	0	14	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Repeating Crossbow	Repeating Fire	26		74	0	0	0	0	0	0	0	0	0	13	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Spread Crossbow	Kick			68	0	0	0	0	0	0	0	0	0	11	17	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Hand Ballista	Kick			135	0	0	0	0	0	0	0	0	0	30	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Jar Cannon	Kick			192	0	0	0	0	0	0	0	0	0	34	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Dryleaf Arts	Palm Blast	14	Strike	86	0	0	0	0	45	45	0	0	0	8	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Dane's Footwork	Palm Blast	14	Strike	86	0	0	0	0	45	45	0	0	0	8	8	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Dueling Shield	Shield Strike		Standard / Pierce	125	0	0	0	0	35	50	0	0	0	15	14	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Carian Thrusting Shield	Shield Strike		Standard / Pierce	122	36	0	0	0	41	41	30	0	0	17	13	15	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Ritual Thrusting Shield	Shield Strike		Standard / Pierce	135	0	0	0	0	25	40	0	0	0	13	12	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Backhand Blade	Blind Spot	9	Slash / Pierce	105	0	0	0	0	45	55	0	0	0	10	13	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Curseblade's Cirque	Deadly Dance	15	Slash	108	0	0	0	0	20	75	0	0	0	9	22	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	1	0	0
+W	Reverse-Bladed Sword	Blind Spot	9	Slash / Pierce	115	0	0	0	0	30	40	0	0	0	9	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Great Katana	Overhead Stance	8/10	Slash / Pierce	145	0	0	0	0	30	50	0	0	0	14	18	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Dragon-Hunter's Great Katana	Dragonwound Slash	18	Slash / Pierce	152	0	0	0	0	37	37	0	0	0	15	20	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Rakshasa's Great Katana	Weed Cutter	8	Slash / Pierce	155	0	0	0	0	15	61	0	0	0	12	27	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Reed Great Katana	Overhead Stance	8/10	Slash / Pierce	158	0	0	0	0	25	35	0	0	0	11	16	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	55	0	0	0	0	0	0	0
+W	Milady	Impaling Thrust	9	Standard / Pierce	116	0	0	0	0	30	55	0	0	0	12	17	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Leda's Sword	Needle Piercer	19	Standard / Pierce	101	0	0	0	65	15	60	0	30	0	11	22	0	19	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Rellana's Twin Blades	Moon-and-Fire Stance	10/25	Standard / Pierce	103	66	66	0	0	37	37	34	34	0	13	16	16	16	0	0	4	4	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	1	0	0
+W	Idus Sword	Impaling Thrust	9	Standard / Pierce	124	0	0	0	0	28	37	0	0	0	10	15	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	0	0	0	0	0	0	0	0
+W	Beast Claw	Savage Claws	13	Slash	98	0	0	0	0	55	30	0	0	0	13	11	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	1	0	0
+W	Red Bear's Claw	Red Bear Hunt	8	Slash	104	0	0	0	0	62	18	0	0	0	20	10	0	0	0	0	0	0	0	0	6	6	6	6	10000	0	0	45	0	0	0	0	1	0	0
+G	0	1	0	1.2	18	25	-1.2	60	75	1	80	90	1	150	110	1
+G	4	1	0	1	20	40	1	50	80	1	80	95	1	99	100	1
+G	5	1	0	1	20	75	1	40	225	1	80	270	1	99	300	1
+G	6	1	0	1	25	10	1	45	75	1	60	90	1	99	100	1
+G	7	1	0	1.2	20	35	-1.2	60	75	1	80	90	1	150	110	1
+G	10	1	0	1	15	10	1	30	50	1	50	60	1	99	70	1
+G	11	1	0	1	25	6	1	45	15	1	60	18	1	99	20	1
+G	12	1	0	1	15	10	1	30	55	1	43	75	1	99	100	1
+G	14	1	0	1	20	40	1	40	60	1	80	85	1	99	100	1
+G	15	1	0	1	25	25	1	60	65	1	80	95	1	99	100	1
+G	16	1	0	1	18	20	1	60	75	1	80	90	1	99	100	1
+E	10000	-1	-1	-2	-2	-2	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	10013	-1	-1	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	10100	-1	-1	-2	-2	-1	-2	-2	-1	-2	-1	-2	-2	-2	-1	-1	-2	-1	-2	-2	-1	-2	-2	-2	-1	-1
+E	12000	-1	-1	-2	-1	-2	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	15000	-1	-1	-2	-1	-1	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	19000	-1	-1	-2	-2	-2	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-1	-1	-2
+E	20000	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2
+E	20010	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2
+E	20020	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2
+E	20030	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1
+E	30000	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2
+E	30010	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2
+E	30020	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2	-1	-2	-2	-1	-2
+E	30030	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1	-2	-2	-2	-1	-1
+E	30040	-1	-1	-1	-1	-2	-1	-1	-1	-1	-2	-1	-1	-1	-1	-2	-1	-1	-1	-1	-2	-1	-1	-1	-1	-2
+E	20010000	-1	-1	-2	-2	-2	-2	-1	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	20010100	-1	-1	-1	-1	-2	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	20010300	-1	-1	-2	-2	-2	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-2
+E	20010400	-1	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-1	-1	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	20010600	-1	-1	-2	-1	-1	-2	-2	-1	-2	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	20010700	-1	-1	-2	-2	-2	-2	-2	-1	-1	-2	-2	-2	-2	-1	-2	-2	-1	-2	-2	-2	-2	-2	-2	-1	-2
+E	20010800	-1	-1	-1	-2	-2	-2	-2	-1	-2	-2	-2	-2	-1	-1	-2	-2	-1	-1	-2	-2	-2	-2	-1	-1	-2
+S	Glintstone Pebble	7	1	10	0	0
+S	Great Glintstone Shard	12	1	16	0	0
+S	Swift Glintstone Shard	5	1	12	0	0
+S	Glintstone Cometshard	17	1	36	0	0
+S	Comet	24	1	52	0	0
+S	Shard Spiral	14	1	27	0	0
+S	Glintstone Stars	12	1	12	0	0
+S	Star Shower	23	1	24	0	0
+S	Crystal Barrage	14	1	23	0	0
+S	Glintstone Arc	9	1	13	0	0
+S	Cannon of Haima	38	1	25	0	0
+S	Crystal Burst	14	1	18	0	0
+S	Shatter Earth	10	1	15	0	0
+S	Rock Blaster	22	1	21	0	0
+S	Gavel of Haima	22	1	25	0	0
+S	Terra Magica	20	1	20	0	0
+S	Starlight	9	1	15	0	0
+S	Comet Azur	40	3	60	0	0
+S	Founding Rain of Stars	27	2	52	0	0
+S	Stars of Ruin	32	1	43	0	0
+S	Glintblade Phalanx	18	1	22	0	0
+S	Carian Phalanx	24	1	34	0	0
+S	Greatblade Phalanx	30	1	29	0	0
+S	Rennala's Full Moon	47	2	70	0	0
+S	Ranni's Dark Moon	57	2	68	0	0
+S	Magic Downpour	18	1	15	0	0
+S	Loretta's Greatbow	24	1	26	0	0
+S	Loretta's Mastery	39	1	46	0	0
+S	Magic Glintblade	12	1	14	0	0
+S	Glintstone Icecrag	12	1	15	0	0
+S	Zamor Ice Storm	17	1	36	0	0
+S	Freezing Mist	20	1	21	0	0
+S	Carian Greatsword	12	1	24	0	0
+S	Adula's Moonblade	22	1	32	0	0
+S	Carian Slicer	4	1	14	0	0
+S	Carian Piercer	17	1	27	0	0
+S	Scholar's Armament	25	1	12	0	0
+S	Scholar's Shield	30	1	12	0	0
+S	Lucidity	10	1	17	0	0
+S	Frozen Armament	20	1	15	0	0
+S	Shattering Crystal	21	1	38	0	0
+S	Crystal Release	34	1	41	0	0
+S	Crystal Torrent	20	1	47	0	0
+S	Ambush Shard	13	1	23	0	0
+S	Night Shard	7	1	18	0	0
+S	Night Comet	21	1	38	0	0
+S	Thops's Barrier	7	1	18	0	0
+S	Carian Retaliation	8	1	17	0	0
+S	Eternal Darkness	25	1	35	0	0
+S	Unseen Blade	13	1	12	0	0
+S	Unseen Form	20	1	16	0	0
+S	Meteorite	30	1	30	0	0
+S	Meteorite of Astel	60	2	55	0	0
+S	Rock Sling	18	1	18	0	0
+S	Gravity Well	12	1	17	0	0
+S	Collapsing Stars	18	1	36	0	0
+S	Magma Shot	16	1	19	10	0
+S	Gelmir's Fury	16	1	28	15	0
+S	Roiling Magma	28	1	21	12	0
+S	Rykard's Rancor	23	2	40	18	0
+S	Briars of Sin	6	1	0	24	0
+S	Briars of Punishment	9	1	0	21	0
+S	Rancorcall	12	1	16	14	0
+S	Ancient Death Rancor	21	1	34	24	0
+S	Explosive Ghostflame	29	1	42	30	0
+S	Fia's Mist	25	1	23	18	0
+S	Tibia's Summons	17	1	28	20	0
+S	Death Lightning	28	2	0	47	0
+S	Oracle Bubbles	12	1	19	0	15
+S	Great Oracular Bubble	16	1	25	0	18
+S	Catch Flame	10	1	0	8	0
+S	O, Flame!	16	1	0	16	0
+S	Flame Sling	11	1	0	10	0
+S	Flame, Fall Upon Them	16	1	0	28	0
+S	Whirl, O Flame!	19	1	0	13	0
+S	Flame, Cleanse Me	14	1	0	12	0
+S	Flame, Grant Me Strength	28	1	0	15	0
+S	Flame, Protect Me	30	1	0	24	0
+S	Giantsflame Take Thee	30	2	0	30	0
+S	Flame of the Fell God	34	2	0	41	0
+S	Burn, O Flame!	26	1	0	27	0
+S	Black Flame	18	1	0	20	0
+S	Surge, O Flame!	1	1	0	9	0
+S	Scouring Black Flame	21	1	0	28	0
+S	Black Flame Ritual	30	1	0	42	0
+S	Black Flame Blade	15	1	0	17	0
+S	Black Flame's Protection	30	1	0	30	0
+S	Noble Presence	20	1	0	26	0
+S	Bloodflame Talons	12	1	0	13	15
+S	Bloodboon	13	1	0	14	17
+S	Bloodflame Blade	20	1	0	12	10
+S	Barrier of Gold	30	1	0	24	0
+S	Protection of the Erdtree	30	1	0	35	0
+S	Rejection	9	1	0	12	0
+S	Wrath of Gold	40	1	0	32	0
+S	Urgent Heal	16	1	0	8	0
+S	Heal	32	1	0	12	0
+S	Great Heal	45	1	0	15	0
+S	Lord's Heal	55	1	0	20	0
+S	Erdtree Heal	65	1	0	42	0
+S	Blessing's Boon	30	1	0	24	0
+S	Blessing of the Erdtree	60	1	0	38	0
+S	Cure Poison	7	1	0	10	0
+S	Lord's Aid	12	1	0	12	0
+S	Flame Fortification	20	1	0	10	0
+S	Magic Fortification	20	1	0	10	0
+S	Lightning Fortification	20	1	0	10	0
+S	Divine Fortification	20	1	0	10	0
+S	Lord's Divine Fortification	30	1	0	27	0
+S	Night Maiden's Mist	20	1	14	0	0
+S	Assassin's Approach	15	1	0	10	0
+S	Shadow Bait	15	1	0	13	0
+S	Darkness	24	1	0	18	0
+S	Golden Vow	47	1	0	25	0
+S	Discus of Light	3	1	13	13	0
+S	Triple Rings of Light	23	1	23	23	0
+S	Radagon's Rings of Light	21	1	31	31	0
+S	Elden Stars	41	2	0	50	0
+S	Law of Regression	55	1	37	0	0
+S	Immutable Shield	15	1	19	19	0
+S	Litany of Proper Death	17	1	17	17	0
+S	Law of Causality	22	1	29	0	0
+S	Order's Blade	22	1	13	13	0
+S	Order Healing	15	1	11	11	0
+S	Bestial Sling	7	1	0	10	0
+S	Stone of Gurranq	15	1	0	13	0
+S	Beast Claw	10	1	0	8	0
+S	Gurranq's Beast Claw	21	1	0	15	0
+S	Bestial Vitality	18	1	0	12	0
+S	Bestial Constitution	10	1	0	9	0
+S	Lightning Spear	18	1	0	17	0
+S	Ancient Dragons' Lightning Strike	36	1	0	26	0
+S	Lightning Strike	19	1	0	28	0
+S	Frozen Lightning Spear	29	1	0	34	0
+S	Honed Bolt	12	1	0	24	0
+S	Ancient Dragons' Lightning Spear	25	1	0	32	0
+S	Fortissax's Lightning Spear	35	1	0	46	0
+S	Lansseax's Glaive	22	1	0	40	0
+S	Electrify Armament	27	1	0	15	0
+S	Vyke's Dragonbolt	35	1	0	23	0
+S	Dragonbolt Blessing	20	1	0	21	0
+S	Dragonfire	28	1	0	15	12
+S	Agheel's Flame	36	1	0	23	15
+S	Magma Breath	30	1	0	14	10
+S	Theodorix's Magma	45	1	0	21	14
+S	Dragonice	36	1	0	15	12
+S	Borealis's Mist	48	1	0	23	15
+S	Rotten Breath	36	1	0	15	12
+S	Ekzykes's Decay	48	1	0	23	15
+S	Glintstone Breath	28	1	0	15	12
+S	Smarag's Glintstone Breath	36	1	0	23	15
+S	Placidusax's Ruin	62	3	0	36	0
+S	Dragonclaw	24	1	0	17	13
+S	Dragonmaw	34	1	0	24	16
+S	Greyoll's Roar	50	2	0	28	17
+S	Pest Threads	19	1	0	11	0
+S	Swarm of Flies	14	1	0	11	16
+S	Poison Mist	18	1	0	12	0
+S	Poison Armament	15	1	0	10	0
+S	Scarlet Aeonia	48	3	0	35	0
+S	Inescapable Frenzy	22	1	0	21	0
+S	The Flame of Frenzy	16	1	0	16	0
+S	Unendurable Frenzy	22	1	0	31	0
+S	Frenzied Burst	24	1	0	22	0
+S	Howl of Shabriri	21	1	0	33	0
+S	Aspects of the Crucible: Tail	20	1	0	27	0
+S	Aspects of the Crucible: Horns	18	1	0	27	0
+S	Aspects of the Crucible: Breath	28	1	0	27	0
+S	Black Blade	26	2	0	46	0
+S	Fire's Deadly Sin	26	1	0	19	0
+S	Golden Lightning Fortification	30	1	0	24	0
+S	Miriam's Vanishing	9	1	26	0	0
+S	Glintblade Trio	19	1	28	0	0
+S	Rellana's Twin Moons	47	2	72	0	0
+S	Glintstone Nail	10	1	18	0	0
+S	Glintstone Nails	23	1	32	0	0
+S	Blades of Stone	18	2	48	0	0
+S	Gravitational Missile	18	1	36	0	0
+S	Mantle of Thorns	9	1	0	20	0
+S	Impenetrable Thorns	15	1	0	24	0
+S	Rings of Spectral Light	14	1	24	18	0
+S	Vortex of Putrescence	29	2	32	26	0
+S	Mass of Purtrescence	41	1	28	22	0
+S	Heal From Afar	45	1	0	18	0
+S	Aspect of the Crucible: Thorns	14	1	0	27	0
+S	Aspect of the Crucible: Bloom	23	1	0	27	0
+S	Minor Erdtree	30	2	0	70	0
+S	Land of Shadow	40	1	0	58	0
+S	Wrath from Afar	18	1	0	34	0
+S	Light of Miquella	48	2	0	72	0
+S	Multilayered Ring of Light	23	1	0	36	0
+S	Roar of Rugalea	17	1	0	14	0
+S	Knight's Lightning Spear	29	1	0	36	0
+S	Dragonbolt of Florissax	35	1	0	52	0
+S	Electrocharge	26	1	0	30	0
+S	Ghostflame Breath	36	1	0	23	15
+S	Rotten Butterflies	48	1	0	33	0
+S	Pest-Thread Spears	28	1	0	26	0
+S	Midra's Flame of Frenzy	22	2	0	41	0
+S	Fleeting Microcosm	26	1	42	0	0
+S	Cherishing Fingers	20	1	36	0	0
+S	Watchful Spirit	12	1	0	26	0
+S	Golden Arcs	12	1	0	22	0
+S	Giant Golden Arc	24	1	0	34	0
+S	Spira	10	2	0	48	0
+S	Divine Beast Tornado	24	1	0	28	0
+S	Divine Bird Feathers	3	1	0	24	0
+S	Fire Serpent	11	1	0	16	0
+S	Rain of Fire	27	1	0	52	0
+S	Messmer's Orb	31	2	0	60	0

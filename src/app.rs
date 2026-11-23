@@ -81,6 +81,8 @@ enum Act {
     CheckUpdate,
     ShowUpdate,
     InstallUpdate,
+    /// Close a game that's stuck in the background with no window.
+    EndStuckGame,
 }
 
 #[derive(Clone, PartialEq)]
@@ -97,6 +99,8 @@ enum Confirmed {
     ResetBingoSave,
     /// Set race graces on this game's character even though it has many already.
     ForceGraces(u32),
+    /// Close this game process, which had no window.
+    EndGame(u32),
     Restore(Backup),
     Delete(Backup),
     Debug,
@@ -446,7 +450,9 @@ impl App {
             }
             Act::Launch => {
                 if let Some(pid) = snap.game_pid {
-                    sys::focus_pid(pid);
+                    if !sys::focus_pid(pid) && snap.game_stuck {
+                        return self.act(ctx, Act::EndStuckGame, snap);
+                    }
                 } else if !p.regulation.is_file() {
                     self.alert("Randomize first", "Open the Randomizer, enter the seed and press Randomize.");
                 } else if !p.me2_launcher.is_file() {
@@ -586,6 +592,18 @@ impl App {
                 }
             }
             Act::InstallUpdate => self.install_update(ctx),
+            Act::EndStuckGame => {
+                if let (true, Some(pid)) = (snap.game_stuck, snap.game_pid) {
+                    self.confirm(
+                        "Close Elden Ring",
+                        "Elden Ring is still running in the background with no window, usually left over from a crash or a slow exit. It stops a new game from starting.
+
+Close it?",
+                        "Close it",
+                        Confirmed::EndGame(pid),
+                    );
+                }
+            }
             Act::Fix(f) => {
                 match f {
                     Fix::OpenUrl(u) => sys::shell_open(&u),
@@ -671,6 +689,20 @@ impl App {
                     self.alert("Race graces", "That game has closed. Nothing was changed.");
                 }
             }
+            Confirmed::EndGame(pid) => {
+                // Only the same process, and only if it still has no window.
+                if snap.game_pid != Some(pid) || sys::has_window(pid) {
+                    self.alert("Close Elden Ring", "It isn't stuck any more, so nothing was closed.");
+                } else {
+                    match sys::end_process(pid) {
+                        Ok(()) => {
+                            self.toast(ctx, "Closed Elden Ring");
+                            self.shared.wake();
+                        }
+                        Err(e) => self.alert("Couldn't close Elden Ring", e),
+                    }
+                }
+            }
             Confirmed::ResetBingoSave => match crate::bingosave::reset_bingo_save() {
                 Ok(()) => self.toast(ctx, "Next bingo game starts with a fresh save"),
                 Err(e) => self.alert("Couldn't reset", e),
@@ -717,7 +749,37 @@ impl eframe::App for App {
         c::BG.to_normalized_gamma_f32()
     }
 
+    /// Debug builds only: BINGOHUB_HOVER="x,y" puts a pretend pointer there, so a screenshot can show
+    /// hover states without touching the real mouse.
+    #[cfg(debug_assertions)]
+    fn raw_input_hook(&mut self, _ctx: &egui::Context, raw: &mut egui::RawInput) {
+        if let Some((x, y)) = std::env::var("BINGOHUB_HOVER").ok().and_then(|v| v.split_once(',').map(|(a, b)| (a.trim().parse().ok(), b.trim().parse().ok()))) {
+            if let (Some(x), Some(y)) = (x, y) {
+                raw.events.push(egui::Event::PointerMoved(egui::pos2(x, y)));
+            }
+        }
+    }
+
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        // Debug builds only: BINGOHUB_SHOT=path.png saves the window's own frame after BINGOHUB_SHOT_AFTER seconds (3) and exits.
+        #[cfg(debug_assertions)]
+        if let Ok(path) = std::env::var("BINGOHUB_SHOT") {
+            static SENT: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+            ctx.request_repaint();
+            let after: f64 = std::env::var("BINGOHUB_SHOT_AFTER").ok().and_then(|v| v.parse().ok()).unwrap_or(3.0);
+            if ctx.input(|i| i.time) > after && !SENT.swap(true, std::sync::atomic::Ordering::Relaxed) {
+                ctx.send_viewport_cmd(egui::ViewportCommand::Screenshot(Default::default()));
+            }
+            let shot = ctx.input(|i| i.events.iter().find_map(|e| if let egui::Event::Screenshot { image, .. } = e { Some(image.clone()) } else { None }));
+            if let Some(img) = shot {
+                let f = std::fs::File::create(&path).unwrap();
+                let mut enc = png::Encoder::new(std::io::BufWriter::new(f), img.size[0] as u32, img.size[1] as u32);
+                enc.set_color(png::ColorType::Rgba);
+                let bytes: Vec<u8> = img.pixels.iter().flat_map(|c| c.to_array()).collect();
+                enc.write_header().unwrap().write_image_data(&bytes).unwrap();
+                std::process::exit(0);
+            }
+        }
         if self.hwnd == 0 {
             self.hwnd = sys::own_window(TITLE);
             sys::style_window(self.hwnd);
@@ -1009,6 +1071,7 @@ impl App {
 
                     let normal_save_in_bingo = snap.game == GameState::Modded && settings.separate_save && !snap.bingo_save;
                     let (lead, detail, color) = match snap.game {
+                        _ if snap.game_stuck => (Lead::Dot(c::WARN), "Still running in the background with no window, so a new game can't start.".to_string(), c::WARN),
                         _ if normal_save_in_bingo => (
                             Lead::Dot(c::WARN),
                             "Using your normal save. Close the game and launch from here to use your bingo save.".to_string(),
@@ -1037,7 +1100,11 @@ impl App {
                     };
                     let running = snap.game != GameState::NotRunning;
                     ui::row(ui, lead, "Launch Elden Ring", &detail, color, false, true, |ui| {
-                        if ui::button(ui, if running { "Show" } else { "Launch" }, Kind::Primary, running || reg.is_some()).clicked() {
+                        if snap.game_stuck {
+                            if ui::button(ui, "Close it", Kind::Primary, true).clicked() {
+                                acts.push(Act::EndStuckGame);
+                            }
+                        } else if ui::button(ui, if running { "Show" } else { "Launch" }, Kind::Primary, running || reg.is_some()).clicked() {
                             acts.push(Act::Launch);
                         }
                     });
@@ -1061,7 +1128,13 @@ impl App {
     // ------------------------------------------------------------ classes
 
     fn classes_page(&mut self, ui: &mut Ui, snap: &Snapshot) {
-        egui::ScrollArea::vertical().id_salt("classes").auto_shrink([false, false]).show(ui, |ui| {
+        let mut area = egui::ScrollArea::vertical().id_salt("classes").auto_shrink([false, false]);
+        // Debug builds only: BINGOHUB_SCROLL=n opens the page scrolled down, for screenshots.
+        #[cfg(debug_assertions)]
+        if let Some(n) = std::env::var("BINGOHUB_SCROLL").ok().and_then(|v| v.parse::<f32>().ok()) {
+            area = area.vertical_scroll_offset(n);
+        }
+        area.show(ui, |ui| {
             page_area(ui, Some(1000.0), |ui| {
                 ui::title(ui, "Classes");
                 let Some(sp) = &snap.classes else {
@@ -1232,6 +1305,10 @@ impl App {
                     }
                     if ui::button(ui, "Practice card", Kind::Ghost, sel.is_some()).clicked() {
                         acts.push(Act::Practice);
+                    }
+                    // The Board's own file picker needs this folder; open it to copy the path.
+                    if ui::button(ui, "Open folder", Kind::Ghost, true).clicked() {
+                        acts.push(Act::OpenFolder(core::paths().boards_dir.clone()));
                     }
                 },
             );
@@ -1729,6 +1806,12 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
     let name_font = egui::FontId::new(18.0, egui::FontFamily::Name("sb".into()));
     p.text(pos2(left, rect.top() + 30.0), Align2::LEFT_CENTER, &class.name, name_font, c::TEXT);
 
+    const NUM_W: f32 = 54.0;
+    let tag_w = ui::galley(ui, "Smithing", tag_font(), c::TEXT).size().x + 20.0;
+    let stats = class_stats(class);
+    // Which spell tools the class starts with.
+    let tools = class.items.iter().filter_map(|it| crate::weapons::weapon(&it.name)).fold((false, false), |t, w| (t.0 || w.sorcery, t.1 || w.incantation));
+
     for (n, it) in class.items.iter().enumerate() {
         let info = crate::items::info(&it.name);
         let row = Rect::from_min_size(pos2(left, rect.top() + TOP + n as f32 * ITEM_H), vec2(right - left, ITEM_H));
@@ -1750,11 +1833,21 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
         });
         let mut text_right = right;
         if let Some((label, col)) = tag {
-            let g = ui::galley(ui, label, egui::FontId::new(12.0, egui::FontFamily::Name("sb".into())), col);
+            let g = ui::galley(ui, label, tag_font(), col);
             let pill = Rect::from_min_size(pos2(right - g.size().x - 20.0, row.center().y - 11.0), vec2(g.size().x + 20.0, 22.0));
             p.rect_filled(pill, 11.0, col.gamma_multiply(0.13));
             p.galley(pill.center() - g.size() / 2.0, g, col);
             text_right = pill.left() - 12.0;
+        }
+
+        // Attack rating (or spell FP) in a fixed column left of the widest tag, so rows line up.
+        let d = ItemDetail::new(it, &stats, &tools);
+        if let Some((value, label, col)) = d.figure() {
+            text_right = right - tag_w - 12.0;
+            let cx = text_right - NUM_W / 2.0;
+            p.text(pos2(cx, row.center().y - 7.0), Align2::CENTER_CENTER, value, egui::FontId::new(15.0, egui::FontFamily::Name("sb".into())), col);
+            p.text(pos2(cx, row.center().y + 10.0), Align2::CENTER_CENTER, label, egui::FontId::new(10.5, egui::FontFamily::Proportional), c::FAINT);
+            text_right -= NUM_W + 10.0;
         }
 
         let x = icon.right() + 14.0;
@@ -1770,19 +1863,60 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
             p.rect_filled(b, 4.0, c::ACCENT.gamma_multiply(0.16));
             p.galley(b.center() - g.size() / 2.0, g, c::ACCENT);
         }
-        let mut meta = info.map(|i| i.kind.to_string()).unwrap_or_default();
+
+        // Shown in this order, but when space is short the least important go first: warnings stay,
+        // then the skill, the weapon type, the buildup. Items are never cut in half.
+        let mut parts: Vec<(u8, String, Color32)> = vec![];
+        if let Some(i) = info {
+            parts.push((2, i.kind.to_string(), c::MUTED));
+        }
         if let Some(n) = it.count {
-            meta = if meta.is_empty() { format!("×{n}") } else { format!("{meta}   ×{n}") };
+            parts.push((0, format!("×{n}"), c::MUTED));
         }
-        let mut job = egui::text::LayoutJob::default();
-        job.append(&meta, 0.0, egui::TextFormat::simple(ui::small(), c::MUTED));
         if let Some(l) = it.level {
-            let sep = if meta.is_empty() { "" } else { "   ·   " };
-            job.append(&format!("{sep}Lv {l} to wield"), 0.0, egui::TextFormat::simple(ui::small(), c::WARN));
+            parts.push((0, format!("Lv {l} to wield"), c::WARN));
         }
-        job.wrap = egui::text::TextWrapping::truncate_at_width((text_right - x).max(1.0));
+        if let Some(why) = d.cant_cast() {
+            parts.push((0, why, c::WARN));
+        }
+        if let Some(w) = d.weapon.filter(|w| !w.skill.is_empty()) {
+            parts.push((1, w.skill.to_string(), c::MUTED));
+        }
+        if let Some((name, v)) = d.buildup().first() {
+            parts.push((3, format!("{name} {v}"), c::MUTED));
+        }
+        let max_w = (text_right - x).max(1.0);
+        let layout = |keep: &[bool]| {
+            let mut job = egui::text::LayoutJob::default();
+            for ((_, text, col), _) in parts.iter().zip(keep).filter(|(_, k)| **k) {
+                let sep = if job.text.is_empty() { "" } else { "  ·  " };
+                job.append(&format!("{sep}{text}"), 0.0, egui::TextFormat::simple(ui::small(), *col));
+            }
+            job
+        };
+        let mut keep = vec![false; parts.len()];
+        for level in 0..=3 {
+            for i in 0..parts.len() {
+                if parts[i].0 != level {
+                    continue;
+                }
+                keep[i] = true;
+                let fits = ui.fonts_mut(|f| f.layout_job(layout(&keep))).size().x <= max_w;
+                if !fits && keep.iter().filter(|k| **k).count() > 1 {
+                    keep[i] = false;
+                }
+            }
+        }
+        let mut job = layout(&keep);
+        job.wrap = egui::text::TextWrapping::truncate_at_width(max_w);
         let g = ui.fonts_mut(|f| f.layout_job(job));
         p.galley(pos2(x, row.center().y + 3.0), g, c::MUTED);
+
+        // The full breakdown on hover, after a short pause so passing over the cards stays quiet.
+        let resp = ui.interact(row, ui.id().with(("class_item", &class.name, n)), Sense::hover());
+        if d.has_more() && hover_after(ui, &resp, 0.3) {
+            item_detail(ui, &d, &it.name, pos2(x - 8.0, row.bottom() + 2.0));
+        }
     }
     let y = rect.top() + TOP + slots as f32 * ITEM_H + 12.0;
     p.hline(left..=right, y, Stroke::new(1.0_f32, c::DIVIDER));
@@ -1818,6 +1952,188 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
         p.text(pos2(cx, cy - 7.0), Align2::CENTER_CENTER, v.to_string(), value_font.clone(), c::TEXT);
         p.text(pos2(cx, cy + 10.0), Align2::CENTER_CENTER, short(k), label_font.clone(), c::FAINT);
     }
+}
+
+fn tag_font() -> egui::FontId {
+    egui::FontId::new(12.0, egui::FontFamily::Name("sb".into()))
+}
+
+/// Str, Dex, Int, Fai, Arc from the spoiler's stat list.
+fn class_stats(class: &crate::classes::Class) -> [u32; 5] {
+    let get = |k: &str| class.stats.iter().find(|(n, _)| n == k).map_or(0, |(_, v)| *v);
+    [get("Strength"), get("Dexterity"), get("Intelligence"), get("Faith"), get("Arcane")]
+}
+
+/// What the Classes page knows about one starting item at its class's stats.
+struct ItemDetail {
+    kind: &'static str,
+    weapon: Option<&'static crate::weapons::Weapon>,
+    spell: Option<&'static crate::weapons::Spell>,
+    attack: Option<crate::weapons::Attack>,
+    bow: bool,
+    /// The stats the attack was worked out with (Strength ×1.5 when shown two-handed).
+    eff: [u32; 5],
+    /// Starts with a staff, a seal.
+    tools: (bool, bool),
+}
+
+impl ItemDetail {
+    fn new(it: &crate::classes::Item, stats: &[u32; 5], tools: &(bool, bool)) -> Self {
+        let kind = crate::items::info(&it.name).map_or("", |i| i.kind);
+        let weapon = crate::weapons::weapon(&it.name).filter(|_| !matches!(kind, "Arrow" | "Greatarrow" | "Bolt" | "Ballista Bolt"));
+        let bow = matches!(kind, "Light Bow" | "Bow" | "Greatbow" | "Ballista");
+        let attack = weapon.map(|w| crate::weapons::attack(w, *stats, bow));
+        let mut eff = *stats;
+        if attack.as_ref().is_some_and(|a| a.two_handed) {
+            eff[0] = stats[0] * 3 / 2;
+        }
+        let spell = matches!(kind, "Sorcery" | "Incantation").then(|| crate::weapons::spell(&it.name)).flatten();
+        ItemDetail { kind, weapon, spell, attack, bow, eff, tools: *tools }
+    }
+
+    fn short(&self, a: usize) -> bool {
+        self.weapon.is_some_and(|w| self.eff[a] < w.req[a])
+    }
+
+    /// The number on the right of the row: attack rating, a catalyst's spell scaling, or a spell's FP.
+    fn figure(&self) -> Option<(String, &'static str, Color32)> {
+        if let Some(a) = &self.attack {
+            let col = if (0..5).any(|i| self.short(i)) { c::WARN } else { c::TEXT };
+            if let Some(s) = a.spell_scaling {
+                return Some((s.to_string(), "SCALING", col));
+            }
+            if a.total > 0 {
+                return Some((a.total.to_string(), if a.two_handed && !self.bow { "2H ATTACK" } else { "ATTACK" }, col));
+            }
+        }
+        let s = self.spell?;
+        Some((s.fp.to_string(), "FP", if self.cant_cast().is_some() { c::WARN } else { c::TEXT }))
+    }
+
+    /// Why the class can't cast this spell from the start, if it can't.
+    fn cant_cast(&self) -> Option<String> {
+        let s = self.spell?;
+        match self.kind {
+            "Sorcery" if !self.tools.0 => return Some("No staff".into()),
+            "Incantation" if !self.tools.1 => return Some("No seal".into()),
+            _ => {}
+        }
+        let stat = [(2, "Int"), (3, "Fai"), (4, "Arc")];
+        let (i, (_, k)) = stat.iter().enumerate().find(|(i, (a, _))| self.eff[*a] < s.req[*i])?;
+        Some(format!("Needs {k} {}", s.req[i]))
+    }
+
+    /// Status buildup, e.g. [("Bleed", 45)].
+    fn buildup(&self) -> Vec<(&'static str, u32)> {
+        self.attack.as_ref().map_or(vec![], |a| (0..7).filter(|&s| a.status[s] > 0).map(|s| (crate::weapons::STATUS[s], a.status[s])).collect())
+    }
+
+    fn has_more(&self) -> bool {
+        self.attack.is_some() || self.spell.is_some()
+    }
+}
+
+/// True once the pointer has rested on `resp` for `secs`.
+fn hover_after(ui: &Ui, resp: &egui::Response, secs: f64) -> bool {
+    let key = resp.id.with("hover_since");
+    let now = ui.input(|i| i.time);
+    if !resp.hovered() {
+        ui.ctx().data_mut(|d| d.remove::<f64>(key));
+        return false;
+    }
+    let since = ui.ctx().data_mut(|d| *d.get_temp_mut_or_insert_with(key, || now));
+    if now - since >= secs {
+        return true;
+    }
+    ui.ctx().request_repaint_after(std::time::Duration::from_secs_f64(secs - (now - since)));
+    false
+}
+
+/// The hover card for a starting item: everything the row has no room for.
+fn item_detail(ui: &Ui, d: &ItemDetail, name: &str, pos: egui::Pos2) {
+    const KEY_W: f32 = 92.0;
+    let row = |ui: &mut Ui, key: &str, parts: &[(String, Color32)]| {
+        let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), 22.0), Sense::hover());
+        ui::text_at(ui, pos2(r.left(), r.center().y), Align2::LEFT_CENTER, key, ui::small(), c::MUTED);
+        let mut job = egui::text::LayoutJob::default();
+        for (i, (t, col)) in parts.iter().enumerate() {
+            job.append(t, if i == 0 { 0.0 } else { 12.0 }, egui::TextFormat::simple(ui::small(), *col));
+        }
+        let g = ui.fonts_mut(|f| f.layout_job(job));
+        ui.painter().galley(pos2(r.left() + KEY_W, r.center().y - g.size().y / 2.0), g, c::TEXT);
+    };
+    egui::Area::new(ui.id().with("item_detail"))
+        .order(egui::Order::Tooltip)
+        .fixed_pos(pos)
+        .constrain(true)
+        .interactable(false)
+        .show(ui.ctx(), |ui| {
+            egui::Frame::new()
+                .fill(c::RAISED)
+                .stroke(Stroke::new(1.0_f32, c::BORDER))
+                .corner_radius(8.0)
+                .inner_margin(egui::Margin::symmetric(16, 14))
+                .show(ui, |ui| {
+                    ui.set_width(268.0);
+                    ui.label(egui::RichText::new(name).font(ui::strong()).color(c::TEXT));
+                    ui.add_space(8.0);
+                    let (line, _) = ui.allocate_exact_size(vec2(ui.available_width(), 1.0), Sense::hover());
+                    ui.painter().hline(line.x_range(), line.center().y, Stroke::new(1.0_f32, c::BORDER));
+                    ui.add_space(6.0);
+
+                    if let (Some(w), Some(a)) = (d.weapon, &d.attack) {
+                        if !w.skill.is_empty() {
+                            let mut parts = vec![(w.skill.to_string(), c::TEXT)];
+                            if !w.skill_fp.is_empty() {
+                                parts.push((format!("{} FP", w.skill_fp), c::MUTED));
+                            }
+                            row(ui, "Skill", &parts);
+                        }
+                        if let Some(s) = a.spell_scaling {
+                            row(ui, if w.sorcery { "Sorcery" } else { "Incantations" }, &[(format!("{s} scaling"), c::TEXT)]);
+                        } else {
+                            for t in (0..5).filter(|&t| a.damage[t] > 0) {
+                                row(ui, crate::weapons::DAMAGE[t], &[(a.damage[t].to_string(), c::TEXT)]);
+                            }
+                        }
+                        for (s, v) in d.buildup() {
+                            row(ui, s, &[(v.to_string(), c::TEXT)]);
+                        }
+                        let letters: Vec<(String, Color32)> = w.letters().into_iter().map(|(k, l)| (format!("{k} {l}"), c::TEXT)).collect();
+                        if !letters.is_empty() {
+                            row(ui, "Scaling", &letters);
+                        }
+                        let req: Vec<(String, Color32)> = (0..5)
+                            .filter(|&i| w.req[i] > 0)
+                            .map(|i| match d.short(i) {
+                                true => (format!("{} {} (+{})", crate::weapons::ATTRS[i], w.req[i], w.req[i] - d.eff[i]), c::WARN),
+                                false => (format!("{} {}", crate::weapons::ATTRS[i], w.req[i]), c::TEXT),
+                            })
+                            .collect();
+                        if !req.is_empty() {
+                            row(ui, "Requires", &req);
+                        }
+                        if !w.damage_type.is_empty() && a.spell_scaling.is_none() {
+                            row(ui, "Damage", &[(w.damage_type.to_string(), c::TEXT)]);
+                        }
+                    } else if let Some(s) = d.spell {
+                        row(ui, "FP", &[(s.fp.to_string(), c::TEXT)]);
+                        row(ui, "Slots", &[(s.slots.to_string(), c::TEXT)]);
+                        let req: Vec<(String, Color32)> = [(2, "Int"), (3, "Fai"), (4, "Arc")]
+                            .iter()
+                            .enumerate()
+                            .filter(|(i, _)| s.req[*i] > 0)
+                            .map(|(i, (a, k))| match d.eff[*a] < s.req[i] {
+                                true => (format!("{k} {} (+{})", s.req[i], s.req[i] - d.eff[*a]), c::WARN),
+                                false => (format!("{k} {}", s.req[i]), c::TEXT),
+                            })
+                            .collect();
+                        if !req.is_empty() {
+                            row(ui, "Requires", &req);
+                        }
+                    }
+                });
+        });
 }
 
 /// The seed's swap lists, closed until someone asks for them.

@@ -12,6 +12,7 @@ mod randocheck;
 mod sys;
 mod ui;
 mod update;
+mod weapons;
 mod worker;
 
 use eframe::egui;

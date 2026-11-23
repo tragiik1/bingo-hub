@@ -4,6 +4,7 @@ using SixLabors.ImageSharp; using SixLabors.ImageSharp.PixelFormats; using SixLa
 // Builds the Classes page's item data from the player's own game files (vanilla params and icons).
 // args: gameDir outDir iconPx [pal]
 //   items.tsv  name<TAB>kind<TAB>smithing|somber|<empty><TAB>iconId  (weapons, then spells)
+//   weapons.tsv  per weapon: attack, scaling, requirements, status, skill; scaling curves; spell costs
 //   icons.bin  "BHIC", u32 count, (u32 iconId, u32 length) x count, then the PNGs
 // Upgrade type: the weapon's EquipMtrlSetParam rows (Smithing Stones 10100-10109, Somber 10160-10169);
 // ammo, Unarmed and weapons with no +1 (Meteorite Staff, Serpent-Hunter) count as not upgradable.
@@ -41,6 +42,84 @@ Console.WriteLine("upgrade kinds: " + string.Join(", ", rows.GroupBy(x=>x.up).Se
 // dedupe by name (first wins: weapons before spells)
 var seen = new HashSet<string>(); var outRows = rows.Where(x => seen.Add(x.name)).ToList();
 File.WriteAllText(Path.Combine(outDir,"items.tsv"), string.Join("\n", outRows.Select(x=>$"{x.name}\t{x.kind}\t{x.up}\t{x.icon}"))+"\n", new UTF8Encoding(false));
+// weapons.tsv: what the Classes page needs to work out attack rating, plus skills and spell costs.
+// Classes get plain +0 weapons with their own skills (the Randomizer never changes these params).
+var reg = G<BND4>("_regulationBnd");
+// The Randomizer's own layouts, plus four it doesn't ship (from Paramdex, in .\defs).
+var defs = Directory.GetFiles("Resources/Params/Defs", "*.xml").Concat(Directory.GetFiles(Path.Combine(AppContext.BaseDirectory, "defs"), "*.xml"))
+  .Select(f => { var x = new System.Xml.XmlDocument(); x.Load(f); return PARAMDEF.XmlSerializer.Deserialize(x, true); }).ToList();
+Param P(string file) {
+  var p = Param.Read(reg.Files.First(f => Path.GetFileName(f.Name) == file).Bytes);
+  if (!Project.Utility.ExtensionMethods.ApplyParamDefsCarefully(p, defs)) throw new Exception("No paramdef fits " + file);
+  return p;
+}
+var reinforce = P("ReinforceParamWeapon.param").Rows.ToDictionary(x => x.ID);
+var graphs = P("CalcCorrectGraph.param").Rows.ToDictionary(x => x.ID);
+var aecs = P("AttackElementCorrectParam.param").Rows.ToDictionary(x => x.ID);
+var spfx = P("SpEffectParam.param").Rows.ToDictionary(x => x.ID);
+var magic = P("Magic.param").Rows.ToDictionary(x => x.ID);
+var arts = new Dictionary<int,string>();
+foreach (var f in BND4.Read(bhd.GetFile("/msg/engus/item_dlc02.msgbnd.dcx")).Files.Where(f => Path.GetFileName(f.Name).StartsWith("ArtsName")))
+  foreach (var e in FMG.Read(f.Bytes).Entries) if (!string.IsNullOrWhiteSpace(e.Text) && !e.Text.Contains("[ERROR]") && !e.Text.Contains("dummy", StringComparison.OrdinalIgnoreCase)) arts[e.ID] = e.Text.Trim();
+var swordArts = P("SwordArtsParam.param").Rows.ToDictionary(x => x.ID);
+double D(Param.Row row, string f) => Convert.ToDouble(row[f].Value.Value);
+string N(double v) => Math.Round(v, 4).ToString(System.Globalization.CultureInfo.InvariantCulture);
+var els = new[]{"Physics","Magic","Fire","Thunder","Dark"};
+var attrs = new[]{("Strength","Strength"),("Agility","Dexterity"),("Magic","Magic"),("Faith","Faith"),("Luck","Luck")};
+var lines = new List<string>(); var usedGraphs = new SortedSet<int>{0, 6}; var usedAec = new SortedSet<int>(); var wseen = new HashSet<string>();
+foreach (var row in wep.Rows) {
+  if (row.ID % 10000 != 0) continue; var name = wfmg[row.ID]?.Trim();
+  if (string.IsNullOrWhiteSpace(name) || name.Contains("[ERROR]") || !wseen.Add(name)) continue;
+  int t = I(row,"wepType"); if (t is 81 or 83 or 85 or 86) continue;
+  if (!reinforce.TryGetValue(I(row,"reinforceTypeId"), out var rf)) { Console.WriteLine("no reinforce row for " + name); continue; }
+  var atk = new[]{"attackBasePhysics","attackBaseMagic","attackBaseFire","attackBaseThunder","attackBaseDark"}
+    .Zip(new[]{"physicsAtkRate","magicAtkRate","fireAtkRate","thunderAtkRate","darkAtkRate"}, (a, r) => D(row,a) * D(rf,r));
+  var scale = new[]{"correctStrength","correctAgility","correctMagic","correctFaith","correctLuck"}
+    .Zip(new[]{"correctStrengthRate","correctAgilityRate","correctMagicRate","correctFaithRate","correctLuckRate"}, (a, r) => D(row,a) * D(rf,r));
+  var req = new[]{"properStrength","properAgility","properMagic","properFaith","properLuck"}.Select(f => I(row,f));
+  var g = new[]{"correctType_Physics","correctType_Magic","correctType_Fire","correctType_Thunder","correctType_Dark","correctType_Poison","correctType_Blood","correctType_Sleep","correctType_Madness"}.Select(f => I(row,f)).ToArray();
+  foreach (var id in g) usedGraphs.Add(id);
+  int aec = I(row,"attackElementCorrectId"); usedAec.Add(aec);
+  // Status buildup from the weapon's SpEffects, at +0 (ReinforceParamWeapon.spEffectId1..3 offsets).
+  var status = new double[7]; var stf = new[]{"poizonAttackPower","diseaseAttackPower","bloodAttackPower","freezeAttackPower","sleepAttackPower","madnessAttackPower","curseAttackPower"};
+  for (int k = 0; k < 3; k++) {
+    int id = I(row,$"spEffectBehaviorId{k}"); if (id <= 0) continue;
+    if (!spfx.TryGetValue(id + I(rf,$"spEffectId{k+1}"), out var se)) continue;
+    for (int s = 0; s < 7; s++) status[s] += D(se, stf[s]);
+  }
+  var types = new List<string>();
+  if (I(row,"isNormalAttackType") == 1) types.Add("Standard"); if (I(row,"isSlashAttackType") == 1) types.Add("Slash");
+  if (I(row,"isBlowAttackType") == 1) types.Add("Strike"); if (I(row,"isThrustAttackType") == 1) types.Add("Pierce");
+  // Skill: SwordArtsParam.textId names it in ArtsName. FP as the game shows it: the skill's own cost,
+  // or for stances (Unsheathe 0, then 10/15) the light/heavy follow-up costs.
+  string skill = "", fp = "";
+  if (swordArts.TryGetValue(I(row,"swordArtsParamId"), out var sa)) {
+    skill = arts.GetValueOrDefault(I(sa,"textId"), "");
+    if (skill == "No Skill") skill = "";
+    int l2 = I(sa,"useMagicPoint_L2"), r1 = I(sa,"useMagicPoint_R1"), r2 = I(sa,"useMagicPoint_R2");
+    fp = skill == "" ? "" : l2 > 0 ? l2.ToString() : string.Join("/", new[]{r1, r2}.Where(x => x > 0).Distinct());
+  }
+  lines.Add(string.Join("\t", new[]{"W", name, skill, fp, string.Join(" / ", types)}.Concat(atk.Select(N)).Concat(scale.Select(N)).Concat(req.Select(x => x.ToString()))
+    .Concat(g.Select(x => x.ToString())).Append(aec.ToString()).Concat(status.Select(N))
+    .Append(I(row,"isDualBlade").ToString()).Append(I(row,"enableMagic").ToString()).Append(I(row,"enableMiracle").ToString())));
+}
+foreach (var id in usedGraphs) {
+  if (!graphs.TryGetValue(id, out var gr)) { Console.WriteLine("no graph " + id); continue; }
+  lines.Add(string.Join("\t", new[]{"G", id.ToString()}.Concat(Enumerable.Range(0,5).SelectMany(k => new[]{N(D(gr,$"stageMaxVal{k}")), N(D(gr,$"stageMaxGrowVal{k}")), N(D(gr,$"adjPt_maxGrowVal{k}"))}))));
+}
+foreach (var id in usedAec) {
+  if (!aecs.TryGetValue(id, out var ae)) { Console.WriteLine("no attack element row " + id); continue; }
+  // Per element, per attribute: -2 = doesn't scale, -1 = scales with the weapon's own value, else an override rate.
+  lines.Add(string.Join("\t", new[]{"E", id.ToString()}.Concat(els.SelectMany(el => attrs.Select(a =>
+    I(ae,$"is{a.Item2}Correct_by{el}") == 0 ? "-2" : N(D(ae,$"overwrite{a.Item2}CorrectRate_by{el}")))))));
+}
+foreach (var row in goods.Rows) {
+  int gt = I(row,"goodsType"); if (gt!=5 && (gt<16||gt>18)) continue;
+  var name = gfmg[row.ID]?.Trim(); if (string.IsNullOrWhiteSpace(name) || name.Contains("[ERROR]") || !magic.TryGetValue(row.ID, out var m)) continue;
+  lines.Add(string.Join("\t", "S", name, I(m,"mp"), I(m,"slotLength"), I(m,"requirementIntellect"), I(m,"requirementFaith"), I(m,"requirementLuck")));
+}
+File.WriteAllText(Path.Combine(outDir,"weapons.tsv"), string.Join("\n", lines)+"\n", new UTF8Encoding(false));
+Console.WriteLine($"weapons.tsv: {lines.Count(l => l[0]=='W')} weapons, {usedGraphs.Count} graphs, {usedAec.Count} element rows, {lines.Count(l => l[0]=='S')} spells, {arts.Count} skill names");
 // icons from SB_Icon atlases
 var need = outRows.Select(x=>x.icon).ToHashSet();
 var lay = BND4.Read(bhd.GetFile("/menu/hi/01_common.sblytbnd.dcx"));

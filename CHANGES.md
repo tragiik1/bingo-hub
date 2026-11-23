@@ -469,3 +469,41 @@ patched (`tools/randomizer-patch`).
   Greatsword, Bolt of Gransax, Dark Moon Greatsword...) were dropped too.
 - The new list has 21 weapons, all four great katanas among them. A test rejects spells, catalysts,
   greatbows and Remembrance weapons.
+
+## Fifteenth round: weapon details on the Classes page, closing a stuck game (1.0.18)
+
+- Each weapon row shows its attack rating at the class's starting stats, on the right next to the
+  upgrade tag ("ATTACK", or "2H ATTACK" when one hand is under the Strength requirement but two
+  hands aren't). The meta line adds the weapon's skill and its status buildup, dropping whole items that
+  don't fit. Staves and seals show their spell scaling; spells show their FP and say "No staff",
+  "No seal" or "Needs Int 18" when the class can't cast them. Numbers under a requirement are
+  amber.
+- Resting on a row for 0.3 s opens a card with the skill and its FP, attack per damage type,
+  buildup, scaling letters, requirements (amber with the points missing, e.g. "Str 18 (+6)") and
+  damage type.
+- Data: `tools/item-icons` now also writes `assets/weapons.tsv` from the game's own params
+  (EquipParamWeapon, ReinforceParamWeapon, CalcCorrectGraph, AttackElementCorrectParam,
+  SpEffectParam, SwordArtsParam, Magic, and the ArtsName text). Four layouts come from Paramdex
+  (`tools/item-icons/defs`). The decompiled Randomizer gives classes plain +0 weapons with their
+  own skills and never edits these params, so vanilla numbers are the seed's numbers.
+- Attack rating follows the formula used by eldenring.tclark.io (its source was read, not run).
+  The extracted inputs (base attack, scaling, requirements, curves, element rows, status) match
+  that calculator's published data for all 464 weapons it has; Fire Knight Shortsword isn't in it.
+  Uchigatana at Str 12 / Dex 15 is 133, checked by hand.
+- Stuck game: if eldenring.exe is still running more than 60 s after starting and has had no
+  visible window for 15 s, the Race page says so and offers "Close it" (Launch does the same).
+  After a confirm, it ends that process only if it's the same one and still has no window. Games
+  with a window are never touched, so a normal session can't be closed by this. A test ends a
+  windowless ping.exe; it hasn't been tried on a real stuck game.
+- The row's small line keeps its items in order but, when space is short, drops the least important
+  first: "Lv X to wield" and cast warnings stay, then the skill, the weapon type, the buildup.
+- The owner found an explanatory note about the 40% penalty unneeded, so the card has no notes:
+  short requirements are amber with the points missing, and the number's label says "2H".
+- Boards page: "Open folder" opens the Boards folder, for the Bingo Board's own file picker.
+- Rapid Bingo: added "Kill a Magma Wyrm boss" (80 goals).
+- Debug builds only: `BINGOHUB_SHOT=out.png` (after `BINGOHUB_SHOT_AFTER` seconds, default 3) saves
+  the hub's own frame and exits; `BINGOHUB_HOVER=x,y` fakes the pointer; `BINGOHUB_SCROLL=n`
+  opens the Classes page scrolled down. This works with the PC locked and never moves the real
+  mouse or takes focus. Release builds don't have it.
+- Tested: `cargo test`, and screenshots of the Classes page (top, lower cards, the hover card on a
+  weapon and on a seal) taken that way. Not seen: the stuck-game row on the Race page.

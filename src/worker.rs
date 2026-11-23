@@ -43,6 +43,9 @@ pub struct Snapshot {
     pub classes: Option<crate::classes::Spoiler>,
     /// The race graces hotkey, one of `sys::hotkey`.
     pub hotkey: u8,
+    /// The game is still running but has had no window for a while: left over from a crash or a
+    /// slow exit, and it stops a new game from starting.
+    pub game_stuck: bool,
 }
 
 pub struct Shared {
@@ -148,6 +151,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut tick: u64 = 0;
     let mut procs = sys::ProcCache::default();
     let mut fast_until = Instant::now();
+    let mut no_window_since: Option<Instant> = None;
     core::unlock_randomizer_output();
 
     loop {
@@ -379,6 +383,17 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
         prev_state = game;
         prev_game = game_pid;
 
+        // Past start-up, a game without a window for 15 s is stuck (a normal exit takes a second or two).
+        let stuck = match game_pid {
+            Some(pid) if sys::process_age(pid).is_some_and(|a| a > 60.0) && !sys::has_window(pid) => {
+                no_window_since.get_or_insert_with(Instant::now).elapsed() >= Duration::from_secs(15)
+            }
+            _ => {
+                no_window_since = None;
+                false
+            }
+        };
+
         let snap = Snapshot {
             game,
             game_pid,
@@ -395,6 +410,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             bingo_save: crate::bingosave::active(),
             classes: classes.clone(),
             hotkey: shared.hotkey.load(Ordering::Relaxed),
+            game_stuck: stuck,
         };
         {
             let mut cur = shared.snap.lock().unwrap();

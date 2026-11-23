@@ -9,6 +9,7 @@
     <DllDir Condition="'$(DllDir)'==''">$(MSBuildThisFileDirectory)extracted</DllDir>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="defs\*.xml" CopyToOutputDirectory="PreserveNewest" LinkBase="defs" />
     <PackageReference Include="BCnEncoder.Net" Version="2.1.0" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.9" />
     <Reference Include="SoulsFormats"><HintPath>$(DllDir)\SoulsFormats.dll</HintPath></Reference>
