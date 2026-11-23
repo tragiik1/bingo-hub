@@ -513,3 +513,7 @@ patched (`tools/randomizer-patch`).
 - "2H ATTACK" wasn't clear to the owner. A weapon the class can only wield two-handed now reads
   "TWO-HANDED" under its number, and the hover card has a Grip line: "Two-handed · Str 13 to
   one-hand". The number column is a little wider (62px) to fit the label. Checked on screen.
+- Boards: "Set as default" is now "Load in the Board" ("Loaded by the Board" when it is). The owner
+  didn't know what it did: EldenBingo's admin panel fills its file box from that setting
+  (`LastBingoFile`) and opens Browse in that file's folder (AdminControl.cs), so the Board starts
+  with that board and its picker opens in Boards.

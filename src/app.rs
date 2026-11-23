@@ -519,7 +519,7 @@ impl App {
             }
             Act::SetDefault(path) => match core::board_config_set("LastBingoFile", &path.display().to_string(), snap.board.is_some()) {
                 Ok(()) => {
-                    self.toast(ctx, format!("{} is the Board's default", core::pretty(&path)));
+                    self.toast(ctx, format!("The Bingo Board will load {}", core::pretty(&path)));
                     self.load_boards();
                 }
                 Err(e) => self.alert("Couldn't set default", e),
@@ -1301,7 +1301,8 @@ impl App {
                     }
                 },
                 |ui, acts| {
-                    if ui::button(ui, if is_default { "Board default" } else { "Set as default" }, Kind::Ghost, sel.is_some() && !is_default).clicked() {
+                    // The Bingo Board fills in this file, and its Browse opens in the Boards folder.
+                    if ui::button(ui, if is_default { "Loaded by the Board" } else { "Load in the Board" }, Kind::Ghost, sel.is_some() && !is_default).clicked() {
                         acts.push(Act::SetDefault(sel.clone().unwrap().path));
                     }
                     if ui::button(ui, "Practice card", Kind::Ghost, sel.is_some()).clicked() {
