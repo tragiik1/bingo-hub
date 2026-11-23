@@ -107,6 +107,8 @@ enum Confirmed {
     StartSteam,
     /// The run as it was when Delete was pressed (a race can be added to the log meanwhile).
     DeleteRun(Run),
+    /// Move this board to the Recycle Bin.
+    DeleteBoard(PathBuf),
 }
 
 enum PromptFor {
@@ -152,6 +154,7 @@ pub struct App {
     boards: Vec<Board>,
     boards_loaded: bool,
     board_sel: usize,
+    board_ed: crate::boards::Editor,
     default_board: Option<String>,
     query: String,
     practice: Option<Practice>,
@@ -191,6 +194,7 @@ impl App {
             boards: vec![],
             boards_loaded: false,
             board_sel: 0,
+            board_ed: Default::default(),
             default_board: None,
             query: String::new(),
             practice: None,
@@ -299,6 +303,7 @@ impl App {
     fn load_boards(&mut self) {
         self.boards = core::list_boards();
         self.default_board = core::board_config_get("LastBingoFile").filter(|s| !s.is_empty());
+        self.board_ed.card = crate::boards::card_size();
         self.board_sel = self.board_sel.min(self.boards.len().saturating_sub(1));
         self.boards_loaded = true;
         // Boards re-sort when one is added; a card dealt from a board that changed is closed.
@@ -451,7 +456,7 @@ impl App {
             Act::Launch => {
                 if let Some(pid) = snap.game_pid {
                     if !sys::focus_pid(pid) && snap.game_stuck {
-                        return self.act(ctx, Act::EndStuckGame, snap);
+                        self.act(ctx, Act::EndStuckGame, snap);
                     }
                 } else if !p.regulation.is_file() {
                     self.alert("Randomize first", "Open the Randomizer, enter the seed and press Randomize.");
@@ -707,6 +712,14 @@ Close it?",
                 Ok(()) => self.toast(ctx, "Next bingo game starts with a fresh save"),
                 Err(e) => self.alert("Couldn't reset", e),
             },
+            Confirmed::DeleteBoard(path) => match sys::recycle(&path) {
+                Ok(()) => {
+                    self.board_ed.forget(&path);
+                    self.load_boards();
+                    self.toast(ctx, "Moved to the Recycle Bin");
+                }
+                Err(e) => self.alert("Couldn't delete the board", e),
+            },
             Confirmed::DeleteRun(run) => {
                 if let Some(i) = self.runs.iter().position(|r| *r == run) {
                     self.runs.remove(i);
@@ -749,10 +762,65 @@ impl eframe::App for App {
         c::BG.to_normalized_gamma_f32()
     }
 
-    /// Debug builds only: BINGOHUB_HOVER="x,y" puts a pretend pointer there, so a screenshot can show
-    /// hover states without touching the real mouse.
+    /// Debug builds only: BINGOHUB_HOVER="x,y" puts a pretend pointer there, and BINGOHUB_SCRIPT plays
+    /// input ("1.5 dclick 600,300; 2 text Hello; 2.2 key Enter; 3 key ctrl+Z"), so screenshots can show
+    /// interactions without touching the real mouse or keyboard.
     #[cfg(debug_assertions)]
     fn raw_input_hook(&mut self, _ctx: &egui::Context, raw: &mut egui::RawInput) {
+        use std::sync::Mutex;
+        static START: std::sync::OnceLock<std::time::Instant> = std::sync::OnceLock::new();
+        static DONE: Mutex<usize> = Mutex::new(0);
+        let t = START.get_or_init(std::time::Instant::now).elapsed().as_secs_f64();
+        if let Ok(script) = std::env::var("BINGOHUB_SCRIPT") {
+            // Behave as a focused window (a locked PC gives it none).
+            raw.focused = true;
+            let steps: Vec<&str> = script.split(';').map(str::trim).filter(|s| !s.is_empty()).collect();
+            let mut done = DONE.lock().unwrap();
+            while let Some(step) = steps.get(*done) {
+                let mut parts = step.splitn(3, ' ');
+                let (Some(at), Some(cmd)) = (parts.next().and_then(|v| v.parse::<f64>().ok()), parts.next()) else { break };
+                if t < at {
+                    break;
+                }
+                let arg = parts.next().unwrap_or("");
+                let xy = || arg.split_once(',').and_then(|(x, y)| Some(egui::pos2(x.trim().parse().ok()?, y.trim().parse().ok()?)));
+                let press = |raw: &mut egui::RawInput, button: egui::PointerButton, n: usize| {
+                    if let Some(pos) = xy() {
+                        raw.events.push(egui::Event::PointerMoved(pos));
+                        for _ in 0..n {
+                            for pressed in [true, false] {
+                                raw.events.push(egui::Event::PointerButton { pos, button, pressed, modifiers: Default::default() });
+                            }
+                        }
+                    }
+                };
+                match cmd {
+                    "move" => {
+                        if let Some(pos) = xy() {
+                            raw.events.push(egui::Event::PointerMoved(pos));
+                        }
+                    }
+                    "click" => press(raw, egui::PointerButton::Primary, 1),
+                    "dclick" => press(raw, egui::PointerButton::Primary, 2),
+                    "rclick" => press(raw, egui::PointerButton::Secondary, 1),
+                    "text" => raw.events.push(egui::Event::Text(arg.to_string())),
+                    "key" => {
+                        let (ctrl, name) = match arg.strip_prefix("ctrl+") {
+                            Some(n) => (true, n),
+                            None => (false, arg),
+                        };
+                        if let Some(key) = egui::Key::from_name(name) {
+                            let modifiers = if ctrl { egui::Modifiers::COMMAND } else { Default::default() };
+                            for pressed in [true, false] {
+                                raw.events.push(egui::Event::Key { key, physical_key: None, pressed, repeat: false, modifiers });
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+                *done += 1;
+            }
+        }
         if let Some((x, y)) = std::env::var("BINGOHUB_HOVER").ok().and_then(|v| v.split_once(',').map(|(a, b)| (a.trim().parse().ok(), b.trim().parse().ok()))) {
             if let (Some(x), Some(y)) = (x, y) {
                 raw.events.push(egui::Event::PointerMoved(egui::pos2(x, y)));
@@ -815,7 +883,7 @@ impl eframe::App for App {
             ui.scope_builder(UiBuilder::new().max_rect(content), |ui| match self.page {
                 Page::Race => self.race(ui, &snap, &mut acts),
                 Page::Saves => self.saves(ui, &snap, &mut acts),
-                Page::Boards => self.boards_page(ui, &mut acts),
+                Page::Boards => self.boards_page(ui, &mut acts, &snap),
                 Page::Classes => self.classes_page(ui, &snap),
                 Page::Runs => self.runs_page(ui, &mut acts),
                 Page::Setup => self.setup(ui, &snap, &mut acts),
@@ -1232,7 +1300,7 @@ impl App {
 
     // ------------------------------------------------------------ boards
 
-    fn boards_page(&mut self, ui: &mut Ui, acts: &mut Vec<Act>) {
+    fn boards_page(&mut self, ui: &mut Ui, acts: &mut Vec<Act>, snap: &Snapshot) {
         if !self.boards_loaded {
             self.load_boards();
         }
@@ -1305,7 +1373,8 @@ impl App {
                     if ui::button(ui, if is_default { "Loaded by the Board" } else { "Load in the Board" }, Kind::Ghost, sel.is_some() && !is_default).clicked() {
                         acts.push(Act::SetDefault(sel.clone().unwrap().path));
                     }
-                    if ui::button(ui, "Practice card", Kind::Ghost, sel.is_some()).clicked() {
+                    let full = sel.as_ref().is_some_and(|b| b.goals.len() >= self.board_ed.card);
+                    if ui::button(ui, "Practice card", Kind::Ghost, full).clicked() {
                         acts.push(Act::Practice);
                     }
                     // The Board's own file picker needs this folder; open it to copy the path.
@@ -1326,19 +1395,38 @@ impl App {
                 ui::field(ui, "goal_search", &mut self.query, "Search goals", right.width(), 100);
             });
 
-            let boards = &self.boards;
-            let out = ui::table(ui, "boards", Rect::from_min_max(pos2(left.left(), left.top() + 44.0), left.max), &[col("Board", 5.0), col_r("Goals", 1.4)], n, Some(self.board_sel), "No boards yet", |r, ci| {
-                if ci == 0 { (boards[r].name.clone(), c::TEXT) } else { (boards[r].goals.len().to_string(), c::MUTED) }
-            });
-            if let Some(i) = out.clicked {
-                self.board_sel = i;
+            // Editing: see boards.rs. Changes are saved as they're made, then the list is reloaded.
+            let running = snap.board.is_some();
+            let mut out = Vec::new();
+            if self.modal.is_none() {
+                self.board_ed.keys(ui, self.boards.get(self.board_sel), &self.query, running, &mut out);
             }
-
-            let q = self.query.trim().to_lowercase();
-            let goals: Vec<(usize, &str)> = sel_goals(boards.get(self.board_sel), &q);
-            ui::table(ui, "goals", Rect::from_min_max(pos2(right.left(), right.top() + 44.0), right.max), &[col_r("", 0.9), col("Goal", 10.0)], goals.len(), None, if q.is_empty() { "" } else { "No matching goals" }, |r, ci| {
-                if ci == 0 { ((goals[r].0 + 1).to_string(), c::FAINT) } else { (goals[r].1.to_string(), c::TEXT) }
-            });
+            let list = Rect::from_min_max(pos2(left.left(), left.top() + 44.0), left.max);
+            self.board_ed.boards_panel(ui, list, &self.boards, self.board_sel, running, &mut out);
+            let goals = Rect::from_min_max(pos2(right.left(), right.top() + 44.0), right.max);
+            self.board_ed.goals_panel(ui, goals, self.boards.get(self.board_sel), &self.query, &mut out);
+            let ctx = ui.ctx().clone();
+            for o in out {
+                match o {
+                    crate::boards::Out::Changed(path) => {
+                        self.load_boards();
+                        if let Some(i) = self.boards.iter().position(|b| b.path == path) {
+                            self.board_sel = i;
+                        }
+                    }
+                    crate::boards::Out::Reload => self.load_boards(),
+                    crate::boards::Out::Select(i) => self.board_sel = i,
+                    crate::boards::Out::ClearSearch => self.query.clear(),
+                    crate::boards::Out::Toast(t) => self.toast(&ctx, t),
+                    crate::boards::Out::Error(e) => self.alert("Couldn't save", e),
+                    crate::boards::Out::ConfirmDelete(path, name) => self.confirm(
+                        "Delete board",
+                        format!("Move \"{name}\" to the Recycle Bin? Friends who already have it keep their copy."),
+                        "Delete",
+                        Confirmed::DeleteBoard(path),
+                    ),
+                }
+            }
         });
     }
 
@@ -1722,10 +1810,6 @@ impl App {
             self.modal = None;
         }
     }
-}
-
-fn sel_goals<'a>(b: Option<&'a Board>, q: &str) -> Vec<(usize, &'a str)> {
-    b.map(|b| b.goals.iter().enumerate().filter(|(_, g)| q.is_empty() || g.name.to_lowercase().contains(q)).map(|(i, g)| (i, g.name.as_str())).collect()).unwrap_or_default()
 }
 
 fn nav_item(ui: &mut Ui, rect: Rect, label: &str, selected: bool, badge: Option<(String, Color32)>, id: (&str, &str)) -> egui::Response {

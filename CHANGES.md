@@ -517,3 +517,34 @@ patched (`tools/randomizer-patch`).
   didn't know what it did: EldenBingo's admin panel fills its file box from that setting
   (`LastBingoFile`) and opens Browse in that file's folder (AdminControl.cs), so the Board starts
   with that board and its picker opens in Boards.
+
+## Seventeenth round: board editor (unreleased)
+
+- Boards page edits boards in place (`src/boards.rs`). Goals: double-click a goal (or select it and
+  press Enter/F2, or hover and press Edit) to change it; Enter saves, Esc cancels, clicking away
+  saves. "Add a goal" at the foot of the list adds on Enter and stays ready for the next one, and
+  the list scrolls to it. Hover Delete (or the Delete key) removes a goal with a toast. Duplicates
+  (ignoring case) are refused with "Already on this board". Arrow keys move the selection.
+- Boards: "+ New board" at the foot of the list makes "New board", puts its name in edit mode, and
+  Enter goes straight to adding goals; Esc on a brand-new empty board removes it again. Each row
+  has a "⋯" menu (also on right-click): Rename, Duplicate, Show in folder, Delete… (confirmed,
+  to the Recycle Bin). Double-click a board to rename it. Names that would clash with another
+  board, even one that only looks the same ("Rapid Bingo" next to rapid-bingo.json), show
+  "Name taken".
+- Every change is saved at once (written through a temp file). Ctrl+Z steps back through goal
+  changes, new boards (sent to the Recycle Bin) and renames for the session.
+- Boards below the Bingo Board's card size (its GS_BoardSize setting squared, 25 by default) show
+  their count in amber and "a card needs 25"; Practice card is off for them.
+- Files keep the Board's layout (one goal per line, tab-indented) and any extra fields on a goal.
+  Names typed in the hub are shown as typed ("BB Practice"); downloaded slugs are still tidied.
+  Renaming the board the Bingo Board remembers updates that setting when the Board is closed.
+- Release note: updates copy Boards over friends' folders, so a board renamed or deleted here stays
+  on their PCs under the old name until they delete it.
+- Tested: `cargo test` (round trip with a BOM and extra fields, names, create/rename/clash in the
+  test build's own folder), and screenshots of every state in a sandbox install with copies of the
+  boards: editing, saved edit, duplicate warning, adding two in a row, Delete key + undo, New
+  board → name → add, Esc on a new board, the ⋯ and right-click menus, Name taken, Duplicate,
+  the delete confirmation, arrow keys + Enter, and rename + undo. The real Boards folder wasn't
+  touched.
+- Debug builds only: `BINGOHUB_SCRIPT` plays input for screenshots ("2 dclick 650,384; 2.4 text
+  Hello; 2.6 key Enter; 3 key ctrl+Z"; also move, click, rclick).

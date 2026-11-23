@@ -3,6 +3,7 @@
 mod art;
 mod app;
 mod bingosave;
+mod boards;
 mod classes;
 mod core;
 mod crash;

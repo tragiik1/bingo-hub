@@ -514,6 +514,14 @@ pub fn rename_backup(b: &Backup, label: &str) -> Result<(), String> {
 #[derive(Clone)]
 pub struct Goal {
     pub name: String,
+    /// Any other fields the file had on this goal, written back untouched.
+    extra: serde_json::Map<String, serde_json::Value>,
+}
+
+impl Goal {
+    pub fn new(name: &str) -> Self {
+        Goal { name: name.trim().to_string(), extra: Default::default() }
+    }
 }
 
 #[derive(Clone)]
@@ -529,6 +537,10 @@ pub fn pretty(file: &Path) -> String {
         if s.ends_with(')') && s[i + 2..s.len() - 1].chars().all(|c| c.is_ascii_digit()) {
             s.truncate(i);
         }
+    }
+    // A name typed in the hub ("BB Season 5") is shown as typed; downloaded slugs are tidied.
+    if s.chars().any(|c| c.is_uppercase()) {
+        return s.trim().to_string();
     }
     let s = s.replace(['-', '_'], " ");
     let mut out = String::new();
@@ -555,15 +567,99 @@ pub fn load_board(p: &Path) -> Option<Board> {
     }
     let text = fs::read_to_string(p).ok()?;
     let v: serde_json::Value = serde_json::from_str(text.trim_start_matches('\u{feff}')).ok()?;
-    let goals: Vec<Goal> = v
-        .as_array()?
+    let arr = v.as_array()?;
+    let goals: Vec<Goal> = arr
         .iter()
         .filter_map(|e| {
-            let name = e.get("name")?.as_str()?.trim().to_string();
-            Some(Goal { name })
+            let mut extra = e.as_object()?.clone();
+            let name = extra.remove("name")?.as_str()?.trim().to_string();
+            Some(Goal { name, extra })
         })
         .collect();
-    (!goals.is_empty()).then(|| Board { path: p.to_path_buf(), name: pretty(p), goals })
+    // An empty list is a board being written; any other array without goals isn't a board.
+    (!goals.is_empty() || arr.is_empty()).then(|| Board { path: p.to_path_buf(), name: pretty(p), goals })
+}
+
+/// A goal list worth importing: a board with at least one goal.
+fn is_goal_list(p: &Path) -> bool {
+    load_board(p).is_some_and(|b| !b.goals.is_empty())
+}
+
+/// Writes the board in the layout the Bingo Board's own files use: one goal per line.
+pub fn save_board(b: &Board) -> Result<(), String> {
+    let mut out = String::from("[");
+    for (i, g) in b.goals.iter().enumerate() {
+        let name = serde_json::Value::String(g.name.clone());
+        let line = if g.extra.is_empty() {
+            format!("{{\"name\": {name}}}")
+        } else {
+            let mut obj = serde_json::Map::new();
+            obj.insert("name".into(), name);
+            obj.extend(g.extra.clone());
+            serde_json::Value::Object(obj).to_string()
+        };
+        out += if i == 0 { "\n\t" } else { ",\n\t" };
+        out += &line;
+    }
+    out += if b.goals.is_empty() { "]\n" } else { "\n]\n" };
+    write_atomic(&b.path, out).map_err(|e| format!("Couldn't save {}: {e}", b.name))
+}
+
+/// The file a board called `name` lives in. Err if nothing usable is left of the name.
+pub fn board_path_for(name: &str) -> Result<PathBuf, String> {
+    let clean: String = name.chars().filter(|c| !matches!(c, '<' | '>' | ':' | '"' | '/' | '\\' | '|' | '?' | '*') && !c.is_control()).collect();
+    let clean = clean.split_whitespace().collect::<Vec<_>>().join(" ");
+    let clean = clean.trim_end_matches('.').trim();
+    if clean.is_empty() {
+        return Err("Give the board a name.".into());
+    }
+    Ok(paths().boards_dir.join(format!("{clean}.json")))
+}
+
+/// True if another board already has this file, or would show under the same name
+/// ("Rapid Bingo.json" next to "rapid-bingo.json"). Windows ignores case.
+fn board_taken(path: &Path, except: Option<&Path>) -> bool {
+    let file = path.file_name().map(|n| n.to_string_lossy().to_lowercase());
+    let shown = pretty(path).to_lowercase();
+    json_files(&paths().boards_dir)
+        .iter()
+        .filter(|f| Some(f.as_path()) != except)
+        .any(|f| f.file_name().map(|n| n.to_string_lossy().to_lowercase()) == file || pretty(f).to_lowercase() == shown)
+}
+
+/// A name that isn't taken yet: "New board", "New board 2", ...
+pub fn free_board_name(base: &str) -> String {
+    (1..1000)
+        .map(|i| if i == 1 { base.to_string() } else { format!("{base} {i}") })
+        .find(|n| board_path_for(n).is_ok_and(|p| !board_taken(&p, None)))
+        .unwrap_or_else(|| base.to_string())
+}
+
+/// Makes a board file, empty or with these goals.
+pub fn create_board(name: &str, goals: Vec<Goal>) -> Result<PathBuf, String> {
+    let path = board_path_for(name)?;
+    if board_taken(&path, None) {
+        return Err(format!("There's already a board called \"{}\".", name.trim()));
+    }
+    fs::create_dir_all(&paths().boards_dir).map_err(|e| e.to_string())?;
+    save_board(&Board { path: path.clone(), name: pretty(&path), goals })?;
+    Ok(path)
+}
+
+/// Renames a board's file. The Bingo Board's remembered file follows it when the Board is closed.
+pub fn rename_board(from: &Path, name: &str, board_running: bool) -> Result<PathBuf, String> {
+    let to = board_path_for(name)?;
+    if to == from {
+        return Ok(to);
+    }
+    if board_taken(&to, Some(from)) {
+        return Err(format!("There's already a board called \"{}\".", name.trim()));
+    }
+    fs::rename(from, &to).map_err(|e| format!("Couldn't rename the board: {e}"))?;
+    if board_config_get("LastBingoFile").is_some_and(|f| Path::new(&f) == from) {
+        let _ = board_config_set("LastBingoFile", &to.display().to_string(), board_running);
+    }
+    Ok(to)
 }
 
 fn json_files(dir: &Path) -> Vec<PathBuf> {
@@ -591,7 +687,7 @@ fn library_hashes() -> Vec<Vec<u8>> {
 }
 
 fn download_candidates() -> Vec<PathBuf> {
-    json_files(&paths().downloads).into_iter().filter(|p| load_board(p).is_some()).collect()
+    json_files(&paths().downloads).into_iter().filter(|p| is_goal_list(p)).collect()
 }
 
 pub fn pending_in_downloads() -> usize {
@@ -607,7 +703,7 @@ pub fn pending_in_downloads() -> usize {
 
 /// Copies a goal-list into the library. False if invalid or already there.
 pub fn import_board(src: &Path) -> bool {
-    if load_board(src).is_none() {
+    if !is_goal_list(src) {
         return false;
     }
     let Some(h) = file_hash(src) else { return false };
@@ -922,6 +1018,58 @@ pub fn when(t: NaiveDateTime) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn board_files_round_trip() {
+        let dir = std::env::temp_dir().join("bingohub-board-test");
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        let p = dir.join("mixed.json");
+        // A BOM, compact layout and an extra field the hub doesn't know about.
+        fs::write(&p, "\u{feff}[{\"name\":\"Kill Margit\",\"tooltip\":\"Stormveil\"},{\"name\":\" Kill \\\"Godrick\\\" \"}]").unwrap();
+        let mut b = load_board(&p).unwrap();
+        assert_eq!(b.goals[1].name, "Kill \"Godrick\"");
+        b.goals.push(Goal::new("  Kill Rennala "));
+        save_board(&b).unwrap();
+        let text = fs::read_to_string(&p).unwrap();
+        assert!(text.starts_with("[\n\t{"), "{text}");
+        assert!(text.contains("\"tooltip\":\"Stormveil\""), "extra fields are kept: {text}");
+        assert!(text.contains("\t{\"name\": \"Kill Rennala\"}"), "{text}");
+        let again = load_board(&p).unwrap();
+        assert_eq!(again.goals.iter().map(|g| g.name.as_str()).collect::<Vec<_>>(), ["Kill Margit", "Kill \"Godrick\"", "Kill Rennala"]);
+        // An emptied board stays a board; an array of something else doesn't.
+        save_board(&Board { goals: vec![], ..again }).unwrap();
+        assert!(load_board(&p).is_some_and(|b| b.goals.is_empty()) && !is_goal_list(&p));
+        fs::write(dir.join("other.json"), "[1, 2]").unwrap();
+        assert!(load_board(&dir.join("other.json")).is_none());
+    }
+
+    #[test]
+    fn board_names() {
+        assert_eq!(pretty(Path::new("rapid-bingo.json")), "Rapid Bingo");
+        assert_eq!(pretty(Path::new("BB Season 5.json")), "BB Season 5");
+        assert!(board_path_for("  ").is_err() && board_path_for("<>").is_err());
+        assert!(board_path_for("A/B: C?").unwrap().ends_with("AB C.json"));
+    }
+
+    /// Makes and renames boards, but only in the test build's own folder, never an install.
+    #[test]
+    fn board_create_rename() {
+        let dir = paths().boards_dir.clone();
+        if dir.parent().is_some_and(|r| r.join("Bingo Board").exists() || r.join("Bingo Randomizer").exists()) {
+            return;
+        }
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("rapid-bingo.json"), "[{\"name\": \"a\"}]").unwrap();
+        assert!(create_board("Rapid Bingo", vec![]).is_err(), "looks the same as rapid-bingo.json");
+        assert_eq!(free_board_name("Rapid Bingo"), "Rapid Bingo 2");
+        let p = create_board("New board", vec![Goal::new("x")]).unwrap();
+        assert!(rename_board(&p, "rapid bingo", false).is_err());
+        let q = rename_board(&p, "BB Practice", false).unwrap();
+        assert!(q.ends_with("BB Practice.json") && !p.exists() && load_board(&q).unwrap().name == "BB Practice");
+        assert_eq!(rename_board(&q, "BB Practice", false).unwrap(), q, "same name is a no-op");
+    }
 
     #[test]
     #[ignore]

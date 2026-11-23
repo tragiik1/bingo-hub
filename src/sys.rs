@@ -353,6 +353,11 @@ pub fn shell_open(target: &str) {
     }
 }
 
+/// Opens Explorer with this file selected.
+pub fn reveal(p: &Path) {
+    let _ = Command::new("explorer.exe").raw_arg(format!("/select,\"{}\"", p.display())).spawn();
+}
+
 pub fn open_folder(p: &Path) {
     let _ = Command::new("explorer.exe").arg(p).spawn();
 }
