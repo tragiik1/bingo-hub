@@ -508,7 +508,7 @@ patched (`tools/randomizer-patch`).
 - Tested: `cargo test`, and screenshots of the Classes page (top, lower cards, the hover card on a
   weapon and on a seal) taken that way. Not seen: the stuck-game row on the Race page.
 
-## Sixteenth round: clearer two-handed attack (unreleased)
+## Sixteenth round: clearer two-handed attack (1.0.19)
 
 - "2H ATTACK" wasn't clear to the owner. A weapon the class can only wield two-handed now reads
   "TWO-HANDED" under its number, and the hover card has a Grip line: "Two-handed · Str 13 to
@@ -518,7 +518,7 @@ patched (`tools/randomizer-patch`).
   (`LastBingoFile`) and opens Browse in that file's folder (AdminControl.cs), so the Board starts
   with that board and its picker opens in Boards.
 
-## Seventeenth round: board editor (unreleased)
+## Seventeenth round: board editor (1.0.19)
 
 - Boards page edits boards in place (`src/boards.rs`). Goals: double-click a goal (or select it and
   press Enter/F2, or hover and press Edit) to change it; Enter saves, Esc cancels, clicking away
