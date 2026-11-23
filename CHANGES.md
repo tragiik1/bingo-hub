@@ -443,3 +443,18 @@ patched (`tools/randomizer-patch`).
   items.tsv, and that icons decode). Screenshots of the page and of the spoiler opening looked
   right. Not checked visually: an opened swap group and the search filter.
 - The hub exe grows by ~3.4 MB.
+
+## Thirteenth round: stat panel, spoiler spacing, Bingo pick tag (unreleased)
+
+- Stats are one panel with the value above the label and hairlines between cells, replacing eight
+  dark boxes. The Classes page has 36px under the last card so the window edge doesn't cut the
+  Spoiler card.
+- "BINGO PICK" badge (gold, next to the name, gold edge on the icon) for weapons listed in
+  `assets/bingo-weapons.txt`. The 35 starting entries were picked by hand: a strong skill or fast
+  early boss kills. A web search found no bingo-specific ranking. The owner can edit the file, and a
+  test fails if a name isn't a real weapon.
+- Removed `Boards/bingo-brawlers-season2-45min.json` (sent to the Recycle Bin); `rapid-bingo.json`
+  replaces it. Updates copy Boards over the friends' folder, so their old copy stays until they
+  delete it.
+- Tested: `cargo test`. Not looked at on screen; no screenshots were taken because they pull the
+  owner out of the game.

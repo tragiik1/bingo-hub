@@ -1089,6 +1089,8 @@ impl App {
                     ui.add_space(10.0);
                     spoiler(ui, &sp.swaps, &mut self.spoiler);
                 }
+                // Room under the last card so the window edge doesn't sit on it.
+                ui.add_space(36.0);
             });
         });
     }
@@ -1711,9 +1713,9 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
     const TOP: f32 = 18.0 + 24.0 + 10.0;
     const ITEM_H: f32 = 60.0;
     const ICON: f32 = 48.0;
-    const STAT_H: f32 = 30.0;
+    const STAT_H: f32 = 44.0;
     let stat_rows = class.stats.len().div_ceil(4).max(1);
-    let h = TOP + slots as f32 * ITEM_H + 12.0 + 14.0 + stat_rows as f32 * STAT_H + 12.0;
+    let h = TOP + slots as f32 * ITEM_H + 12.0 + 14.0 + stat_rows as f32 * STAT_H + 18.0;
     let (rect, _) = ui.allocate_exact_size(vec2(w, h), Sense::hover());
     if !ui.is_rect_visible(rect) {
         return;
@@ -1731,7 +1733,11 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
         let info = crate::items::info(&it.name);
         let row = Rect::from_min_size(pos2(left, rect.top() + TOP + n as f32 * ITEM_H), vec2(right - left, ITEM_H));
         let icon = Rect::from_min_size(pos2(left, row.center().y - ICON / 2.0), vec2(ICON, ICON));
-        p.rect_filled(icon, 8.0, c::RAISED);
+        let pick = crate::items::bingo_pick(&it.name);
+        p.rect_filled(icon, 8.0, if pick { c::RAISED.lerp_to_gamma(c::ACCENT, 0.12) } else { c::RAISED });
+        if pick {
+            p.rect_stroke(icon, 8.0, Stroke::new(1.0_f32, c::ACCENT.gamma_multiply(0.55)), StrokeKind::Inside);
+        }
         if let Some(tex) = info.and_then(|i| crate::items::texture(ui.ctx(), i.icon)) {
             p.image(tex.id(), icon.shrink(2.0), Rect::from_min_max(pos2(0.0, 0.0), pos2(1.0, 1.0)), Color32::WHITE);
         }
@@ -1752,8 +1758,18 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
         }
 
         let x = icon.right() + 14.0;
-        let name = ui::truncated(ui, &it.name, ui::body(), c::TEXT, text_right - x);
-        p.galley(pos2(x, row.center().y - 19.0), name, c::TEXT);
+        // "Bingo pick" badge right after the name.
+        let badge = pick.then(|| ui::galley(ui, "BINGO PICK", egui::FontId::new(10.0, egui::FontFamily::Name("sb".into())), c::ACCENT));
+        let badge_w = badge.as_ref().map_or(0.0, |g| g.size().x + 14.0 + 8.0);
+        let name = ui::truncated(ui, &it.name, ui::body(), c::TEXT, text_right - x - badge_w);
+        let name_w = name.size().x;
+        let name_y = row.center().y - 19.0;
+        p.galley(pos2(x, name_y), name, c::TEXT);
+        if let Some(g) = badge {
+            let b = Rect::from_min_size(pos2(x + name_w + 8.0, name_y + 1.0), vec2(g.size().x + 14.0, 17.0));
+            p.rect_filled(b, 4.0, c::ACCENT.gamma_multiply(0.16));
+            p.galley(b.center() - g.size() / 2.0, g, c::ACCENT);
+        }
         let mut meta = info.map(|i| i.kind.to_string()).unwrap_or_default();
         if let Some(n) = it.count {
             meta = if meta.is_empty() { format!("×{n}") } else { format!("{meta}   ×{n}") };
@@ -1782,14 +1798,25 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
         "Arcane" => "ARC",
         _ => "",
     };
-    let gap = 8.0;
-    let cell_w = ((right - left) - gap * 3.0) / 4.0;
+    // One panel, value over label, hairlines between cells.
+    let panel = Rect::from_min_size(pos2(left, y + 14.0), vec2(right - left, stat_rows as f32 * STAT_H));
+    p.rect_filled(panel, 8.0, c::SURFACE.lerp_to_gamma(c::BG, 0.6));
+    let cell_w = panel.width() / 4.0;
+    let line = Stroke::new(1.0_f32, c::DIVIDER);
+    for col in 1..4 {
+        let x = (panel.left() + col as f32 * cell_w).round();
+        p.vline(x, panel.y_range().shrink(9.0), line);
+    }
+    for row in 1..stat_rows {
+        p.hline(panel.x_range().shrink(12.0), (panel.top() + row as f32 * STAT_H).round(), line);
+    }
+    let value_font = egui::FontId::new(15.0, egui::FontFamily::Name("sb".into()));
+    let label_font = egui::FontId::new(10.5, egui::FontFamily::Proportional);
     for (i, (k, v)) in class.stats.iter().enumerate() {
-        let min = pos2(left + (i % 4) as f32 * (cell_w + gap), y + 14.0 + (i / 4) as f32 * STAT_H);
-        let cell = Rect::from_min_size(min, vec2(cell_w, STAT_H - 6.0));
-        p.rect_filled(cell, 6.0, c::BG);
-        p.text(pos2(cell.left() + 10.0, cell.center().y), Align2::LEFT_CENTER, short(k), ui::small(), c::FAINT);
-        p.text(pos2(cell.right() - 10.0, cell.center().y), Align2::RIGHT_CENTER, v.to_string(), ui::strong(), c::TEXT);
+        let cx = panel.left() + (i % 4) as f32 * cell_w + cell_w / 2.0;
+        let cy = panel.top() + (i / 4) as f32 * STAT_H + STAT_H / 2.0;
+        p.text(pos2(cx, cy - 7.0), Align2::CENTER_CENTER, v.to_string(), value_font.clone(), c::TEXT);
+        p.text(pos2(cx, cy + 10.0), Align2::CENTER_CENTER, short(k), label_font.clone(), c::FAINT);
     }
 }
 

@@ -49,6 +49,18 @@ pub fn info(name: &str) -> Option<Info> {
     t.get(name).or_else(|| t.get(name.trim_end_matches(" +0"))).copied()
 }
 
+static PICKS: &str = include_str!("../assets/bingo-weapons.txt");
+
+fn picks() -> impl Iterator<Item = &'static str> {
+    PICKS.lines().map(str::trim).filter(|l| !l.is_empty() && !l.starts_with('#'))
+}
+
+/// Weapons the group rates for races (assets/bingo-weapons.txt).
+pub fn bingo_pick(name: &str) -> bool {
+    let name = name.trim_end_matches(" +0");
+    picks().any(|p| p == name)
+}
+
 fn icon_png(id: u32) -> Option<&'static [u8]> {
     static INDEX: OnceLock<HashMap<u32, (usize, usize)>> = OnceLock::new();
     let index = INDEX.get_or_init(|| {
@@ -108,6 +120,15 @@ mod tests {
         assert_eq!(info("Uchigatana").unwrap().upgrade, Upgrade::Smithing);
         assert_eq!(info("Glintstone Arc").unwrap().kind, "Sorcery");
         assert_eq!(info("Dueling Shield +0").unwrap().kind, "Thrusting Shield");
+    }
+
+    #[test]
+    fn bingo_picks_are_real_weapons() {
+        for p in picks() {
+            let i = info(p).unwrap_or_else(|| panic!("{p} isn't in items.tsv"));
+            assert!(!matches!(i.kind, "Sorcery" | "Incantation"), "{p} is a spell");
+        }
+        assert!(bingo_pick("Wing of Astel") && !bingo_pick("Club"));
     }
 
     #[test]

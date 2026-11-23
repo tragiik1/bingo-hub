@@ -1,0 +1,42 @@
+# Weapons shown with a "Bingo pick" tag on the Classes page: ones the group rates for races
+# (strong skill or fast boss kills early). One name per line, exactly as the game spells it.
+# Edit freely; names that don't match a weapon fail the tests.
+
+# Base game
+Wing of Astel
+Stormhawk Axe
+Bloodhound's Fang
+Moonveil
+Rivers of Blood
+Sword of Night and Flame
+Dark Moon Greatsword
+Blasphemous Blade
+Coded Sword
+Golden Order Greatsword
+Godslayer's Greatsword
+Ruins Greatsword
+Morgott's Cursed Sword
+Eleonora's Poleblade
+Bolt of Gransax
+Vyke's War Spear
+Mohgwyn's Sacred Spear
+Siluria's Tree
+Nagakiba
+Reduvia
+Hand of Malenia
+Sacred Relic Sword
+Dragon King's Cragblade
+Grafted Blade Greatsword
+Gargoyle's Blackblade
+Meteorite Staff
+Lusat's Glintstone Staff
+Carian Regal Scepter
+
+# Shadow of the Erdtree
+Milady
+Rellana's Twin Blades
+Star-Lined Sword
+Dragon-Hunter's Great Katana
+Rakshasa's Great Katana
+Ancient Meteoric Ore Greatsword
+Bloodfiend's Sacred Spear
