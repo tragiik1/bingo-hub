@@ -405,3 +405,16 @@ patched (`tools/randomizer-patch`).
 - Logo switched to "Bingo of Grace" (`src/art.rs`): a 3x3 card fills in square by square, each stamping down with a flash; the middle row completes, a light runs along it, sparks fly up, then it resets (6.4 s loop). Animates only while the hub is focused; otherwise it rests on the lit-row frame (`art::REST_T`), which is also the icon frame.
 - Icon rebuilt with tools/icon/make_icon.py.
 - Tested: unit test for the card frame; icon checked at every size. The live in-app capture came out black because the PC was locked (LogonUI running), so the logo wasn't seen inside the running hub this time; the drawing code is unchanged from 1.0.11, which was checked.
+
+## Eleventh round: Smithing Stones cost 1 per level (1.0.14)
+
+- The user wanted BONANZA 0.95's "1 Smithing Stone per level". Decompiling both showed S2 already
+  runs the same `patchSmithingStones` step, only with 2 stones per level instead of 1 (vanilla is
+  2/4/6 per tier; S2 was 2/2/2, BONANZA 1/1/1). `tools/randomizer-patch` can now set that number:
+  `patch.ps1 -Stones N` (patcher `--stones N`). Installed with `-Stones 1`.
+- Tested: seed `rapid2` through the old and new dll, hashing every param the Randomizer writes:
+  only EquipMtrlSetParam differs, and stones [1]-[8] are x1 in every row. Launching the installed
+  exe unpacked the patched dll to a new `%TEMP%\.net\S2_Style_1.0` folder. Not checked in game.
+- Before the release, the hub on this PC saw the Randomizer as changed and offered the
+  released (2-stone) build as an update. 1.0.14 ships the 1-stone build.
+

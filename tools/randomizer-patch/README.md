@@ -33,6 +33,14 @@ code includes the Randomizer's fingerprint). Needs Python 3 and the .NET SDK.
   confirm `%TEMP%\.net\S2_Style_1.0` gets a new folder holding the patched dll), not only with
   `seedtest`, which loads the dll directly.
 
+- 2026-11-23: Smithing Stones cost 1 per upgrade level (`patch.ps1 -Stones 1`). S2 already had
+  BONANZA 0.95's `patchSmithingStones` step (rows in EquipMtrlSetParam whose first material is a
+  regular Smithing Stone [1]-[8], goods 10100-10109) but set them to 2; BONANZA sets 1. The patch
+  changes only that constant. Tested on seed `rapid2` with both builds: every param the Randomizer
+  writes is identical except EquipMtrlSetParam, where stones [1]-[8] go from x2 to x1 (Somber and
+  Ancient Dragon stones were already x1). The real app unpacks the patched dll (54EED041...254B).
+  Installed build SHA-256 F40C1D55...A92E; the previous one is in `Data\Randomizer backup6-11-23-1508`.
+
 ## The pieces
 
 - `unbundle.py` pulls `Randomizer.dll` out of the .NET single-file exe.
