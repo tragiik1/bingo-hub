@@ -591,7 +591,7 @@ patched (`tools/randomizer-patch`).
 - Tested: `cargo test` (new `retired_boards_only_when_untouched`, `manifest_without_retired_still_reads`);
   the release script's retired list run read-only against the real releases.
 
-## Twenty-first round: upgraded attack on class cards (unreleased)
+## Twenty-first round: upgraded attack on class cards (1.0.22)
 
 - Each weapon row shows its attack at +0 and, after a "›", at the boards' main upgrade goal:
   +12 for smithing weapons, +4 for somber (the boards have "Smithing-stone +12 weapon" and
