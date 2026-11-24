@@ -35,6 +35,11 @@ pub struct Component {
     pub merge: bool,
     /// Relative path -> SHA-256 of the files that identify this version.
     pub files: BTreeMap<String, String>,
+    /// Merge folders only: files earlier releases shipped that this one doesn't (a board that was
+    /// renamed or deleted), with every hash they were shipped with. A copy still matching one of
+    /// those is removed; a copy someone edited is theirs and stays.
+    #[serde(default)]
+    pub retired: BTreeMap<String, Vec<String>>,
     /// Set when the zip lives in an earlier release (the tool didn't change); else found by `asset`.
     #[serde(default)]
     pub url: String,
@@ -129,8 +134,42 @@ fn matches(c: &Component, dir: &Path) -> bool {
     c.files.iter().all(|(rel, want)| sha256_hex(&dir.join(rel)).is_some_and(|got| got.eq_ignore_ascii_case(want)))
 }
 
+/// Retired files in `dir` that are exactly as a release shipped them.
+fn stale(c: &Component, dir: &Path) -> Vec<PathBuf> {
+    c.retired
+        .iter()
+        // Windows names ignore case, so "a.json" retired for "A.json" is the same file.
+        .filter(|(rel, _)| !c.files.keys().any(|k| k.eq_ignore_ascii_case(rel)))
+        .map(|(rel, hashes)| (dir.join(rel), hashes))
+        .filter(|(p, hashes)| sha256_hex(p).is_some_and(|got| hashes.iter().any(|h| h.eq_ignore_ascii_case(&got))))
+        .map(|(p, _)| p)
+        .collect()
+}
+
 fn up_to_date(c: &Component) -> bool {
-    matches(c, &root().join(&c.folder))
+    let dir = root().join(&c.folder);
+    matches(c, &dir) && stale(c, &dir).is_empty()
+}
+
+/// Removes retired boards (to the Recycle Bin). When the Bingo Board remembers one that was
+/// renamed, it's pointed at the new name: same content, so the same hash as a file shipped now.
+fn remove_retired(c: &Component, dir: &Path) {
+    let last = core::board_config_get("LastBingoFile").filter(|s| !s.is_empty());
+    let board_running = running_in("Bingo Board").is_some();
+    for p in stale(c, dir) {
+        let remembered = last.as_deref().is_some_and(|f| f.eq_ignore_ascii_case(&p.display().to_string()));
+        if remembered {
+            // The Board rewrites its settings on exit; this waits for the next update instead.
+            if board_running {
+                continue;
+            }
+            let hash = sha256_hex(&p).unwrap_or_default();
+            if let Some(new) = c.files.iter().find(|(_, h)| h.eq_ignore_ascii_case(&hash)).map(|(rel, _)| dir.join(rel)) {
+                let _ = core::board_config_set("LastBingoFile", &new.display().to_string(), false);
+            }
+        }
+        let _ = crate::sys::recycle(&p);
+    }
 }
 
 /// What the latest release would change here, if anything.
@@ -256,6 +295,7 @@ pub fn install_tools(tools: &[Component]) -> Result<Vec<String>, String> {
             if !copied {
                 return Err(format!("Couldn't update {}. Windows blocked writing to the folder.", c.name));
             }
+            remove_retired(c, &target);
         } else {
             let old = root.join(format!("{}.old", c.folder));
             let _ = fs::remove_dir_all(&old);
@@ -360,4 +400,44 @@ pub fn cleanup() {
         }
     }
     let _ = fs::remove_dir_all(core::paths().data_dir.join(".update"));
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn retired_boards_only_when_untouched() {
+        let dir = std::env::temp_dir().join(format!("bingohub-retired-{}", std::process::id()));
+        let _ = fs::remove_dir_all(&dir);
+        fs::create_dir_all(&dir).unwrap();
+        fs::write(dir.join("old.json"), "[]").unwrap(); // renamed upstream, untouched here
+        fs::write(dir.join("edited.json"), "[1]").unwrap(); // retired, but changed by the player
+        fs::write(dir.join("mine.json"), "[]").unwrap(); // never shipped
+        fs::write(dir.join("Kept.json"), "[]").unwrap(); // retired as "kept.json", still shipped as "Kept.json"
+        let h = sha256_hex(&dir.join("old.json")).unwrap();
+        let c = Component {
+            name: "Boards".into(),
+            folder: "Boards".into(),
+            asset: "Boards.zip".into(),
+            merge: true,
+            files: BTreeMap::from([("New.json".into(), h.clone()), ("Kept.json".into(), h.clone())]),
+            retired: BTreeMap::from([
+                ("old.json".into(), vec!["0000".into(), h.to_uppercase()]),
+                ("edited.json".into(), vec![h.clone()]),
+                ("kept.json".into(), vec![h.clone()]),
+                ("gone.json".into(), vec![h.clone()]),
+            ]),
+            url: String::new(),
+            size: 0,
+        };
+        assert_eq!(stale(&c, &dir), vec![dir.join("old.json")]);
+        let _ = fs::remove_dir_all(&dir);
+    }
+
+    #[test]
+    fn manifest_without_retired_still_reads() {
+        let m: Manifest = serde_json::from_str(r#"{"components":[{"name":"B","folder":"B","asset":"B.zip","files":{}}]}"#).unwrap();
+        assert!(m.components[0].retired.is_empty());
+    }
 }

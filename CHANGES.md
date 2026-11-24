@@ -549,7 +549,7 @@ patched (`tools/randomizer-patch`).
 - Debug builds only: `BINGOHUB_SCRIPT` plays input for screenshots ("2 dclick 650,384; 2.4 text
   Hello; 2.6 key Enter; 3 key ctrl+Z"; also move, click, rclick).
 
-## Eighteenth round: stale Classes data warning (unreleased)
+## Eighteenth round: stale Classes data warning (1.0.20)
 
 - `tools/item-icons` writes the game version it read as the first line of `assets/weapons.tsv`
   ("V 2.7.2"). On the owner's PC only (where `Source\tools\item-icons\make.ps1` exists), Setup
@@ -560,7 +560,7 @@ patched (`tools/randomizer-patch`).
 - Tested: `cargo test`; a screenshot of Setup with data marked 2.7.1 against the 2.7.2 game shows
   the warning; re-running make.ps1 gives a byte-identical weapons.tsv.
 
-## Nineteenth round: infused starting weapons (unreleased)
+## Nineteenth round: infused starting weapons (1.0.20)
 
 - Bug (owner): a Warrior card showed "Quality Longsword +25" with no icon or numbers. The
   Randomizer's main-hand pool only strips upgrade levels (`washWeaponLevels`), so classes can start
@@ -574,3 +574,19 @@ patched (`tools/randomizer-patch`).
 - Tested: `cargo test`, and one screenshot of the seed with the Quality Longsword Warrior
   (icon, Square Off, 108 attack). That screenshot was taken while the owner was in game; no more
   were taken.
+
+## Twentieth round: updates remove renamed and deleted boards (unreleased)
+
+- 1.0.20 shipped the owner's rename of rapid-bingo.json to "Rapid Bingo.json". Boards merge into
+  friends' folders, so they'd have kept both.
+- release.ps1 reads every earlier release's manifest and lists, under the Boards component's new
+  `retired` key, each board file no longer shipped with every hash it was shipped with. Names
+  still shipped (ignoring case) are never retired.
+- update.rs: a retired file whose hash matches a shipped version counts as out of date; after the
+  merge it goes to the Recycle Bin. Copies a friend edited, and boards they made, are kept. If the
+  Bingo Board remembers a removed board that was renamed (same hash as a file shipped now), it's
+  pointed at the new name; while the Board is open that file is left for the next update.
+- First release with this retires rapid-bingo.json and bingo-brawlers-season2-45min.json (dropped
+  in an earlier release).
+- Tested: `cargo test` (new `retired_boards_only_when_untouched`, `manifest_without_retired_still_reads`);
+  the release script's retired list run read-only against the real releases.

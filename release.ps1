@@ -86,11 +86,43 @@ if ($repo -and (Get-Command gh -ErrorAction SilentlyContinue)) {
         }
     } catch { Write-Host "  (Couldn't read the last release; uploading every tool.)" -ForegroundColor Yellow }
 }
+# Every board file any earlier release shipped, with each version's hash, so updates can remove
+# boards that were since renamed or deleted (only copies nobody edited; see update.rs).
+$shipped = @{}
+if ($repo -and (Get-Command gh -ErrorAction SilentlyContinue)) {
+    try {
+        foreach ($r in (gh api "repos/$repo/releases?per_page=100" | ConvertFrom-Json)) {
+            $murl = ($r.assets | Where-Object name -eq 'manifest.json').browser_download_url
+            if (-not $murl) { continue }
+            foreach ($c in (Invoke-RestMethod $murl).components | Where-Object merge) {
+                $seen = @($c.files.PSObject.Properties | ForEach-Object { @{ n = $_.Name; h = @($_.Value) } })
+                if ($c.retired) { $seen += @($c.retired.PSObject.Properties | ForEach-Object { @{ n = $_.Name; h = @($_.Value) } }) }
+                foreach ($s in $seen) {
+                    $key = "$($c.folder)|$($s.n)"
+                    if (-not $shipped[$key]) { $shipped[$key] = New-Object System.Collections.Generic.HashSet[string] }
+                    foreach ($h in $s.h) { [void]$shipped[$key].Add("$h".ToLower()) }
+                }
+            }
+        }
+    } catch { Write-Host "  (Couldn't read earlier releases; renamed boards won't be cleaned up this time.)" -ForegroundColor Yellow }
+}
 $toolAssets = @()
 $components = foreach ($t in $tools_) {
     $files = [ordered]@{}
     foreach ($k in $t.keys) { $files[$k] = (Get-FileHash -LiteralPath "$stage\$($t.folder)\$k" -Algorithm SHA256).Hash.ToLower() }
     $entry = [ordered]@{ name = $t.name; folder = $t.folder; asset = $t.asset; merge = $t.merge; files = $files }
+    if ($t.merge) {
+        $retired = [ordered]@{}
+        foreach ($key in ($shipped.Keys | Where-Object { $_.StartsWith("$($t.folder)|") } | Sort-Object)) {
+            $n = $key.Substring($t.folder.Length + 1)
+            # -notcontains ignores case, like Windows file names.
+            if ($t.keys -notcontains $n) { $retired[$n] = [string[]]@($shipped[$key] | Sort-Object) }
+        }
+        if ($retired.Count) {
+            $entry.retired = $retired
+            Write-Host "  $($t.name): removes $($retired.Count) old file(s) on update: $($retired.Keys -join ', ')"
+        }
+    }
     $old = $prev[$t.folder]
     if ($old -and $old.files -eq ([pscustomobject]$files | ConvertTo-Json -Compress)) {
         $entry.url = $old.url
