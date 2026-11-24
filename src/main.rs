@@ -21,13 +21,15 @@ use eframe::egui;
 fn main() {
     // After a self-update the old copy may still be closing: wait for it instead of bailing.
     let updated = std::env::args().any(|a| a == "--updated");
-    let mut first = sys::single_instance(r"Local\EldenBingoHub");
+    // Debug screenshot runs (BINGOHUB_SHOT) sit beside a running hub instead of focusing it.
+    let mutex = if cfg!(debug_assertions) && std::env::var_os("BINGOHUB_SHOT").is_some() { r"Local\EldenBingoHubShot" } else { r"Local\EldenBingoHub" };
+    let mut first = sys::single_instance(mutex);
     for _ in 0..60 {
         if first || !updated {
             break;
         }
         std::thread::sleep(std::time::Duration::from_millis(100));
-        first = sys::single_instance(r"Local\EldenBingoHub");
+        first = sys::single_instance(mutex);
     }
     if !first {
         sys::focus_titled("Bingo Hub");

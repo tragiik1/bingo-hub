@@ -548,3 +548,14 @@ patched (`tools/randomizer-patch`).
   touched.
 - Debug builds only: `BINGOHUB_SCRIPT` plays input for screenshots ("2 dclick 650,384; 2.4 text
   Hello; 2.6 key Enter; 3 key ctrl+Z"; also move, click, rclick).
+
+## Eighteenth round: stale Classes data warning (unreleased)
+
+- `tools/item-icons` writes the game version it read as the first line of `assets/weapons.tsv`
+  ("V 2.7.2"). On the owner's PC only (where `Source\tools\item-icons\make.ps1` exists), Setup
+  warns "Classes data is out of date" when the installed game's version differs, with a button
+  that opens the tool's folder. Friends never see it.
+- Debug builds only: screenshot runs (`BINGOHUB_SHOT`) use their own single-instance name, so
+  they open beside a running hub instead of bringing it to the front.
+- Tested: `cargo test`; a screenshot of Setup with data marked 2.7.1 against the 2.7.2 game shows
+  the warning; re-running make.ps1 gives a byte-identical weapons.tsv.

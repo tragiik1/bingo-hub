@@ -107,6 +107,11 @@ pub fn weapon(name: &str) -> Option<&'static Weapon> {
     w.get(name).or_else(|| w.get(name.trim_end_matches(" +0")))
 }
 
+/// The game version the Classes data was built from (the "V" line of weapons.tsv).
+pub fn built_for() -> Option<&'static str> {
+    TABLE.lines().find_map(|l| l.strip_prefix("V	")).map(str::trim)
+}
+
 pub fn spell(name: &str) -> Option<&'static Spell> {
     data().spells.get(name)
 }
@@ -240,6 +245,7 @@ mod tests {
         let pebble = spell("Glintstone Pebble").unwrap();
         assert_eq!((pebble.fp, pebble.slots, pebble.req[0]), (7, 1, 10));
         assert!(weapon("Glintstone Staff").unwrap().sorcery && weapon("Finger Seal").unwrap().incantation);
+        assert!(built_for().is_some_and(|v| v.split('.').count() >= 3), "weapons.tsv starts with the game version");
     }
 
     #[test]

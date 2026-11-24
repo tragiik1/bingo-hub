@@ -935,7 +935,20 @@ pub fn run_checks(settings: &Settings, steam_running: bool) -> Vec<Check> {
                     None,
                 );
             }
-            add(Level::Ok, "Elden Ring", game_ver, None);
+            add(Level::Ok, "Elden Ring", game_ver.clone(), None);
+            // Only on the owner's PC (it has the source): the Classes page's weapon numbers come
+            // from the game as it was when tools/item-icons last ran.
+            let tool = p.boards_dir.parent().map(|r| r.join("Source").join("tools").join("item-icons"));
+            if let (Some(tool), Some(built)) = (tool.filter(|t| t.join("make.ps1").is_file()), crate::weapons::built_for()) {
+                if built != game_ver {
+                    add(
+                        Level::Warn,
+                        "Classes data is out of date",
+                        format!("Built from Elden Ring {built}, the game is now {game_ver}. Run make.ps1 in this folder, then release."),
+                        Some(("Open folder", Fix::OpenFolder(tool))),
+                    );
+                }
+            }
             if let Some(bp) = board_config_get("GamePath").filter(|s| !s.is_empty()) {
                 let same = bp.trim_end_matches('\\').eq_ignore_ascii_case(dir.to_string_lossy().trim_end_matches('\\'));
                 if same {

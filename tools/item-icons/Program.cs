@@ -66,7 +66,10 @@ double D(Param.Row row, string f) => Convert.ToDouble(row[f].Value.Value);
 string N(double v) => Math.Round(v, 4).ToString(System.Globalization.CultureInfo.InvariantCulture);
 var els = new[]{"Physics","Magic","Fire","Thunder","Dark"};
 var attrs = new[]{("Strength","Strength"),("Agility","Dexterity"),("Magic","Magic"),("Faith","Faith"),("Luck","Luck")};
-var lines = new List<string>(); var usedGraphs = new SortedSet<int>{0, 6}; var usedAec = new SortedSet<int>(); var wseen = new HashSet<string>();
+// First line: the game version this was built from, so the hub can tell when a patch has made it stale.
+var fv = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(game, "eldenring.exe"));
+var gameVer = fv.FilePrivatePart == 0 ? $"{fv.FileMajorPart}.{fv.FileMinorPart}.{fv.FileBuildPart}" : $"{fv.FileMajorPart}.{fv.FileMinorPart}.{fv.FileBuildPart}.{fv.FilePrivatePart}";
+var lines = new List<string>{ "V	" + gameVer }; var usedGraphs = new SortedSet<int>{0, 6}; var usedAec = new SortedSet<int>(); var wseen = new HashSet<string>();
 foreach (var row in wep.Rows) {
   if (row.ID % 10000 != 0) continue; var name = wfmg[row.ID]?.Trim();
   if (string.IsNullOrWhiteSpace(name) || name.Contains("[ERROR]") || !wseen.Add(name)) continue;
