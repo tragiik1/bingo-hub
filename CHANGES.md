@@ -575,7 +575,7 @@ patched (`tools/randomizer-patch`).
   (icon, Square Off, 108 attack). That screenshot was taken while the owner was in game; no more
   were taken.
 
-## Twentieth round: updates remove renamed and deleted boards (unreleased)
+## Twentieth round: updates remove renamed and deleted boards (1.0.21)
 
 - 1.0.20 shipped the owner's rename of rapid-bingo.json to "Rapid Bingo.json". Boards merge into
   friends' folders, so they'd have kept both.
@@ -590,3 +590,21 @@ patched (`tools/randomizer-patch`).
   in an earlier release).
 - Tested: `cargo test` (new `retired_boards_only_when_untouched`, `manifest_without_retired_still_reads`);
   the release script's retired list run read-only against the real releases.
+
+## Twenty-first round: upgraded attack on class cards (unreleased)
+
+- Each weapon row shows its attack at +0 and, after a "›", at the boards' main upgrade goal:
+  +12 for smithing weapons, +4 for somber (the boards have "Smithing-stone +12 weapon" and
+  "Somber +4 weapon"). Catalysts show spell scaling the same way. The level is tinted like the
+  Smithing/Somber tag. The hover card gets an "Upgraded" row: smithing +6 · +12 · +16 · +25,
+  somber +2 · +4 · +9 · +10 (what the stone [1]/[2] bell bearings reach, the boards' goals, the max).
+- The number column now fits the card's widest label instead of a fixed 62 px, and the
+  "BINGO PICK" badge is dropped when the name wouldn't fit beside it (the icon's gold ring stays).
+- tools/item-icons adds to each W row: reinforce type, max level, raw attack and scaling, status
+  SpEffects; plus R rows (ReinforceParamWeapon per type and level) and X rows (status SpEffects).
+  weapons.tsv is ~550 KB.
+- `weapons::attack_at(w, stats, two_hand_only, level)`; `attack` is level 0.
+- Checked against the reference calculator's data: 69,011 weapon upgrade levels match; the only
+  difference is Occult Fingerprint Stone Shield again (the calculator zeroes its madness by hand).
+- Tested: `cargo test` (new `weapons::tests::upgrades`), screenshots of the Classes page and hover
+  cards (game not running).

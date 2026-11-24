@@ -1892,11 +1892,14 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
     let name_font = egui::FontId::new(18.0, egui::FontFamily::Name("sb".into()));
     p.text(pos2(left, rect.top() + 30.0), Align2::LEFT_CENTER, &class.name, name_font, c::TEXT);
 
-    const NUM_W: f32 = 62.0;
+    const UP_W: f32 = 30.0;
     let tag_w = ui::galley(ui, "Smithing", tag_font(), c::TEXT).size().x + 20.0;
     let stats = class_stats(class);
+    let details: Vec<ItemDetail> = class.items.iter().map(|it| ItemDetail::new(it, &stats, &class_tools(class))).collect();
+    // The number column fits this card's widest label, so rows line up without wasting room.
+    let label_font = egui::FontId::new(10.5, egui::FontFamily::Proportional);
+    let num_w = details.iter().filter_map(|d| d.figure()).map(|(_, l, _)| ui::galley(ui, l, label_font.clone(), c::FAINT).size().x).fold(30.0_f32, f32::max) + 6.0;
     // Which spell tools the class starts with.
-    let tools = class.items.iter().filter_map(|it| crate::weapons::weapon(&it.name)).fold((false, false), |t, w| (t.0 || w.sorcery, t.1 || w.incantation));
 
     for (n, it) in class.items.iter().enumerate() {
         let info = crate::items::info(&it.name);
@@ -1926,19 +1929,33 @@ fn class_card(ui: &mut Ui, class: &crate::classes::Class, w: f32, slots: usize) 
             text_right = pill.left() - 12.0;
         }
 
-        // Attack rating (or spell FP) in a fixed column left of the widest tag, so rows line up.
-        let d = ItemDetail::new(it, &stats, &tools);
+        // Attack rating (or spell FP) in a fixed column left of the widest tag, so rows line up,
+        // and beside it the same number at the upgrade level the boards ask for.
+        let d = &details[n];
         if let Some((value, label, col)) = d.figure() {
-            text_right = right - tag_w - 12.0;
-            let cx = text_right - NUM_W / 2.0;
-            p.text(pos2(cx, row.center().y - 7.0), Align2::CENTER_CENTER, value, egui::FontId::new(15.0, egui::FontFamily::Name("sb".into())), col);
-            p.text(pos2(cx, row.center().y + 10.0), Align2::CENTER_CENTER, label, egui::FontId::new(10.5, egui::FontFamily::Proportional), c::FAINT);
-            text_right -= NUM_W + 10.0;
+            text_right = right - tag_w - 10.0;
+            let num_font = egui::FontId::new(15.0, egui::FontFamily::Name("sb".into()));
+            if let Some((lv, up)) = d.upgraded_figure() {
+                let cx = text_right - UP_W / 2.0;
+                let tint = if d.weapon.is_some_and(|w| w.max_level <= 10) { SOMBER } else { SMITHING };
+                p.text(pos2(cx, row.center().y - 7.0), Align2::CENTER_CENTER, up, num_font.clone(), col);
+                p.text(pos2(cx, row.center().y + 10.0), Align2::CENTER_CENTER, format!("+{lv}"), egui::FontId::new(10.5, egui::FontFamily::Name("sb".into())), tint);
+                p.text(pos2(text_right - UP_W - 5.0, row.center().y - 8.0), Align2::CENTER_CENTER, "›", num_font.clone(), c::FAINT);
+                text_right -= UP_W + 10.0;
+            }
+            let cx = text_right - num_w / 2.0;
+            p.text(pos2(cx, row.center().y - 7.0), Align2::CENTER_CENTER, value, num_font, col);
+            p.text(pos2(cx, row.center().y + 10.0), Align2::CENTER_CENTER, label, label_font.clone(), c::FAINT);
+            text_right -= num_w + 10.0;
         }
 
         let x = icon.right() + 14.0;
         // "Bingo pick" badge right after the name.
-        let badge = pick.then(|| ui::galley(ui, "BINGO PICK", egui::FontId::new(10.0, egui::FontFamily::Name("sb".into())), c::ACCENT));
+        // When the name and badge don't both fit, the name wins: the icon's gold ring still marks it.
+        let full_w = ui::galley(ui, &it.name, ui::body(), c::TEXT).size().x;
+        let badge = pick
+            .then(|| ui::galley(ui, "BINGO PICK", egui::FontId::new(10.0, egui::FontFamily::Name("sb".into())), c::ACCENT))
+            .filter(|g| full_w + g.size().x + 22.0 <= text_right - x);
         let badge_w = badge.as_ref().map_or(0.0, |g| g.size().x + 14.0 + 8.0);
         let name = ui::truncated(ui, &it.name, ui::body(), c::TEXT, text_right - x - badge_w);
         let name_w = name.size().x;
@@ -2044,6 +2061,11 @@ fn tag_font() -> egui::FontId {
     egui::FontId::new(12.0, egui::FontFamily::Name("sb".into()))
 }
 
+/// Which spell tools the class starts with: a staff, a seal.
+fn class_tools(class: &crate::classes::Class) -> (bool, bool) {
+    class.items.iter().filter_map(|it| crate::weapons::weapon(&it.name)).fold((false, false), |t, w| (t.0 || w.sorcery, t.1 || w.incantation))
+}
+
 /// Str, Dex, Int, Fai, Arc from the spoiler's stat list.
 fn class_stats(class: &crate::classes::Class) -> [u32; 5] {
     let get = |k: &str| class.stats.iter().find(|(n, _)| n == k).map_or(0, |(_, v)| *v);
@@ -2061,7 +2083,14 @@ struct ItemDetail {
     eff: [u32; 5],
     /// Starts with a staff, a seal.
     tools: (bool, bool),
+    /// The same attack at the upgrade levels the boards ask for.
+    upgrades: Vec<(u32, crate::weapons::Attack)>,
 }
+
+/// Upgrade levels worth knowing: what the stone [1]/[2] bell bearings reach, the boards' upgrade
+/// goals, and the most a weapon goes to. The second one is shown on the card.
+const SMITHING_STEPS: [u32; 4] = [6, 12, 16, 25];
+const SOMBER_STEPS: [u32; 4] = [2, 4, 9, 10];
 
 impl ItemDetail {
     fn new(it: &crate::classes::Item, stats: &[u32; 5], tools: &(bool, bool)) -> Self {
@@ -2074,7 +2103,12 @@ impl ItemDetail {
             eff[0] = stats[0] * 3 / 2;
         }
         let spell = matches!(kind, "Sorcery" | "Incantation").then(|| crate::weapons::spell(&it.name)).flatten();
-        ItemDetail { kind, weapon, spell, attack, bow, eff, tools: *tools }
+        let upgrades = match weapon.map(|w| (w, w.max_level)) {
+            Some((w, 25)) => SMITHING_STEPS.iter().map(|&lv| (lv, crate::weapons::attack_at(w, *stats, bow, lv))).collect(),
+            Some((w, 10)) => SOMBER_STEPS.iter().map(|&lv| (lv, crate::weapons::attack_at(w, *stats, bow, lv))).collect(),
+            _ => vec![],
+        };
+        ItemDetail { kind, weapon, spell, attack, bow, eff, tools: *tools, upgrades }
     }
 
     fn short(&self, a: usize) -> bool {
@@ -2094,6 +2128,18 @@ impl ItemDetail {
         }
         let s = self.spell?;
         Some((s.fp.to_string(), "FP", if self.cant_cast().is_some() { c::WARN } else { c::TEXT }))
+    }
+
+    /// The figure's number for an upgrade level: attack, or a catalyst's spell scaling.
+    fn value(a: &crate::weapons::Attack) -> u32 {
+        a.spell_scaling.unwrap_or(a.total)
+    }
+
+    /// The card's upgraded number: (level, value) at the boards' main upgrade goal.
+    fn upgraded_figure(&self) -> Option<(u32, String)> {
+        let base = Self::value(self.attack.as_ref()?);
+        let (lv, a) = self.upgrades.get(1)?;
+        (base > 0 && Self::value(a) > base).then(|| (*lv, Self::value(a).to_string()))
     }
 
     /// Why the class can't cast this spell from the start, if it can't.
@@ -2188,6 +2234,9 @@ fn item_detail(ui: &Ui, d: &ItemDetail, name: &str, pos: egui::Pos2) {
                         for (s, v) in d.buildup() {
                             row(ui, s, &[(v.to_string(), c::TEXT)]);
                         }
+                        if d.upgraded_figure().is_some() {
+                            upgrade_row(ui, d, KEY_W);
+                        }
                         let letters: Vec<(String, Color32)> = w.letters().into_iter().map(|(k, l)| (format!("{k} {l}"), c::TEXT)).collect();
                         if !letters.is_empty() {
                             row(ui, "Scaling", &letters);
@@ -2223,6 +2272,20 @@ fn item_detail(ui: &Ui, d: &ItemDetail, name: &str, pos: egui::Pos2) {
                     }
                 });
         });
+}
+
+/// "Upgraded" in the hover card: each level over its attack (or spell scaling).
+fn upgrade_row(ui: &mut Ui, d: &ItemDetail, key_w: f32) {
+    let (r, _) = ui.allocate_exact_size(vec2(ui.available_width(), 38.0), Sense::hover());
+    let top = r.top() + 11.0;
+    ui::text_at(ui, pos2(r.left(), top), Align2::LEFT_CENTER, "Upgraded", ui::small(), c::MUTED);
+    let tint = if d.weapon.is_some_and(|w| w.max_level <= 10) { SOMBER } else { SMITHING };
+    let col_w = (r.width() - key_w) / d.upgrades.len().max(1) as f32;
+    for (i, (lv, a)) in d.upgrades.iter().enumerate() {
+        let x = r.left() + key_w + i as f32 * col_w;
+        ui::text_at(ui, pos2(x, top), Align2::LEFT_CENTER, &format!("+{lv}"), ui::small(), tint);
+        ui::text_at(ui, pos2(x, top + 17.0), Align2::LEFT_CENTER, &ItemDetail::value(a).to_string(), ui::small(), c::TEXT);
+    }
 }
 
 /// The seed's swap lists, closed until someone asks for them.

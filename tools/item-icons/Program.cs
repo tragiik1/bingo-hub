@@ -69,7 +69,7 @@ var attrs = new[]{("Strength","Strength"),("Agility","Dexterity"),("Magic","Magi
 // First line: the game version this was built from, so the hub can tell when a patch has made it stale.
 var fv = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(game, "eldenring.exe"));
 var gameVer = fv.FilePrivatePart == 0 ? $"{fv.FileMajorPart}.{fv.FileMinorPart}.{fv.FileBuildPart}" : $"{fv.FileMajorPart}.{fv.FileMinorPart}.{fv.FileBuildPart}.{fv.FilePrivatePart}";
-var lines = new List<string>{ "V	" + gameVer }; var usedGraphs = new SortedSet<int>{0, 6}; var usedAec = new SortedSet<int>(); var wseen = new HashSet<string>();
+var lines = new List<string>{ "V	" + gameVer }; var usedGraphs = new SortedSet<int>{0, 6}; var usedAec = new SortedSet<int>(); var wseen = new HashSet<string>(); var usedReinforce = new SortedSet<int>(); var usedSpfx = new SortedSet<int>();
 foreach (var row in wep.Rows) {
   // Plain weapons and their +0 infusions ("Quality Longsword"): classes can start with either.
   if (row.ID % 100 != 0) continue; var name = wfmg[row.ID]?.Trim();
@@ -77,6 +77,9 @@ foreach (var row in wep.Rows) {
   if (row.ID % 10000 != 0 && wep[row.ID / 10000 * 10000] == null) continue;
   int t = I(row,"wepType"); if (t is 81 or 83 or 85 or 86) continue;
   if (!reinforce.TryGetValue(I(row,"reinforceTypeId"), out var rf)) { Console.WriteLine("no reinforce row for " + name); continue; }
+  int rfType = I(row,"reinforceTypeId"), maxLv = 0;
+  // Ammo, Unarmed and weapons with no +1 (Meteorite Staff) don't upgrade.
+  if (I(row,"originEquipWep1") >= 0 && rfType != 3000) while (maxLv < 25 && reinforce.ContainsKey(rfType + maxLv + 1)) maxLv++;
   var atk = new[]{"attackBasePhysics","attackBaseMagic","attackBaseFire","attackBaseThunder","attackBaseDark"}
     .Zip(new[]{"physicsAtkRate","magicAtkRate","fireAtkRate","thunderAtkRate","darkAtkRate"}, (a, r) => D(row,a) * D(rf,r));
   var scale = new[]{"correctStrength","correctAgility","correctMagic","correctFaith","correctLuck"}
@@ -106,7 +109,24 @@ foreach (var row in wep.Rows) {
   }
   lines.Add(string.Join("\t", new[]{"W", name, skill, fp, string.Join(" / ", types)}.Concat(atk.Select(N)).Concat(scale.Select(N)).Concat(req.Select(x => x.ToString()))
     .Concat(g.Select(x => x.ToString())).Append(aec.ToString()).Concat(status.Select(N))
-    .Append(I(row,"isDualBlade").ToString()).Append(I(row,"enableMagic").ToString()).Append(I(row,"enableMiracle").ToString())));
+    .Append(I(row,"isDualBlade").ToString()).Append(I(row,"enableMagic").ToString()).Append(I(row,"enableMiracle").ToString())
+    // Upgrades: ReinforceParamWeapon rows reinforceTypeId+level multiply the raw values below.
+    .Append(rfType.ToString()).Append(maxLv.ToString())
+    .Concat(new[]{"attackBasePhysics","attackBaseMagic","attackBaseFire","attackBaseThunder","attackBaseDark","correctStrength","correctAgility","correctMagic","correctFaith","correctLuck"}.Select(f => N(D(row,f))))
+    .Concat(Enumerable.Range(0,3).Select(k => Math.Max(0, I(row,$"spEffectBehaviorId{k}")).ToString()))));
+  usedReinforce.Add(rfType);
+  for (int lv = 0; lv <= maxLv; lv++) for (int k = 0; k < 3; k++) {
+    int id = I(row,$"spEffectBehaviorId{k}"); if (id > 0 && reinforce.TryGetValue(rfType + lv, out var rl)) usedSpfx.Add(id + I(rl,$"spEffectId{k+1}"));
+  }
+}
+foreach (var id in usedReinforce) for (int lv = 0; reinforce.TryGetValue(id + lv, out var rl) && lv <= 25; lv++)
+  lines.Add(string.Join("	", new[]{"R", id.ToString(), lv.ToString()}
+    .Concat(new[]{"physicsAtkRate","magicAtkRate","fireAtkRate","thunderAtkRate","darkAtkRate","correctStrengthRate","correctAgilityRate","correctMagicRate","correctFaithRate","correctLuckRate"}.Select(f => N(D(rl,f))))
+    .Concat(Enumerable.Range(1,3).Select(k => I(rl,$"spEffectId{k}").ToString()))));
+foreach (var id in usedSpfx) {
+  if (!spfx.TryGetValue(id, out var se)) continue;
+  var st = new[]{"poizonAttackPower","diseaseAttackPower","bloodAttackPower","freezeAttackPower","sleepAttackPower","madnessAttackPower","curseAttackPower"}.Select(f => D(se,f)).ToArray();
+  if (st.Any(v => v != 0)) lines.Add(string.Join("	", new[]{"X", id.ToString()}.Concat(st.Select(N))));
 }
 foreach (var id in usedGraphs) {
   if (!graphs.TryGetValue(id, out var gr)) { Console.WriteLine("no graph " + id); continue; }
@@ -124,7 +144,7 @@ foreach (var row in goods.Rows) {
   lines.Add(string.Join("\t", "S", name, I(m,"mp"), I(m,"slotLength"), I(m,"requirementIntellect"), I(m,"requirementFaith"), I(m,"requirementLuck")));
 }
 File.WriteAllText(Path.Combine(outDir,"weapons.tsv"), string.Join("\n", lines)+"\n", new UTF8Encoding(false));
-Console.WriteLine($"weapons.tsv: {lines.Count(l => l[0]=='W')} weapons, {usedGraphs.Count} graphs, {usedAec.Count} element rows, {lines.Count(l => l[0]=='S')} spells, {arts.Count} skill names");
+Console.WriteLine($"weapons.tsv: {lines.Count(l => l[0]=='W')} weapons, {usedReinforce.Count} upgrade paths, {lines.Count(l => l[0]=='X')} status effects, {usedGraphs.Count} graphs, {usedAec.Count} element rows, {lines.Count(l => l[0]=='S')} spells, {arts.Count} skill names");
 // icons from SB_Icon atlases
 var need = outRows.Select(x=>x.icon).ToHashSet();
 var lay = BND4.Read(bhd.GetFile("/menu/hi/01_common.sblytbnd.dcx"));
