@@ -71,8 +71,10 @@ var fv = System.Diagnostics.FileVersionInfo.GetVersionInfo(Path.Combine(game, "e
 var gameVer = fv.FilePrivatePart == 0 ? $"{fv.FileMajorPart}.{fv.FileMinorPart}.{fv.FileBuildPart}" : $"{fv.FileMajorPart}.{fv.FileMinorPart}.{fv.FileBuildPart}.{fv.FilePrivatePart}";
 var lines = new List<string>{ "V	" + gameVer }; var usedGraphs = new SortedSet<int>{0, 6}; var usedAec = new SortedSet<int>(); var wseen = new HashSet<string>();
 foreach (var row in wep.Rows) {
-  if (row.ID % 10000 != 0) continue; var name = wfmg[row.ID]?.Trim();
+  // Plain weapons and their +0 infusions ("Quality Longsword"): classes can start with either.
+  if (row.ID % 100 != 0) continue; var name = wfmg[row.ID]?.Trim();
   if (string.IsNullOrWhiteSpace(name) || name.Contains("[ERROR]") || !wseen.Add(name)) continue;
+  if (row.ID % 10000 != 0 && wep[row.ID / 10000 * 10000] == null) continue;
   int t = I(row,"wepType"); if (t is 81 or 83 or 85 or 86) continue;
   if (!reinforce.TryGetValue(I(row,"reinforceTypeId"), out var rf)) { Console.WriteLine("no reinforce row for " + name); continue; }
   var atk = new[]{"attackBasePhysics","attackBaseMagic","attackBaseFire","attackBaseThunder","attackBaseDark"}

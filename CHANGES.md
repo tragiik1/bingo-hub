@@ -559,3 +559,18 @@ patched (`tools/randomizer-patch`).
   they open beside a running hub instead of bringing it to the front.
 - Tested: `cargo test`; a screenshot of Setup with data marked 2.7.1 against the 2.7.2 game shows
   the warning; re-running make.ps1 gives a byte-identical weapons.tsv.
+
+## Nineteenth round: infused starting weapons (unreleased)
+
+- Bug (owner): a Warrior card showed "Quality Longsword +25" with no icon or numbers. The
+  Randomizer's main-hand pool only strips upgrade levels (`washWeaponLevels`), so classes can start
+  with +0 infused weapons. Its log name came out as "+25" because EquipParamCustomWeapon rows share
+  IDs with infused weapons and overwrite the name. In game it's a +0 Quality Longsword.
+- The spoiler reader drops any " +N" on class items (classes always start at +0). Item info, icons,
+  Somber/Smithing and Bingo pick fall back from "Quality Longsword" to "Longsword".
+- `tools/item-icons` now writes every +0 infusion the game names (2,877 weapons, ~385 KB).
+  Checked against the reference calculator's data: 2,875 of 2,876 match; the other is Occult
+  Fingerprint Stone Shield, whose madness the calculator overrides to 0 by hand.
+- Tested: `cargo test`, and one screenshot of the seed with the Quality Longsword Warrior
+  (icon, Square Off, 108 attack). That screenshot was taken while the owner was in game; no more
+  were taken.

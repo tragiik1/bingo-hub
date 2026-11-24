@@ -58,6 +58,13 @@ fn parse_item(s: &str) -> Item {
     };
     let count = grab('[', ']');
     let level = grab('(', ')');
+    // Classes always start at +0. The Randomizer's names can carry a stray "+25" (its list of preset
+    // NPC weapons shares IDs with infused weapons and overwrites their names), so drop any level.
+    if let Some((base, lv)) = name.rsplit_once(" +") {
+        if !lv.is_empty() && lv.chars().all(|c| c.is_ascii_digit()) {
+            name = base.trim_end().to_string();
+        }
+    }
     Item { name, level, count }
 }
 
@@ -147,6 +154,8 @@ mod tests {
         assert_eq!(s.classes[0].items[0], Item { name: "Tooth Whip".into(), level: Some(14), count: None });
         assert_eq!(s.classes[0].stats, vec![("Vigor".into(), 7), ("Mind".into(), 11)]);
         assert_eq!(s.classes[1].items[1], Item { name: "Shattershard Arrow (Fletched)".into(), level: None, count: Some(21) });
+        assert_eq!(parse_item("Quality Longsword +25").name, "Quality Longsword");
+        assert_eq!(parse_item("Dueling Shield +0").name, "Dueling Shield");
         assert!(s.swaps.is_empty());
     }
 

@@ -43,10 +43,20 @@ fn table() -> &'static HashMap<&'static str, Info> {
     })
 }
 
-/// The spoiler names items as the game does; ammo and a few weapons carry a " +0" suffix.
+/// Ash of War affinities, as the game puts them in front of a weapon's name.
+pub const AFFINITIES: [&str; 12] = ["Heavy", "Keen", "Quality", "Fire", "Flame Art", "Lightning", "Sacred", "Magic", "Cold", "Poison", "Blood", "Occult"];
+
+/// "Quality Longsword" -> ("Quality", "Longsword"), if the rest is a known weapon.
+pub fn split_affinity(name: &str) -> Option<(&'static str, &str)> {
+    AFFINITIES.iter().find_map(|a| name.strip_prefix(a).and_then(|r| r.strip_prefix(' ')).filter(|r| table().contains_key(r)).map(|r| (*a, r)))
+}
+
+/// The spoiler names items as the game does; ammo and a few weapons carry a " +0" suffix, and an
+/// infused weapon ("Heavy Longsword") looks and upgrades like its plain one.
 pub fn info(name: &str) -> Option<Info> {
     let t = table();
-    t.get(name).or_else(|| t.get(name.trim_end_matches(" +0"))).copied()
+    let name = name.trim_end_matches(" +0");
+    t.get(name).or_else(|| split_affinity(name).and_then(|(_, base)| t.get(base))).copied()
 }
 
 static PICKS: &str = include_str!("../assets/bingo-weapons.txt");
@@ -58,6 +68,7 @@ fn picks() -> impl Iterator<Item = &'static str> {
 /// Weapons the group rates for races (assets/bingo-weapons.txt).
 pub fn bingo_pick(name: &str) -> bool {
     let name = name.trim_end_matches(" +0");
+    let name = split_affinity(name).map_or(name, |(_, base)| base);
     picks().any(|p| p == name)
 }
 
@@ -120,6 +131,9 @@ mod tests {
         assert_eq!(info("Uchigatana").unwrap().upgrade, Upgrade::Smithing);
         assert_eq!(info("Glintstone Arc").unwrap().kind, "Sorcery");
         assert_eq!(info("Dueling Shield +0").unwrap().kind, "Thrusting Shield");
+        let q = info("Quality Longsword").unwrap();
+        assert_eq!((q.kind, q.upgrade, q.icon), ("Straight Sword", Upgrade::Smithing, info("Longsword").unwrap().icon));
+        assert!(info("Quality Nonsense").is_none() && bingo_pick("Keen Great Katana"));
     }
 
     #[test]
