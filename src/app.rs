@@ -170,6 +170,9 @@ pub struct App {
     spoiler: Spoiler,
     /// Started right after a hub update: finish any tool updates without asking again.
     auto_tools: bool,
+    /// Phone board (Race page): running while Some.
+    phone: Option<crate::phone::Phone>,
+    phone_lobby: String,
 }
 
 impl App {
@@ -208,6 +211,8 @@ impl App {
             show_dismissed: false,
             spoiler: Spoiler::default(),
             auto_tools: args.iter().any(|a| a == "--updated"),
+            phone: None,
+            phone_lobby: settings.phone_lobby.clone(),
         };
         if args.iter().any(|a| a == "--updated") {
             app.toast = Some((format!("Updated to {}", update::VERSION), 0.0));
@@ -1189,7 +1194,109 @@ impl App {
                     None => "No backups yet".into(),
                 });
                 ui::sub(ui, &parts.join("   ·   "));
+
+                ui::section(ui, "Phone board", 30.0);
+                self.phone_card(ui);
+                ui.add_space(36.0);
             });
+        });
+    }
+
+    /// See and claim squares on a phone, for players without a second monitor (phone.rs).
+    fn phone_card(&mut self, ui: &mut Ui) {
+        let player = crate::phone::eldenbingo_player();
+        ui::card(ui, |ui| {
+            ui.add_space(12.0);
+            ui.horizontal_top(|ui| {
+                ui.add_space(16.0);
+                ui.vertical(|ui| {
+                    ui.set_width(ui.available_width() - 16.0);
+                    match &self.phone {
+                        None => {
+                            ui::sub(
+                                ui,
+                                &match &player {
+                                    Some((nick, _)) => format!("See the board and claim squares on your phone, no second monitor needed. It joins the lobby as \"{nick} (phone)\" on your team, so everyone can see it."),
+                                    None => "Set a nickname in the Bingo Board and join a lobby there once, then come back here.".to_string(),
+                                },
+                            );
+                            ui.add_space(10.0);
+                            ui.horizontal(|ui| {
+                                ui.spacing_mut().item_spacing.x = 8.0;
+                                let r = ui::field(ui, "phone_lobby", &mut self.phone_lobby, "Lobby name, as in the Bingo Board", 300.0, 60);
+                                ui.add_space(8.0);
+                                let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+                                let ok = player.is_some() && !self.phone_lobby.trim().is_empty();
+                                let start = ui::button(ui, "Start", Kind::Primary, ok).clicked() || (enter && ok);
+                                if let (true, Some((nick, team))) = (start, &player) {
+                                    let lobby = self.phone_lobby.trim().to_string();
+                                    let mut identity = self.settings().phone_identity;
+                                    if identity.is_empty() {
+                                        identity = format!("hub{}", crate::phone::random_token(12));
+                                    }
+                                    let (l2, id2) = (lobby.clone(), identity.clone());
+                                    self.set(|s| {
+                                        s.phone_lobby = l2;
+                                        s.phone_identity = id2;
+                                    });
+                                    self.phone = Some(crate::phone::Phone::start(&lobby, nick, *team, &identity));
+                                }
+                            });
+                        }
+                        Some(ph) => {
+                            let l = ph.client.snapshot();
+                            let mut stop = false;
+                            let mut copied = false;
+                            ui.horizontal_top(|ui| {
+                                if let Some(qr) = &ph.qr {
+                                    draw_qr(ui, qr, 156.0);
+                                    ui.add_space(18.0);
+                                }
+                                ui.vertical(|ui| {
+                                    use crate::bingonet::Conn;
+                                    let (text, color) = match &l.conn {
+                                        Conn::Connecting => ("Connecting to the lobby…".to_string(), c::MUTED),
+                                        Conn::Joined => {
+                                            let team = l.my_team().map(|t| format!("   ·   claiming for {}", l.team_name(t))).unwrap_or_default();
+                                            (format!("In lobby \"{}\"{team}", l.room), c::TEXT)
+                                        }
+                                        Conn::Failed(e) => (e.clone(), c::WARN),
+                                        Conn::Closed => ("Stopped".to_string(), c::MUTED),
+                                    };
+                                    ui.label(egui::RichText::new(text).font(ui::body()).color(color));
+                                    ui.add_space(8.0);
+                                    if let Some(e) = &ph.serve_error {
+                                        ui.label(egui::RichText::new(e).font(ui::small()).color(c::WARN));
+                                    } else {
+                                        ui::sub(ui, "Scan it with your phone's camera. The phone has to be on the same Wi-Fi as this PC.");
+                                        ui.add_space(4.0);
+                                        ui::sub(ui, "If it won't load, allow Bingo Hub on private networks when Windows asks.");
+                                        ui.add_space(8.0);
+                                        ui.horizontal(|ui| {
+                                            ui.spacing_mut().item_spacing.x = 8.0;
+                                            ui.label(egui::RichText::new(&ph.url).font(ui::small()).color(c::FAINT));
+                                            if ui::button(ui, "Copy link", Kind::Ghost, true).clicked() {
+                                                ui.ctx().copy_text(ph.url.clone());
+                                                copied = true;
+                                            }
+                                        });
+                                    }
+                                    ui.add_space(8.0);
+                                    stop = ui::button(ui, "Stop", Kind::Secondary, true).clicked();
+                                });
+                            });
+                            if copied {
+                                self.toast = Some(("Link copied".into(), ui.ctx().input(|i| i.time)));
+                            }
+                            if stop {
+                                self.phone = None;
+                            }
+                            ui.ctx().request_repaint_after(std::time::Duration::from_millis(500));
+                        }
+                    }
+                });
+            });
+            ui.add_space(12.0);
         });
     }
 
@@ -2382,4 +2489,21 @@ fn chevron(ui: &Ui, center: egui::Pos2, open: bool, col: Color32) {
     };
     ui.painter().line_segment([pts[0], pts[1]], s);
     ui.painter().line_segment([pts[1], pts[2]], s);
+}
+
+/// A QR code on a white square (with the 4-module quiet zone scanners expect).
+fn draw_qr(ui: &mut Ui, qr: &qrcodegen::QrCode, side: f32) {
+    let n = qr.size();
+    let (rect, _) = ui.allocate_exact_size(egui::vec2(side, side), egui::Sense::hover());
+    let p = ui.painter();
+    p.rect_filled(rect, 6.0, egui::Color32::WHITE);
+    let m = side / (n + 8) as f32;
+    for y in 0..n {
+        for x in 0..n {
+            if qr.get_module(x, y) {
+                let r = egui::Rect::from_min_size(rect.min + egui::vec2((x + 4) as f32 * m, (y + 4) as f32 * m), egui::vec2(m + 0.3, m + 0.3));
+                p.rect_filled(r, 0.0, egui::Color32::BLACK);
+            }
+        }
+    }
 }

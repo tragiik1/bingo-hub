@@ -608,3 +608,26 @@ patched (`tools/randomizer-patch`).
   difference is Occult Fingerprint Stone Shield again (the calculator zeroes its madness by hand).
 - Tested: `cargo test` (new `weapons::tests::upgrades`), screenshots of the Classes page and hover
   cards (game not running).
+
+## Twenty-second round: phone board (unreleased)
+
+- Race page, "Phone board": type the lobby name and press Start. The hub joins that EldenBingo
+  lobby as "<nickname> (phone)" (nickname and team read from EldenBingo's own user.config) and
+  switches itself to whichever team the player is on. It serves the board as a web page on the
+  local network (port 47130, or any free port) at a random path, shown as a QR code plus a link.
+  The phone sees the board, scores and race clock, and taps a square to claim or unclaim it for
+  the player's team. Everyone in the lobby sees the phone connection in the player list. Nothing
+  touches the game or saves; Stop (or closing the hub) leaves the lobby.
+- src/bingonet.rs speaks EldenBingo 0.18's protocol ("Neto"): an i32 length, then MessagePack
+  packets `[type, count, typeName, object...]`, objects serialized contractless (maps by property
+  name, Guids as strings). Big packets, and big objects inside them, arrive LZ4-compressed
+  (MessagePack-CSharp Lz4BlockArray: `[ext 98 sizes, bin...]`); we always send uncompressed,
+  which the server accepts. Version string "0.18.0". The phone uses its own identity token
+  (settings PhoneIdentity, "hub..."), never EldenBingo's, so it can't kick the player's client.
+  Claims only count while the match is Running (server rule).
+- New dependency: qrcodegen (no dependencies of its own). New settings: PhoneLobby, PhoneIdentity.
+- Tested: `cargo test`; ignored live tests against bingocard.bingobrawlers.com in throwaway
+  "hubtest-..." lobbies: `live_lobby` (a second connection follows the admin's team, claims and
+  unclaims) and `live_phone` (the whole path: lobby, phone connection, page, /state, a claim via
+  POST, a wrong path gets 404). Page checked at phone size in a browser. Not tested: a real phone
+  on Wi-Fi through Windows Firewall (Windows should ask to allow Bingo Hub the first time).

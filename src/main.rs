@@ -2,6 +2,7 @@
 
 mod art;
 mod app;
+mod bingonet;
 mod bingosave;
 mod boards;
 mod classes;
@@ -9,6 +10,7 @@ mod core;
 mod crash;
 mod graces;
 mod items;
+mod phone;
 mod randocheck;
 mod sys;
 mod ui;

@@ -241,6 +241,9 @@ pub struct Settings {
     pub rando_run_time: u64,
     /// SHA-256 of the normal save as the last bingo game on it left it ("" = none since).
     pub bingo_played_hash: String,
+    /// Phone board: the lobby it last joined, and its own EldenBingo identity (never the player's).
+    pub phone_lobby: String,
+    pub phone_identity: String,
 }
 
 impl Default for Settings {
@@ -261,6 +264,8 @@ impl Default for Settings {
             rando_game_version: String::new(),
             rando_run_time: 0,
             bingo_played_hash: String::new(),
+            phone_lobby: String::new(),
+            phone_identity: String::new(),
         }
     }
 }
