@@ -642,7 +642,7 @@ patched (`tools/randomizer-patch`).
   already claimed) show a short message instead of doing nothing. Hub card not screenshotted
   (a game was running); the page was checked at 390x844 against a live test lobby.
 
-## Twenty-third round: phone board keeps going (unreleased)
+## Twenty-third round: phone board keeps going (1.0.24)
 
 - Screen stays on: the page asks for a Wake Lock where the browser allows it (https only, so
   normally not), otherwise it plays assets/keep-awake.mp4 (4 s black H.264 with a silent AAC
