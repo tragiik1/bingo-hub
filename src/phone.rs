@@ -92,7 +92,8 @@ fn lan_ip() -> String {
 impl Phone {
     /// `identity` is the hub's own EldenBingo identity (kept in settings), so reconnecting
     /// replaces our previous phone connection rather than adding another.
-    pub fn start(lobby: &str, player: &str, team: i64, identity: &str) -> Phone {
+    /// `key` is the secret part of the page's link; keeping it the same keeps the phone's bookmark working.
+    pub fn start(lobby: &str, player: &str, team: i64, identity: &str, key: &str) -> Phone {
         let client = Client::connect(Join {
             room: lobby.trim().to_string(),
             nick: format!("{player} (phone)"),
@@ -100,9 +101,10 @@ impl Phone {
             create: None,
             token: identity.to_string(),
             follow: Some(player.to_string()),
+            retry: true,
         });
         let stop = Arc::new(AtomicBool::new(false));
-        let key = random_token(10);
+        let key = key.to_string();
         let (url, serve_error) = match TcpListener::bind(("0.0.0.0", PORT)).or_else(|_| TcpListener::bind(("0.0.0.0", 0))) {
             Ok(l) => {
                 let port = l.local_addr().map(|a| a.port()).unwrap_or(PORT);
@@ -149,7 +151,7 @@ fn handle(mut s: TcpStream, client: &Client, key: &str) -> std::io::Result<()> {
     let (method, path) = (parts.next().unwrap_or(""), parts.next().unwrap_or(""));
     let base = format!("/{key}");
     let (status, ctype, body): (&str, &str, Vec<u8>) = match (method, path.strip_prefix(&base)) {
-        ("GET", Some("") | Some("/")) => ("200 OK", "text/html; charset=utf-8", PAGE.as_bytes().to_vec()),
+        ("GET", Some("") | Some("/")) => ("200 OK", "text/html; charset=utf-8", page().as_bytes().to_vec()),
         ("GET", Some("/state")) => ("200 OK", "application/json", state_json(client).into_bytes()),
         ("POST", Some(rest)) if rest.starts_with("/check/") => match rest[7..].parse::<usize>() {
             Ok(i) => {
@@ -166,12 +168,31 @@ fn handle(mut s: TcpStream, client: &Client, key: &str) -> std::io::Result<()> {
     s.flush()
 }
 
+/// The page with the keep-awake clip inlined (Safari asks for byte ranges, which we don't serve).
+fn page() -> &'static str {
+    static PAGE_FULL: std::sync::OnceLock<String> = std::sync::OnceLock::new();
+    PAGE_FULL.get_or_init(|| PAGE.replace("__AWAKE__", &format!("data:video/mp4;base64,{}", base64(include_bytes!("../assets/keep-awake.mp4")))))
+}
+
+fn base64(b: &[u8]) -> String {
+    const A: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut s = String::with_capacity(b.len().div_ceil(3) * 4);
+    for c in b.chunks(3) {
+        let n = (c[0] as u32) << 16 | (*c.get(1).unwrap_or(&0) as u32) << 8 | *c.get(2).unwrap_or(&0) as u32;
+        for i in 0..4 {
+            s.push(if i <= c.len() { A[(n >> (18 - 6 * i) & 63) as usize] as char } else { '=' });
+        }
+    }
+    s
+}
+
 fn state_json(client: &Client) -> String {
     let l = client.snapshot();
     let my = l.my_team();
     let (conn, error) = match &l.conn {
         Conn::Connecting => ("connecting", String::new()),
         Conn::Joined => ("joined", String::new()),
+        Conn::Reconnecting(e) => ("reconnecting", e.clone()),
         Conn::Failed(e) => ("failed", e.clone()),
         Conn::Closed => ("closed", "Phone board stopped in Bingo Hub.".to_string()),
     };
@@ -242,6 +263,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
 .spin{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 footer{padding-top:10px;font-size:12px;color:var(--faint);text-align:center}
+#awake{position:fixed;inset:0;width:100%;height:100%;opacity:0;pointer-events:none;z-index:-1}
 #toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;pointer-events:none;background:var(--raised);border:1px solid var(--border);color:var(--text);font-size:13px;padding:9px 14px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);transition:opacity .18s,transform .18s;white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 </style></head><body>
@@ -255,6 +277,8 @@ footer{padding-top:10px;font-size:12px;color:var(--faint);text-align:center}
   <div id="scores"></div>
 </main>
 <footer id="foot" hidden></footer>
+<footer id="hint">Tap anywhere to keep the screen on</footer>
+<video id="awake" src="__AWAKE__" playsinline disablepictureinpicture disableremoteplayback preload="auto" aria-hidden="true" tabindex="-1"></video>
 <div id="toast"></div>
 <script>
 const base=location.pathname.replace(/\/$/,'');
@@ -277,13 +301,14 @@ function render(){
   $('room').textContent=s.room?('Lobby · '+s.room):'Bingo';
   $('teamname').textContent=s.myName||(s.conn==='joined'?'Spectating':'Connecting');
   $('team').querySelector('i').style.background=s.myColor||'';
-  if(s.paused)setState('wait','Paused');
+  if(s.conn==='reconnecting')setState('wait','Reconnecting');
+  else if(s.paused)setState('wait','Paused');
   else setState(['','wait','wait','run','done'][s.status]||'',STATUS[s.status]||'');
   $('scores').innerHTML=s.scores.map(t=>`<div class="score${t.team===s.myTeam?' me':''}"><i style="background:${t.color}"></i>${esc(t.name)}<b>${t.score}</b></div>`).join('');
   $('scores').hidden=!s.scores.length;
   if(s.conn==='failed')return message("Couldn't join the lobby",s.error);
   if(s.conn==='closed')return message('Phone board stopped','Start it again in Bingo Hub to keep playing.');
-  if(s.conn==='connecting')return message('Connecting','Joining the lobby…',true);
+  if(s.conn==='connecting'||(s.conn==='reconnecting'&&!s.size))return message(s.conn==='connecting'?'Connecting':'Reconnecting','Joining the lobby…',true);
   if(!s.size)return message(s.status<2?'Waiting for the race':'Waiting for the board',s.status<2?'The board appears here when the race starts.':'',true);
   $('msg').hidden=true;
   const n=s.size,b=$('board');
@@ -327,6 +352,7 @@ function fit(){
 addEventListener('resize',()=>st&&st.size&&fit());
 async function tap(i){
   const s=st;if(!s)return;
+  if(s.conn!=='joined')return toast('Reconnecting to the lobby…');
   if(s.paused)return toast('The race is paused');
   if(s.status!==3)return toast(s.status===4?'The race is over':'Claims open when the race starts');
   const teams=s.squares[i].teams||[];const mine=teams.includes(s.myTeam);
@@ -336,6 +362,22 @@ async function tap(i){
   try{await fetch(base+'/check/'+i,{method:'POST'})}catch(e){}
 }
 setInterval(()=>{if(!st)return;const run=st.status>=1&&st.status<=3&&!st.paused;$('clock').textContent=st.status===0?'0:00':fmt(st.clock+(run?performance.now()-got:0));$('clock').style.color=st.status===0?'var(--faint)':''},250);
+// Keep the screen on. The Wake Lock API needs https, which a page on the local network can't have,
+// so fall back to a silent black clip covering the page (browsers keep the screen on for a playing
+// video with sound, or one that covers the page). Not looped: iOS ignores looping clips, so rewind.
+const awake=$('awake');let lock=null;
+if(navigator.audioSession)navigator.audioSession.type='ambient';else awake.muted=true;
+async function keepAwake(){
+  if(document.visibilityState!=='visible')return;
+  if(navigator.wakeLock){try{if(!lock||lock.released)lock=await navigator.wakeLock.request('screen');$('hint').hidden=true;return}catch(e){}}
+  if(awake.paused)awake.play().catch(()=>{});
+}
+awake.addEventListener('timeupdate',()=>{if(awake.currentTime>awake.duration-1)awake.currentTime=0});
+awake.addEventListener('playing',()=>$('hint').hidden=true);
+awake.addEventListener('error',()=>{if(!lock)$('hint').textContent='Turn off auto-lock to keep the screen on'});
+addEventListener('touchend',keepAwake);addEventListener('click',keepAwake);
+document.addEventListener('visibilitychange',keepAwake);
+setInterval(keepAwake,10000);keepAwake();
 poll();
 </script></body></html>"##;
 
@@ -350,6 +392,14 @@ mod tests {
         assert_eq!(a.len(), 10);
         assert_ne!(a, b);
         assert!(a.chars().all(|c| c.is_ascii_alphanumeric()));
+    }
+
+    #[test]
+    fn base64_matches_rfc4648() {
+        for (i, o) in [("", ""), ("f", "Zg=="), ("fo", "Zm8="), ("foo", "Zm9v"), ("foob", "Zm9vYg=="), ("fooba", "Zm9vYmE="), ("foobar", "Zm9vYmFy")] {
+            assert_eq!(base64(i.as_bytes()), o);
+        }
+        assert!(page().contains("data:video/mp4;base64,AAAA") && !page().contains("__AWAKE__"));
     }
 
     fn http(url: &str, method: &str) -> (String, String) {
@@ -382,7 +432,9 @@ mod tests {
         .map(|s| s.to_string())
         .collect();
         let admin = running_lobby(&tag, &goals);
-        let ph = Phone::start(&tag, "hubtest-admin", 1, &format!("{tag}hub"));
+        let key = random_token(10);
+        let ph = Phone::start(&tag, "hubtest-admin", 1, &format!("{tag}hub"), &key);
+        assert!(ph.url.ends_with(&format!("/{key}")), "the link keeps the saved key");
         assert!(ph.serve_error.is_none(), "{:?}", ph.serve_error);
         assert!(ph.qr.is_some());
         wait(&ph.client, |l| l.my_team() == Some(0) && l.squares.len() == 25, "phone joins on the admin's team");
@@ -397,6 +449,13 @@ mod tests {
         let (st, _) = http(&format!("{local}/check/4"), "POST");
         assert!(st.contains("200"));
         wait(&admin, |l| l.squares[4].teams == vec![0], "claim from the page reaches the lobby");
+        // A dropped connection comes back by itself, and claims work again.
+        ph.client.drop_connection();
+        wait(&ph.client, |l| matches!(l.conn, Conn::Reconnecting(_)), "phone notices the drop");
+        assert_eq!(serde_json::from_str::<serde_json::Value>(&http(&format!("{local}/state"), "GET").1).unwrap()["conn"], "reconnecting");
+        wait(&ph.client, |l| matches!(l.conn, Conn::Joined) && l.my_team() == Some(0), "phone reconnects on the admin's team");
+        http(&format!("{local}/check/7"), "POST");
+        wait(&admin, |l| l.squares[7].teams == vec![0], "claims work after reconnecting");
         let wrong = local.rsplit_once('/').unwrap().0.to_string() + "/notthekey/state";
         assert!(http(&wrong, "GET").0.contains("404"), "other paths are refused");
         println!("phone page: {} (local {local})", ph.url);

@@ -641,3 +641,29 @@ patched (`tools/randomizer-patch`).
   longest word won't fit get shrunk. Taps that can't count (not running, paused, finished,
   already claimed) show a short message instead of doing nothing. Hub card not screenshotted
   (a game was running); the page was checked at 390x844 against a live test lobby.
+
+## Twenty-third round: phone board keeps going (unreleased)
+
+- Screen stays on: the page asks for a Wake Lock where the browser allows it (https only, so
+  normally not), otherwise it plays assets/keep-awake.mp4 (4 s black H.264 with a silent AAC
+  track, 3 KB, made with ffmpeg lavfi color+anullsrc) inlined as a data: URI (Safari asks for
+  byte ranges, which our server doesn't answer). It covers the page at opacity 0 behind
+  everything: Chromium keeps the screen on for a playing video with sound or one covering much
+  of the viewport (opacity ignored); WebKit only for one that can make sound and isn't looping,
+  so it isn't looped (rewound a second before the end) and plays unmuted in the "ambient"
+  audio session where the browser has navigator.audioSession (mixes with music), muted
+  elsewhere. iOS needs a tap first, so a faint "Tap anywhere to keep the screen on" shows
+  until it plays. Technique from ORQWA PR #294; engine rules are that PR's reading of the source.
+- Reconnects: Join.retry (phone only). A lost connection or server restart puts the lobby in
+  Conn::Reconnecting and tries again after 2, 4, 8... up to 30 s, keeping the last board on
+  screen; refused/kicked/no-such-lobby stay Failed. Each attempt closes its socket on the way
+  out so the old reader thread ends. The client now sends a KeepAlive packet (type 7) after 20 s
+  of quiet, so a dead connection shows up as a failed write; the server accepts it (held 2+
+  min live).
+- Same link every time: settings PhoneKey (random once), so the phone can keep a bookmark or
+  home-screen shortcut. Port 47130 unless taken (then any free port, and the link changes).
+- Tested: cargo test (base64 vs RFC 4648, page inlines the clip); live_phone now also checks
+  the key, drops the connection on purpose (test-only Cmd::Drop), sees "reconnecting" on
+  /state, rejoins on the right team and claims again. In the browser pane the clip auto-played
+  muted over the page, kept rewinding, hint hidden. Not tested: real phones (screen actually
+  staying on, especially iPhone with music playing).

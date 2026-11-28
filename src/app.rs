@@ -1221,16 +1221,17 @@ impl App {
             });
             if let (true, Some((nick, team))) = (start, &player) {
                 let lobby = self.phone_lobby.trim().to_string();
-                let mut identity = self.settings().phone_identity;
-                if identity.is_empty() {
-                    identity = format!("hub{}", crate::phone::random_token(12));
-                }
-                let (l2, id2) = (lobby.clone(), identity.clone());
+                let saved = self.settings();
+                let or_new = |v: String, f: fn() -> String| if v.is_empty() { f() } else { v };
+                let identity = or_new(saved.phone_identity, || format!("hub{}", crate::phone::random_token(12)));
+                let key = or_new(saved.phone_key, || crate::phone::random_token(10));
+                let (l2, id2, k2) = (lobby.clone(), identity.clone(), key.clone());
                 self.set(|s| {
                     s.phone_lobby = l2;
                     s.phone_identity = id2;
+                    s.phone_key = k2;
                 });
-                self.phone = Some(crate::phone::Phone::start(&lobby, nick, *team, &identity));
+                self.phone = Some(crate::phone::Phone::start(&lobby, nick, *team, &identity, &key));
             }
             return;
         };
@@ -1239,6 +1240,7 @@ impl App {
         let l = ph.client.snapshot();
         let (lead, detail, color) = match &l.conn {
             Conn::Connecting => (Lead::Spin, "Connecting to the lobby".to_string(), c::MUTED),
+            Conn::Reconnecting(_) => (Lead::Spin, "Connection lost, reconnecting".to_string(), c::WARN),
             Conn::Joined => {
                 let team = l.my_team().map(|t| format!("   ·   claiming for {}", l.team_name(t))).unwrap_or_default();
                 (Lead::Dot(c::GOOD), format!("Lobby \"{}\"{team}", l.room), c::MUTED)

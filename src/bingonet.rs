@@ -319,6 +319,7 @@ const P_SHUTDOWN: i64 = 3;
 const P_CLIENT_REGISTER: i64 = 4;
 const P_CLIENT_DISCONNECT: i64 = 5;
 const P_OBJECTS: i64 = 6;
+const P_KEEPALIVE: i64 = 7;
 
 fn packet(kind: i64, objects: Vec<(&str, V)>) -> Vec<u8> {
     let mut a = vec![V::Int(kind), V::Int(objects.len() as i64)];
@@ -384,6 +385,8 @@ pub enum Conn {
     Connecting,
     /// Connected and in the lobby.
     Joined,
+    /// Lost the connection; trying again (phone board only). The lobby keeps its last state.
+    Reconnecting(String),
     Failed(String),
     Closed,
 }
@@ -534,6 +537,9 @@ pub enum Cmd {
     /// Raw objects (tests use it to run a lobby).
     #[cfg_attr(not(test), allow(dead_code))]
     Send(Vec<(String, V)>),
+    /// Tests: act as if the connection dropped.
+    #[cfg(test)]
+    Drop,
     Leave,
 }
 
@@ -554,6 +560,8 @@ pub struct Join {
     pub token: String,
     /// When set, switch to the team of the lobby member with this nick once we're in.
     pub follow: Option<String>,
+    /// Reconnect by itself after the connection drops (until `leave`).
+    pub retry: bool,
 }
 
 impl Client {
@@ -563,6 +571,10 @@ impl Client {
     #[cfg_attr(not(test), allow(dead_code))]
     pub fn send(&self, objects: Vec<(&str, V)>) {
         let _ = self.tx.send(Cmd::Send(objects.into_iter().map(|(n, v)| (n.to_string(), v)).collect()));
+    }
+    #[cfg(test)]
+    pub fn drop_connection(&self) {
+        let _ = self.tx.send(Cmd::Drop);
     }
     pub fn leave(&self) {
         let _ = self.tx.send(Cmd::Leave);
@@ -576,12 +588,35 @@ impl Client {
         let (tx, rx) = channel();
         let l2 = lobby.clone();
         std::thread::spawn(move || {
-            let r = run(&l2, join, rx);
-            let mut l = l2.lock().unwrap();
-            match r {
-                Err(e) if !matches!(l.conn, Conn::Failed(_)) => l.conn = Conn::Failed(e),
-                _ if matches!(l.conn, Conn::Failed(_)) => {}
-                _ => l.conn = Conn::Closed,
+            let mut backoff = 2;
+            loop {
+                let r = run(&l2, &join, &rx);
+                let mut l = l2.lock().unwrap();
+                match r {
+                    Ok(()) => l.conn = Conn::Closed,
+                    // Refused, kicked or no such lobby: trying again wouldn't help.
+                    Err(_) if matches!(l.conn, Conn::Failed(_)) => {}
+                    Err(e) if !join.retry => l.conn = Conn::Failed(e),
+                    Err(e) => {
+                        if matches!(l.conn, Conn::Joined) {
+                            backoff = 2;
+                        }
+                        l.conn = Conn::Reconnecting(e);
+                    }
+                }
+                if !matches!(l.conn, Conn::Reconnecting(_)) {
+                    return;
+                }
+                drop(l);
+                // Wait before trying again, but stop at once when asked. Claims made meanwhile are dropped.
+                let until = Instant::now() + Duration::from_secs(backoff);
+                while let Some(left) = until.checked_duration_since(Instant::now()) {
+                    if let Ok(Cmd::Leave) | Err(std::sync::mpsc::RecvTimeoutError::Disconnected) = rx.recv_timeout(left) {
+                        l2.lock().unwrap().conn = Conn::Closed;
+                        return;
+                    }
+                }
+                backoff = (backoff * 2).min(30);
             }
         });
         Client { lobby, tx }
@@ -600,10 +635,18 @@ fn read_message(s: &mut TcpStream) -> std::io::Result<Vec<u8>> {
     Ok(b)
 }
 
-fn run(lobby: &Arc<Mutex<Lobby>>, join: Join, rx: Receiver<Cmd>) -> Result<(), String> {
+fn run(lobby: &Arc<Mutex<Lobby>>, join: &Join, rx: &Receiver<Cmd>) -> Result<(), String> {
     let addr = (SERVER, PORT).to_socket_addrs().map_err(|e| format!("Couldn't find the bingo server: {e}"))?.find(|a| a.is_ipv4()).ok_or("Couldn't find the bingo server")?;
     let s = TcpStream::connect_timeout(&addr, Duration::from_secs(8)).map_err(|e| format!("Couldn't reach the bingo server: {e}"))?;
     s.set_nodelay(true).ok();
+    // However this attempt ends, close the socket so the reader thread stops with it.
+    struct Close(TcpStream);
+    impl Drop for Close {
+        fn drop(&mut self) {
+            let _ = self.0.shutdown(Shutdown::Both);
+        }
+    }
+    let _close = Close(s.try_clone().map_err(|e| e.to_string())?);
     let mut w = s.try_clone().map_err(|e| e.to_string())?;
     w.write_all(&packet(P_CLIENT_REGISTER, vec![("Neto.Shared.ClientRegister", V::map(vec![("Message", V::s("hello")), ("Version", V::s(VERSION)), ("IdentityToken", V::s(&join.token))]))]))
         .map_err(|e| e.to_string())?;
@@ -652,7 +695,11 @@ fn run(lobby: &Arc<Mutex<Lobby>>, join: Join, rx: Receiver<Cmd>) -> Result<(), S
                     let _ = evt_tx.send(Err(String::new()));
                     return;
                 }
-                P_CLIENT_DROPPED | P_SHUTDOWN => {
+                P_SHUTDOWN => {
+                    let _ = evt_tx.send(Err("The bingo server restarted".into()));
+                    return;
+                }
+                P_CLIENT_DROPPED => {
                     let why = objs.first().and_then(|(_, o)| o.get("Reason")).and_then(V::str).unwrap_or("server closed the connection").to_string();
                     l.conn = Conn::Failed(format!("Disconnected: {why}"));
                     drop(l);
@@ -683,13 +730,21 @@ fn run(lobby: &Arc<Mutex<Lobby>>, join: Join, rx: Receiver<Cmd>) -> Result<(), S
         None => send(&mut w, vec![("ClientRequestJoinRoom", V::map(vec![("RoomName", V::s(&join.room)), ("AdminPass", V::s("")), ("Nick", nick), ("Team", V::Int(join.team))]))])?,
     }
     let mut followed = false;
+    // Regular traffic, so a dead connection shows up as a failed write instead of silence.
+    let mut quiet = Instant::now();
     loop {
+        if quiet.elapsed() > Duration::from_secs(20) {
+            w.write_all(&packet(P_KEEPALIVE, vec![])).map_err(|e| format!("Lost the connection to the bingo server ({e})"))?;
+            quiet = Instant::now();
+        }
         match rx.recv_timeout(Duration::from_millis(200)) {
             Ok(Cmd::Check(i)) => {
                 let me = lobby.lock().unwrap().me.clone();
                 send(&mut w, vec![("ClientTryCheck", V::map(vec![("Index", V::Int(i as i64)), ("ForUser", V::s(&me))]))])?;
             }
             Ok(Cmd::Send(objs)) => send(&mut w, objs.iter().map(|(n, v)| (n.as_str(), v.clone())).collect())?,
+            #[cfg(test)]
+            Ok(Cmd::Drop) => return Err("test drop".into()),
             Ok(Cmd::Leave) | Err(std::sync::mpsc::RecvTimeoutError::Disconnected) => break,
             Err(_) => {}
         }
@@ -746,7 +801,7 @@ pub(crate) mod tests {
     fn live_lobby() {
         let tag = format!("hubtest-{}", std::process::id());
         let admin = running_lobby(&tag, &(0..25).map(|i| format!("Test square {i}")).collect::<Vec<_>>());
-        let phone = Client::connect(Join { room: tag.clone(), nick: "hubtest-admin (phone)".into(), team: 1, create: None, token: format!("{tag}p"), follow: Some("hubtest-admin".into()) });
+        let phone = Client::connect(Join { room: tag.clone(), nick: "hubtest-admin (phone)".into(), team: 1, create: None, token: format!("{tag}p"), follow: Some("hubtest-admin".into()), retry: false });
         wait(&phone, |l| matches!(l.conn, Conn::Joined) && l.squares.len() == 25, "phone joins and sees the board");
         wait(&phone, |l| l.my_team() == Some(0), "phone follows the admin's team");
         phone.check(7);
@@ -773,7 +828,7 @@ pub(crate) mod tests {
             ("PreparationTime", V::Int(0)),
             ("PointsPerBingoLine", V::Int(0)),
         ]);
-        let admin = Client::connect(Join { room: tag.to_string(), nick: "hubtest-admin".into(), team: 0, create: Some(settings), token: format!("{tag}a"), follow: None });
+        let admin = Client::connect(Join { room: tag.to_string(), nick: "hubtest-admin".into(), team: 0, create: Some(settings), token: format!("{tag}a"), follow: None, retry: false });
         wait(&admin, |l| matches!(l.conn, Conn::Joined), "admin joins");
         let json = serde_json::to_string(&goals.iter().map(|g| serde_json::json!({ "name": g })).collect::<Vec<_>>()).unwrap();
         admin.send(vec![("ClientBingoJson", V::map(vec![("Json", V::s(&json))]))]);
