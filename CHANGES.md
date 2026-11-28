@@ -609,7 +609,7 @@ patched (`tools/randomizer-patch`).
 - Tested: `cargo test` (new `weapons::tests::upgrades`), screenshots of the Classes page and hover
   cards (game not running).
 
-## Twenty-second round: phone board (unreleased)
+## Twenty-second round: phone board (1.0.23)
 
 - Race page, "Phone board": type the lobby name and press Start. The hub joins that EldenBingo
   lobby as "<nickname> (phone)" (nickname and team read from EldenBingo's own user.config) and
