@@ -1207,7 +1207,7 @@ impl App {
         let Some(ph) = &self.phone else {
             let player = crate::phone::eldenbingo_player();
             let (detail, color) = match &player {
-                Some((nick, _)) => (format!("Claim squares from your phone. It joins your team as \"{nick} (phone)\"."), c::MUTED),
+                Some((nick, _)) => (format!("Claim squares from your phone. Shows in the lobby as {nick} (phone)."), c::MUTED),
                 None => ("Set a nickname in the Bingo Board and join a lobby there first.".to_string(), c::WARN),
             };
             let mut start = false;
@@ -1269,7 +1269,7 @@ impl App {
                         draw_qr(ui, qr, QR);
                         ui.add_space(26.0);
                         ui.vertical(|ui| {
-                            let steps = ["Scan the code with your phone's camera", "Keep the phone on the same Wi-Fi as this PC", "If Windows asks, allow Bingo Hub on private networks"];
+                            let steps = ["Scan with your phone's camera", "Use the same Wi-Fi as this PC", "Allow Bingo Hub if Windows asks"];
                             let block = steps.len() as f32 * 30.0 + 22.0;
                             ui.add_space(((QR - block) / 2.0).max(0.0));
                             for (i, step) in steps.iter().enumerate() {

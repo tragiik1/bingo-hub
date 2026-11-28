@@ -634,8 +634,9 @@ patched (`tools/randomizer-patch`).
 - Redesign (same round): the Race card is one checklist-style row (status dot, "Phone board",
   lobby field + Start); while running, the row shows the lobby/team and Stop/Copy link, with the
   QR beside three numbered steps and the link. The phone page uses the hub's palette: lobby and
-  team on top, clock and a status dot on the right, score chips, claimed squares filled in the
-  team color with a tick (dark text on light team colors), other teams' lockout claims tinted,
+  team on top, clock and a status dot on the right, the board as a square grid (square cells, centered,
+  sized to fit) with score chips under it, claimed squares filled in the
+  team color (dark text on light team colors), other teams' lockout claims tinted,
   non-lockout claims as small colored bars. Text is sized per board, and only squares whose
   longest word won't fit get shrunk. Taps that can't count (not running, paused, finished,
   already claimed) show a short message instead of doing nothing. Hub card not screenshotted

@@ -201,11 +201,9 @@ const PAGE: &str = r##"<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="theme-color" content="#0f0f11">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <title>Bingo board</title>
 <style>
-:root{--bg:#0f0f11;--surface:#18181c;--raised:#222227;--border:#2c2c33;--text:#eaeaed;--muted:#8e8e96;--faint:#606068;--accent:#ceae74;--good:#7cba88;--warn:#dca858;--bad:#e2706a}
+:root{--bg:#0f0f11;--surface:#18181c;--raised:#222227;--border:#2c2c33;--text:#eaeaed;--muted:#8e8e96;--faint:#606068;--accent:#ceae74;--good:#7cba88;--warn:#dca858}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
 html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
@@ -222,19 +220,17 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
 #state.run i{background:var(--good);box-shadow:0 0 0 3px rgba(124,186,136,.18)}
 #state.wait i{background:var(--warn)}
 #state.done i{background:var(--accent)}
-#scores{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 0 12px}
-#scores::-webkit-scrollbar{display:none}
+#stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#scores{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding-top:14px}
 .score{flex:none;display:flex;align-items:center;gap:8px;height:28px;padding:0 11px 0 9px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:13px;color:var(--muted)}
 .score i{width:8px;height:8px;border-radius:2px}
 .score b{color:var(--text);font-variant-numeric:tabular-nums}
 .score.me{border-color:#3a3a43;color:var(--text)}
-#board{flex:1;display:grid;gap:4px;min-height:0}
+#board{display:grid;gap:4px;width:100%;aspect-ratio:1}
 .sq span{display:block;max-width:100%}
 .sq{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 2px;border-radius:9px;background:var(--surface);border:1px solid var(--border);color:#d6d6dc;font-size:var(--fs,12px);font-weight:500;line-height:1.18;overflow:hidden;transition:transform .1s ease,background-color .15s ease}
 .sq:active{transform:scale(.95)}
 .sq.mine{background:var(--c);border-color:transparent;color:var(--on);font-weight:650;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 10px -2px var(--c)}
-.sq.mine::after{content:"";position:absolute;top:5px;right:5px;width:10px;height:10px;background:var(--on);opacity:.75;-webkit-mask:var(--tick) center/contain no-repeat;mask:var(--tick) center/contain no-repeat}
-:root{--tick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.4l2.6 2.6L10 3.2' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
 .sq.taken{background:color-mix(in srgb,var(--c) 20%,var(--surface));border-color:color-mix(in srgb,var(--c) 45%,var(--border));color:var(--faint)}
 .sq .bars{position:absolute;left:6px;right:6px;bottom:4px;display:flex;gap:3px}
 .sq .bars i{flex:1;height:3px;border-radius:2px}
@@ -245,7 +241,7 @@ header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;
 #msg p{margin:0;max-width:280px}
 .spin{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-footer{min-height:18px;padding:10px 2px 0;font-size:12px;color:var(--faint);text-align:center}
+footer{padding-top:10px;font-size:12px;color:var(--faint);text-align:center}
 #toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;pointer-events:none;background:var(--raised);border:1px solid var(--border);color:var(--text);font-size:13px;padding:9px 14px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);transition:opacity .18s,transform .18s;white-space:nowrap}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 </style></head><body>
@@ -253,10 +249,12 @@ footer{min-height:18px;padding:10px 2px 0;font-size:12px;color:var(--faint);text
   <div id="left"><div class="eyebrow" id="room">Bingo</div><div id="team"><i></i><span id="teamname">Connecting</span></div></div>
   <div id="right"><div id="clock">0:00</div><div id="state"><i></i><span id="statetext">Connecting</span></div></div>
 </header>
-<div id="scores"></div>
-<div id="board" hidden></div>
-<div id="msg"><div class="spin"></div><b>Connecting</b><p>Joining the lobby…</p></div>
-<footer id="foot"></footer>
+<main id="stage">
+  <div id="board" hidden></div>
+  <div id="msg"><div class="spin"></div><b>Connecting</b><p>Joining the lobby…</p></div>
+  <div id="scores"></div>
+</main>
+<footer id="foot" hidden></footer>
 <div id="toast"></div>
 <script>
 const base=location.pathname.replace(/\/$/,'');
@@ -312,12 +310,13 @@ function render(){
     if(bars.innerHTML!==html)bars.innerHTML=html;
   });
   fit();
-  const claimed=s.squares.filter(q=>(q.teams||[]).includes(s.myTeam)).length;
-  $('foot').textContent=s.notice||(s.status===3&&!s.paused?(claimed?claimed+' claimed · tap a square to claim or undo':'Tap a square to claim it, tap again to undo'):'');
+  $('foot').textContent=s.notice||'';$('foot').hidden=!s.notice;
 }
 function fit(){
-  const b=$('board'),n=st.size||5;if(!b.clientWidth)return;
-  const fs=Math.max(9,Math.min(16,b.clientWidth/n/6.2,b.clientHeight/n/4.6));
+  const b=$('board'),n=st.size||5,stage=$('stage');if(b.hidden)return;
+  const side=Math.max(0,Math.min(stage.clientWidth,stage.clientHeight-$('scores').offsetHeight));
+  b.style.width=side+'px';
+  const fs=Math.max(9,Math.min(16,side/n/6.8));
   document.documentElement.style.setProperty('--fs',fs+'px');
   // Shrink only the squares whose longest word or text still doesn't fit.
   for(const d of b.children){
@@ -326,7 +325,6 @@ function fit(){
   }
 }
 addEventListener('resize',()=>st&&st.size&&fit());
-addEventListener('load',()=>document.fonts&&document.fonts.ready.then(()=>st&&st.size&&fit()));
 async function tap(i){
   const s=st;if(!s)return;
   if(s.paused)return toast('The race is paused');
