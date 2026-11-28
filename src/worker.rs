@@ -290,11 +290,12 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             classes = crate::classes::load();
         }
 
-        // Race graces, automatically only on the separate bingo save: every character there is a
-        // bingo character. On a normal save the player sets them (button or hotkey), because nothing
-        // readable tells a new character from the title screen or a real one that's still loading.
+        // Race graces. On the separate bingo save every character is a bingo character, so any fresh
+        // one gets them. On any other save only a brand-new character does (3 graces or fewer). Either
+        // way only once two reads 2 s apart agree, so a real character that's still loading (and
+        // can briefly read as having none) is never written to.
         match (game, game_pid) {
-            (GameState::Modded, Some(pid)) if settings.auto_graces && crate::bingosave::active() => {
+            (GameState::Modded, Some(pid)) if settings.auto_graces => {
                 if grace_checked.elapsed() >= Duration::from_secs(2) {
                     grace_checked = Instant::now();
                     let reopen = match &grace_game {
@@ -318,7 +319,8 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                             if !settled {
                                 if grace_seen.is_none() { Status::Waiting } else { graces_status.clone() }
                             } else {
-                                match g.apply(Some(crate::graces::FRESH_LIMIT)) {
+                                let limit = if crate::bingosave::active() { crate::graces::FRESH_LIMIT } else { crate::graces::NEW_LIMIT };
+                                match g.apply(Some(limit)) {
                                     Outcome::Applied(_) => {
                                         sys::chime(true);
                                         let _ = tx.send(Msg::Toast("Race graces set".into()));

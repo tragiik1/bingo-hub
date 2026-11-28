@@ -1717,8 +1717,8 @@ If a friend's code is different, the part that differs is what doesn't match.", 
                 use crate::graces::Status;
                 let status = match &snap.graces {
                     _ if !s.auto_graces => format!("Automatic setting is off. Use Set graces or {} in game.", sys::HOTKEY),
-                    _ if !s.separate_save => format!("On your normal save, press {} on the name screen of your new character", sys::HOTKEY),
-                    Status::Idle => "Set automatically on fresh characters in your bingo save".to_string(),
+                    Status::Idle if s.separate_save => "Set automatically on fresh characters in your bingo save".to_string(),
+                    Status::Idle => "Set automatically on new characters, from the name screen on".to_string(),
                     Status::Waiting => "Waiting for a character".to_string(),
                     Status::Set => "Set for this character".to_string(),
                     Status::Skipped(n) => format!("Left alone: this character already has {n} graces. Set graces asks before changing it."),
@@ -1732,7 +1732,7 @@ If a friend's code is different, the part that differs is what doesn't match.", 
                     ui.add_space(8.0);
                     ui.horizontal(|ui| {
                         ui.add_space(18.0);
-                        ui::toggle(ui, &mut s.auto_graces, "Set race graces automatically on the bingo save");
+                        ui::toggle(ui, &mut s.auto_graces, "Set race graces on new bingo characters");
                     });
                     ui::row(ui, Lead::None, "Status", &status, c::MUTED, true, true, |ui| {
                         if ui::button(ui, "Set graces", Kind::Ghost, snap.game == GameState::Modded).clicked() {

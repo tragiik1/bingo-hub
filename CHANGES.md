@@ -670,16 +670,14 @@ patched (`tools/randomizer-patch`).
 
 ## Twenty-fourth round: safer race graces, readable race codes (unreleased)
 
-- Race graces are set automatically only on the separate bingo save. The old rule (normal save:
-  any character with 3 or fewer graces) couldn't tell a brand-new character from the title
-  screen or a real character whose flags were still loading, so it could in theory write race
-  graces onto someone's real playthrough (the open concern from the first review). Play time from
-  GameDataMan was considered and rejected: it also reads 0 at the title screen and before a load
-  finishes, so it has the same gap. Only the player knows a character is their new bingo
-  character, so on a normal save it's now Set graces or Ctrl+F9 (still capped at 3 graces, asks
-  past that). Setup says so; the checklist already shows the hotkey hint when graces aren't set.
-- Automatic setting on the bingo save now writes only when two reads 2 s apart agree
-  (Game::snapshot), so a bingo character that's mid-load isn't wiped by a half-loaded read.
+- Race graces: automatic setting now only writes once two reads 2 s apart agree
+  (Game::snapshot), on both saves. This closes the open concern from the first review: a real
+  character caught mid-load can briefly read as having no graces, and the old check could then
+  write race graces onto it. A load fills the flags in one go, so two identical reads 2 s apart
+  mean it's settled. Play time from GameDataMan was considered and rejected: it also reads 0 at
+  the title screen and before a load finishes. (Briefly tried: automatic only on the bingo save;
+  reverted the same day, the group wants it automatic.) Still unverified in game: that loading
+  a character replaces flags written at the title screen (first review, check 3).
 - Race code: four parts, one per input, 3 hex each: seed, Randomizer, game version, game text
   ("8F3-7A1-A0C-3C9"). When friends' codes differ, the differing part says what doesn't match;
   hovering the Randomize row explains the parts. Old 6-character codes in the run log stay as
@@ -688,4 +686,4 @@ patched (`tools/randomizer-patch`).
   name is in the team colour, scores are one line under the board. The hub card uses the
   checklist's check when joined, and the duplicate "Phone board" heading is gone.
 - Tested: cargo test (race code parts); live_phone again; page and Race card captured. Not
-  tested in game: the grace settle check (needs a bingo-save race).
+  tested in game: the grace settle check (needs a race on either save).

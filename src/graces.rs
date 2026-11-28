@@ -6,12 +6,10 @@
 //! split into a block (id / divisor) and an index; blocks sit in a std::map keyed by block number,
 //! and each flag is one bit, big-endian within its byte.
 //!
-//! Only used on bingo launches (ModEngine 2 loaded, EAC off). Automatic setting only runs on the
-//! separate bingo save, where every character is a bingo character, and only on a character whose
-//! flags read the same twice in a row (not mid-load) with at most FRESH_LIMIT graces. On any other
-//! save nothing is written unless the player asks (button or hotkey), and past NEW_LIMIT the hub
-//! asks again first: counting graces can't tell a brand-new character from the title screen or a
-//! real character that's still loading, so only a person can say "this is my new bingo character".
+//! Only used on bingo launches (ModEngine 2 loaded, EAC off). Automatic setting never touches a
+//! character that has been played (see NEW_LIMIT / FRESH_LIMIT), and only writes once the flags
+//! read the same twice, 2 s apart, so a real character caught mid-load (briefly reading as having
+//! no graces) is left alone. The manual button and hotkey ask before going past the limit.
 
 use std::collections::HashMap;
 use std::ffi::c_void;
