@@ -668,7 +668,7 @@ patched (`tools/randomizer-patch`).
   muted over the page, kept rewinding, hint hidden. Not tested: real phones (screen actually
   staying on, especially iPhone with music playing).
 
-## Twenty-fourth round: safer race graces, readable race codes (unreleased)
+## Twenty-fourth round: safer race graces, readable race codes (1.0.25)
 
 - Race graces: automatic setting now only writes once two reads 2 s apart agree
   (Game::snapshot), on both saves. This closes the open concern from the first review: a real
