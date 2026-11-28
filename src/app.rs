@@ -1130,7 +1130,8 @@ impl App {
                         ),
                         (None, Some(t)) => (Lead::Check, format!("Randomized {}", core::when(t.naive_local()).to_lowercase()), c::MUTED, None),
                     };
-                    ui::row(ui, lead, "Randomize", &detail, color, false, true, |ui| {
+                    let hover = code.is_some();
+                    let row = ui::row(ui, lead, "Randomize", &detail, color, false, true, |ui| {
                         if ui::button(ui, if snap.rando.is_some() { "Show" } else { "Open" }, Kind::Secondary, true).clicked() {
                             acts.push(Act::OpenRando);
                         }
@@ -1141,6 +1142,10 @@ impl App {
                             }
                         }
                     });
+                    if hover {
+                        row.on_hover_text(format!("Race code parts: {}.
+If a friend's code is different, the part that differs is what doesn't match.", core::RACE_CODE_PARTS));
+                    }
 
                     let normal_save_in_bingo = snap.game == GameState::Modded && settings.separate_save && !snap.bingo_save;
                     let (lead, detail, color) = match snap.game {
@@ -1195,7 +1200,7 @@ impl App {
                 });
                 ui::sub(ui, &parts.join("   ·   "));
 
-                ui::section(ui, "Phone board", 30.0);
+                ui.add_space(30.0);
                 self.phone_card(ui);
                 ui.add_space(36.0);
             });
@@ -1212,7 +1217,7 @@ impl App {
             };
             let mut start = false;
             ui::card(ui, |ui| {
-                ui::row(ui, Lead::Dot(c::FAINT), "Phone board", &detail, color, false, false, |ui| {
+                ui::row(ui, Lead::None, "Phone board", &detail, color, false, false, |ui| {
                     let ok = player.is_some() && !self.phone_lobby.trim().is_empty();
                     start = ui::button(ui, "Start", Kind::Secondary, ok).clicked();
                     let r = ui::field(ui, "phone_lobby", &mut self.phone_lobby, "Lobby name", 200.0, 60);
@@ -1243,10 +1248,10 @@ impl App {
             Conn::Reconnecting(_) => (Lead::Spin, "Connection lost, reconnecting".to_string(), c::WARN),
             Conn::Joined => {
                 let team = l.my_team().map(|t| format!("   ·   claiming for {}", l.team_name(t))).unwrap_or_default();
-                (Lead::Dot(c::GOOD), format!("Lobby \"{}\"{team}", l.room), c::MUTED)
+                (Lead::Check, format!("Lobby \"{}\"{team}", l.room), c::MUTED)
             }
             Conn::Failed(e) => (Lead::Dot(c::BAD), e.clone(), c::WARN),
-            Conn::Closed => (Lead::Dot(c::FAINT), "Stopped".to_string(), c::MUTED),
+            Conn::Closed => (Lead::None, "Stopped".to_string(), c::MUTED),
         };
         let (mut stop, mut copied) = (false, false);
         ui::card(ui, |ui| {
@@ -1712,8 +1717,8 @@ impl App {
                 use crate::graces::Status;
                 let status = match &snap.graces {
                     _ if !s.auto_graces => format!("Automatic setting is off. Use Set graces or {} in game.", sys::HOTKEY),
-                    Status::Idle if s.separate_save => "Set automatically on fresh characters in your bingo save".to_string(),
-                    Status::Idle => "Set automatically on new characters, from the name screen on".to_string(),
+                    _ if !s.separate_save => format!("On your normal save, press {} on the name screen of your new character", sys::HOTKEY),
+                    Status::Idle => "Set automatically on fresh characters in your bingo save".to_string(),
                     Status::Waiting => "Waiting for a character".to_string(),
                     Status::Set => "Set for this character".to_string(),
                     Status::Skipped(n) => format!("Left alone: this character already has {n} graces. Set graces asks before changing it."),
@@ -1727,7 +1732,7 @@ impl App {
                     ui.add_space(8.0);
                     ui.horizontal(|ui| {
                         ui.add_space(18.0);
-                        ui::toggle(ui, &mut s.auto_graces, "Set race graces on new bingo characters");
+                        ui::toggle(ui, &mut s.auto_graces, "Set race graces automatically on the bingo save");
                     });
                     ui::row(ui, Lead::None, "Status", &status, c::MUTED, true, true, |ui| {
                         if ui::button(ui, "Set graces", Kind::Ghost, snap.game == GameState::Modded).clicked() {

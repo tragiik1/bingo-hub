@@ -256,9 +256,9 @@ pub enum Lead<'a> {
 }
 
 /// One line inside a card. `actions` are laid out right-to-left at the right edge.
-pub fn row(ui: &mut Ui, lead: Lead, title_text: &str, detail: &str, detail_color: Color32, compact: bool, divider: bool, actions: impl FnOnce(&mut Ui)) {
+pub fn row(ui: &mut Ui, lead: Lead, title_text: &str, detail: &str, detail_color: Color32, compact: bool, divider: bool, actions: impl FnOnce(&mut Ui)) -> Response {
     let h = if compact { 40.0 } else { 62.0 };
-    let (rect, _) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
+    let (rect, resp) = ui.allocate_exact_size(vec2(ui.available_width(), h), Sense::hover());
     if divider {
         ui.painter().hline(rect.x_range().shrink(16.0), rect.top(), Stroke::new(1.0_f32, c::DIVIDER));
     }
@@ -306,6 +306,7 @@ pub fn row(ui: &mut Ui, lead: Lead, title_text: &str, detail: &str, detail_color
         let g = truncated(ui, detail, small(), detail_color, right - x);
         ui.painter().galley(pos2(x, rect.top() + 34.0), g, detail_color);
     }
+    resp
 }
 
 // ---------------------------------------------------------------- tables

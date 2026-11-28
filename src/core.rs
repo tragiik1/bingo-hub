@@ -83,8 +83,8 @@ pub fn rando_exe() -> Option<PathBuf> {
 #[derive(Clone, PartialEq, Debug)]
 pub struct RandoRun {
     pub seed: String,
-    /// Short code that matches only when seed, Randomizer build, game patch and the Randomizer's
-    /// copy of the game text all match.
+    /// Matches only when seed, Randomizer build, game patch and the Randomizer's copy of the game
+    /// text all match. One part per input ("8F3-7A1-A0C-3C9"), so a mismatch shows which one.
     pub code: String,
 }
 
@@ -114,8 +114,16 @@ pub fn rando_run(exe_hash: &str, game_dir: Option<&Path>) -> Option<RandoRun> {
     // The Randomizer picks weapons by the names in its copy of the game text, so a different copy
     // (made before or after a game update) gives a different game from the same seed.
     let text = file_hash_hex(&crate::randocheck::msgbnd_path()).unwrap_or_default();
-    let digest = Sha256::digest(format!("{exe_hash}|{seed}|{game_reg}|{text}").as_bytes());
-    Some(RandoRun { seed, code: hex(&digest[..3]).to_uppercase() })
+    let code = race_code(&seed, exe_hash, &game_reg, &text);
+    Some(RandoRun { seed, code })
+}
+
+/// Parts in this order: seed, Randomizer, game version, game text (3 hex digits each).
+pub const RACE_CODE_PARTS: &str = "Seed · Randomizer · game version · game text";
+
+fn race_code(seed: &str, exe_hash: &str, game_reg: &str, text: &str) -> String {
+    let part = |x: &str| hex(&Sha256::digest(x.as_bytes())[..2])[..3].to_uppercase();
+    [part(seed), part(exe_hash), part(game_reg), part(text)].join("-")
 }
 
 /// The Randomizer copies the game's text into `Cache\msg` on its first run and reuses it forever.
@@ -1038,6 +1046,16 @@ pub fn when(t: NaiveDateTime) -> String {
 /// Runs only against throwaway folders: `cargo test -- --ignored restore_sandbox`.
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn race_code_shows_which_input_differs() {
+        let a = super::race_code("seed", "exe", "reg", "text");
+        let b = super::race_code("seed", "exe", "reg2", "text");
+        assert_eq!(a.len(), 15);
+        let (pa, pb): (Vec<_>, Vec<_>) = (a.split('-').collect(), b.split('-').collect());
+        assert_eq!((pa[0], pa[1], pa[3]), (pb[0], pb[1], pb[3]));
+        assert_ne!(pa[2], pb[2]);
+    }
+
     use super::*;
 
     #[test]

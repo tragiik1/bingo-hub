@@ -667,3 +667,25 @@ patched (`tools/randomizer-patch`).
   /state, rejoins on the right team and claims again. In the browser pane the clip auto-played
   muted over the page, kept rewinding, hint hidden. Not tested: real phones (screen actually
   staying on, especially iPhone with music playing).
+
+## Twenty-fourth round: safer race graces, readable race codes (unreleased)
+
+- Race graces are set automatically only on the separate bingo save. The old rule (normal save:
+  any character with 3 or fewer graces) couldn't tell a brand-new character from the title
+  screen or a real character whose flags were still loading, so it could in theory write race
+  graces onto someone's real playthrough (the open concern from the first review). Play time from
+  GameDataMan was considered and rejected: it also reads 0 at the title screen and before a load
+  finishes, so it has the same gap. Only the player knows a character is their new bingo
+  character, so on a normal save it's now Set graces or Ctrl+F9 (still capped at 3 graces, asks
+  past that). Setup says so; the checklist already shows the hotkey hint when graces aren't set.
+- Automatic setting on the bingo save now writes only when two reads 2 s apart agree
+  (Game::snapshot), so a bingo character that's mid-load isn't wiped by a half-loaded read.
+- Race code: four parts, one per input, 3 hex each: seed, Randomizer, game version, game text
+  ("8F3-7A1-A0C-3C9"). When friends' codes differ, the differing part says what doesn't match;
+  hovering the Randomize row explains the parts. Old 6-character codes in the run log stay as
+  they were; old and new hubs' codes don't compare. ui::row now returns its Response.
+- Phone board without status dots or pills (UI rule): status is plain coloured text, the team
+  name is in the team colour, scores are one line under the board. The hub card uses the
+  checklist's check when joined, and the duplicate "Phone board" heading is gone.
+- Tested: cargo test (race code parts); live_phone again; page and Race card captured. Not
+  tested in game: the grace settle check (needs a bingo-save race).

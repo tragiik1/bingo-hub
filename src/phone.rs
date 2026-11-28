@@ -232,21 +232,18 @@ body{display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top
 header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 2px 12px}
 .eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #left{min-width:0}
-#team{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:600;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#team i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--faint);box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+#team{margin-top:4px;font-weight:600;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #right{text-align:right;flex:none}
 #clock{font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
-#state{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--muted)}
-#state i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
-#state.run i{background:var(--good);box-shadow:0 0 0 3px rgba(124,186,136,.18)}
-#state.wait i{background:var(--warn)}
-#state.done i{background:var(--accent)}
+#state{margin-top:6px;font-size:12px;color:var(--muted)}
+#state.run{color:var(--good)}
+#state.wait{color:var(--warn)}
+#state.done{color:var(--accent)}
 #stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#scores{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;padding-top:14px}
-.score{flex:none;display:flex;align-items:center;gap:8px;height:28px;padding:0 11px 0 9px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:13px;color:var(--muted)}
-.score i{width:8px;height:8px;border-radius:2px}
-.score b{color:var(--text);font-variant-numeric:tabular-nums}
-.score.me{border-color:#3a3a43;color:var(--text)}
+#scores{padding-top:14px;font-size:14px;color:var(--muted);text-align:center;line-height:1.6}
+#scores span{white-space:nowrap}
+#scores b{color:var(--text);font-variant-numeric:tabular-nums;margin-left:5px}
+#scores .sep{margin:0 10px;color:var(--faint)}
 #board{display:grid;gap:4px;width:100%;aspect-ratio:1}
 .sq span{display:block;max-width:100%}
 .sq{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 2px;border-radius:9px;background:var(--surface);border:1px solid var(--border);color:#d6d6dc;font-size:var(--fs,12px);font-weight:500;line-height:1.18;overflow:hidden;transition:transform .1s ease,background-color .15s ease}
@@ -268,8 +265,8 @@ footer{padding-top:10px;font-size:12px;color:var(--faint);text-align:center}
 #toast.on{opacity:1;transform:translate(-50%,0)}
 </style></head><body>
 <header>
-  <div id="left"><div class="eyebrow" id="room">Bingo</div><div id="team"><i></i><span id="teamname">Connecting</span></div></div>
-  <div id="right"><div id="clock">0:00</div><div id="state"><i></i><span id="statetext">Connecting</span></div></div>
+  <div id="left"><div class="eyebrow" id="room">Bingo</div><div id="team">Connecting</div></div>
+  <div id="right"><div id="clock">0:00</div><div id="state">Connecting</div></div>
 </header>
 <main id="stage">
   <div id="board" hidden></div>
@@ -295,16 +292,16 @@ async function poll(){
   catch(e){if(++failed>=3){message("Can't reach Bingo Hub","Check that this phone is on the same Wi-Fi as the PC and the phone board is still on.");setState('','Offline')}}
   setTimeout(poll,700)
 }
-function setState(cls,text){$('state').className=cls;$('statetext').textContent=text}
+function setState(cls,text){$('state').className=cls;$('state').textContent=text}
 function render(){
   const s=st;
   $('room').textContent=s.room?('Lobby · '+s.room):'Bingo';
-  $('teamname').textContent=s.myName||(s.conn==='joined'?'Spectating':'Connecting');
-  $('team').querySelector('i').style.background=s.myColor||'';
+  $('team').textContent=s.myName||(s.conn==='joined'?'Spectating':'Connecting');
+  $('team').style.color=s.myColor||'';
   if(s.conn==='reconnecting')setState('wait','Reconnecting');
   else if(s.paused)setState('wait','Paused');
   else setState(['','wait','wait','run','done'][s.status]||'',STATUS[s.status]||'');
-  $('scores').innerHTML=s.scores.map(t=>`<div class="score${t.team===s.myTeam?' me':''}"><i style="background:${t.color}"></i>${esc(t.name)}<b>${t.score}</b></div>`).join('');
+  $('scores').innerHTML=s.scores.map(t=>`<span><span style="color:${t.color}">${esc(t.name)}</span><b>${t.score}</b></span>`).join('<span class="sep">·</span>');
   $('scores').hidden=!s.scores.length;
   if(s.conn==='failed')return message("Couldn't join the lobby",s.error);
   if(s.conn==='closed')return message('Phone board stopped','Start it again in Bingo Hub to keep playing.');

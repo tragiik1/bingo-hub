@@ -129,6 +129,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
     let mut last_crash = String::new();
     let mut grace_game: Option<(u32, Result<crate::graces::Game, String>, Instant)> = None;
     let mut grace_checked = Instant::now();
+    let mut grace_seen: Option<Vec<bool>> = None;
     let mut graces_status = crate::graces::Status::Idle;
     let mut saw_game_since_swap = false;
     let mut prev_state = GameState::NotRunning;
@@ -289,11 +290,11 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             classes = crate::classes::load();
         }
 
-        // Race graces. On the separate bingo save every character is a bingo character, so any fresh
-        // one gets them. On any other save only a brand-new character does, which covers the name
-        // screen (where the Cheat Engine script was run) and the first moments after Finish.
+        // Race graces, automatically only on the separate bingo save: every character there is a
+        // bingo character. On a normal save the player sets them (button or hotkey), because nothing
+        // readable tells a new character from the title screen or a real one that's still loading.
         match (game, game_pid) {
-            (GameState::Modded, Some(pid)) if settings.auto_graces => {
+            (GameState::Modded, Some(pid)) if settings.auto_graces && crate::bingosave::active() => {
                 if grace_checked.elapsed() >= Duration::from_secs(2) {
                     grace_checked = Instant::now();
                     let reopen = match &grace_game {
@@ -308,19 +309,28 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
                         grace_game = Some((pid, crate::graces::Game::open(pid), Instant::now()));
                     }
                     use crate::graces::{Outcome, Status};
-                    let limit = if crate::bingosave::active() { crate::graces::FRESH_LIMIT } else { crate::graces::NEW_LIMIT };
                     graces_status = match &grace_game {
-                        Some((_, Ok(g), _)) => match g.apply(Some(limit)) {
-                            Outcome::Applied(_) => {
-                                sys::chime(true);
-                                let _ = tx.send(Msg::Toast("Race graces set".into()));
-                                Status::Set
+                        Some((_, Ok(g), _)) => {
+                            // Write only once two reads 2 s apart agree, so never mid-load.
+                            let now = g.snapshot();
+                            let settled = now.is_some() && now == grace_seen;
+                            grace_seen = now;
+                            if !settled {
+                                if grace_seen.is_none() { Status::Waiting } else { graces_status.clone() }
+                            } else {
+                                match g.apply(Some(crate::graces::FRESH_LIMIT)) {
+                                    Outcome::Applied(_) => {
+                                        sys::chime(true);
+                                        let _ = tx.send(Msg::Toast("Race graces set".into()));
+                                        Status::Set
+                                    }
+                                    Outcome::AlreadySet => Status::Set,
+                                    Outcome::NotLoaded => Status::Waiting,
+                                    Outcome::NotFresh(n) => Status::Skipped(n),
+                                    Outcome::WriteFailed => Status::Error("The game didn't take the graces. Try Set graces again.".into()),
+                                }
                             }
-                            Outcome::AlreadySet => Status::Set,
-                            Outcome::NotLoaded => Status::Waiting,
-                            Outcome::NotFresh(n) => Status::Skipped(n),
-                            Outcome::WriteFailed => Status::Error("The game didn't take the graces. Try Set graces again.".into()),
-                        },
+                        }
                         Some((_, Err(e), _)) if e == crate::graces::NOT_READY => Status::Waiting,
                         Some((_, Err(e), _)) => Status::Error(e.clone()),
                         None => Status::Idle,
@@ -329,6 +339,7 @@ fn run(shared: Arc<Shared>, tx: Sender<Msg>, ctx: egui::Context) {
             }
             (GameState::NotRunning, _) => {
                 grace_game = None;
+                grace_seen = None;
                 graces_status = crate::graces::Status::Idle;
             }
             _ => {}

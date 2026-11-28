@@ -6,9 +6,12 @@
 //! split into a block (id / divisor) and an index; blocks sit in a std::map keyed by block number,
 //! and each flag is one bit, big-endian within its byte.
 //!
-//! Only used on bingo launches (ModEngine 2 loaded, EAC off). Automatic setting never touches a
-//! character that has been played (see NEW_LIMIT / FRESH_LIMIT), so a normal playthrough can't be
-//! wiped by accident; the manual button and hotkey ask before going past that limit.
+//! Only used on bingo launches (ModEngine 2 loaded, EAC off). Automatic setting only runs on the
+//! separate bingo save, where every character is a bingo character, and only on a character whose
+//! flags read the same twice in a row (not mid-load) with at most FRESH_LIMIT graces. On any other
+//! save nothing is written unless the player asks (button or hotkey), and past NEW_LIMIT the hub
+//! asks again first: counting graces can't tell a brand-new character from the title screen or a
+//! real character that's still loading, so only a person can say "this is my new bingo character".
 
 use std::collections::HashMap;
 use std::ffi::c_void;
@@ -372,6 +375,13 @@ impl Game {
         let Some(v) = self.u8(a) else { return false };
         let nv = if on { v | bit } else { v & !bit };
         nv == v || self.write_u8(a, nv)
+    }
+
+    /// Which graces are on right now (`None` while no character is readable). Automatic setting
+    /// only writes once two of these agree, so a character that's still loading isn't touched.
+    pub fn snapshot(&self) -> Option<Vec<bool>> {
+        let mut cache = HashMap::new();
+        ALL.iter().map(|&id| self.get(id, &mut cache)).collect()
     }
 
     /// Applies the race graces. Characters with more than `limit` graces are left alone; `None`
