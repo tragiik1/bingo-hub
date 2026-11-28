@@ -1204,100 +1204,97 @@ impl App {
 
     /// See and claim squares on a phone, for players without a second monitor (phone.rs).
     fn phone_card(&mut self, ui: &mut Ui) {
-        let player = crate::phone::eldenbingo_player();
-        ui::card(ui, |ui| {
-            ui.add_space(12.0);
-            ui.horizontal_top(|ui| {
-                ui.add_space(16.0);
-                ui.vertical(|ui| {
-                    ui.set_width(ui.available_width() - 16.0);
-                    match &self.phone {
-                        None => {
-                            ui::sub(
-                                ui,
-                                &match &player {
-                                    Some((nick, _)) => format!("See the board and claim squares on your phone, no second monitor needed. It joins the lobby as \"{nick} (phone)\" on your team, so everyone can see it."),
-                                    None => "Set a nickname in the Bingo Board and join a lobby there once, then come back here.".to_string(),
-                                },
-                            );
-                            ui.add_space(10.0);
-                            ui.horizontal(|ui| {
-                                ui.spacing_mut().item_spacing.x = 8.0;
-                                let r = ui::field(ui, "phone_lobby", &mut self.phone_lobby, "Lobby name, as in the Bingo Board", 300.0, 60);
-                                ui.add_space(8.0);
-                                let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
-                                let ok = player.is_some() && !self.phone_lobby.trim().is_empty();
-                                let start = ui::button(ui, "Start", Kind::Primary, ok).clicked() || (enter && ok);
-                                if let (true, Some((nick, team))) = (start, &player) {
-                                    let lobby = self.phone_lobby.trim().to_string();
-                                    let mut identity = self.settings().phone_identity;
-                                    if identity.is_empty() {
-                                        identity = format!("hub{}", crate::phone::random_token(12));
-                                    }
-                                    let (l2, id2) = (lobby.clone(), identity.clone());
-                                    self.set(|s| {
-                                        s.phone_lobby = l2;
-                                        s.phone_identity = id2;
-                                    });
-                                    self.phone = Some(crate::phone::Phone::start(&lobby, nick, *team, &identity));
-                                }
-                            });
-                        }
-                        Some(ph) => {
-                            let l = ph.client.snapshot();
-                            let mut stop = false;
-                            let mut copied = false;
-                            ui.horizontal_top(|ui| {
-                                if let Some(qr) = &ph.qr {
-                                    draw_qr(ui, qr, 156.0);
-                                    ui.add_space(18.0);
-                                }
-                                ui.vertical(|ui| {
-                                    use crate::bingonet::Conn;
-                                    let (text, color) = match &l.conn {
-                                        Conn::Connecting => ("Connecting to the lobby…".to_string(), c::MUTED),
-                                        Conn::Joined => {
-                                            let team = l.my_team().map(|t| format!("   ·   claiming for {}", l.team_name(t))).unwrap_or_default();
-                                            (format!("In lobby \"{}\"{team}", l.room), c::TEXT)
-                                        }
-                                        Conn::Failed(e) => (e.clone(), c::WARN),
-                                        Conn::Closed => ("Stopped".to_string(), c::MUTED),
-                                    };
-                                    ui.label(egui::RichText::new(text).font(ui::body()).color(color));
-                                    ui.add_space(8.0);
-                                    if let Some(e) = &ph.serve_error {
-                                        ui.label(egui::RichText::new(e).font(ui::small()).color(c::WARN));
-                                    } else {
-                                        ui::sub(ui, "Scan it with your phone's camera. The phone has to be on the same Wi-Fi as this PC.");
-                                        ui.add_space(4.0);
-                                        ui::sub(ui, "If it won't load, allow Bingo Hub on private networks when Windows asks.");
-                                        ui.add_space(8.0);
-                                        ui.horizontal(|ui| {
-                                            ui.spacing_mut().item_spacing.x = 8.0;
-                                            ui.label(egui::RichText::new(&ph.url).font(ui::small()).color(c::FAINT));
-                                            if ui::button(ui, "Copy link", Kind::Ghost, true).clicked() {
-                                                ui.ctx().copy_text(ph.url.clone());
-                                                copied = true;
-                                            }
-                                        });
-                                    }
-                                    ui.add_space(8.0);
-                                    stop = ui::button(ui, "Stop", Kind::Secondary, true).clicked();
-                                });
-                            });
-                            if copied {
-                                self.toast = Some(("Link copied".into(), ui.ctx().input(|i| i.time)));
-                            }
-                            if stop {
-                                self.phone = None;
-                            }
-                            ui.ctx().request_repaint_after(std::time::Duration::from_millis(500));
-                        }
-                    }
+        let Some(ph) = &self.phone else {
+            let player = crate::phone::eldenbingo_player();
+            let (detail, color) = match &player {
+                Some((nick, _)) => (format!("Claim squares from your phone. It joins your team as \"{nick} (phone)\"."), c::MUTED),
+                None => ("Set a nickname in the Bingo Board and join a lobby there first.".to_string(), c::WARN),
+            };
+            let mut start = false;
+            ui::card(ui, |ui| {
+                ui::row(ui, Lead::Dot(c::FAINT), "Phone board", &detail, color, false, false, |ui| {
+                    let ok = player.is_some() && !self.phone_lobby.trim().is_empty();
+                    start = ui::button(ui, "Start", Kind::Secondary, ok).clicked();
+                    let r = ui::field(ui, "phone_lobby", &mut self.phone_lobby, "Lobby name", 200.0, 60);
+                    start |= ok && r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
                 });
             });
-            ui.add_space(12.0);
+            if let (true, Some((nick, team))) = (start, &player) {
+                let lobby = self.phone_lobby.trim().to_string();
+                let mut identity = self.settings().phone_identity;
+                if identity.is_empty() {
+                    identity = format!("hub{}", crate::phone::random_token(12));
+                }
+                let (l2, id2) = (lobby.clone(), identity.clone());
+                self.set(|s| {
+                    s.phone_lobby = l2;
+                    s.phone_identity = id2;
+                });
+                self.phone = Some(crate::phone::Phone::start(&lobby, nick, *team, &identity));
+            }
+            return;
+        };
+
+        use crate::bingonet::Conn;
+        let l = ph.client.snapshot();
+        let (lead, detail, color) = match &l.conn {
+            Conn::Connecting => (Lead::Spin, "Connecting to the lobby".to_string(), c::MUTED),
+            Conn::Joined => {
+                let team = l.my_team().map(|t| format!("   ·   claiming for {}", l.team_name(t))).unwrap_or_default();
+                (Lead::Dot(c::GOOD), format!("Lobby \"{}\"{team}", l.room), c::MUTED)
+            }
+            Conn::Failed(e) => (Lead::Dot(c::BAD), e.clone(), c::WARN),
+            Conn::Closed => (Lead::Dot(c::FAINT), "Stopped".to_string(), c::MUTED),
+        };
+        let (mut stop, mut copied) = (false, false);
+        ui::card(ui, |ui| {
+            ui::row(ui, lead, "Phone board", &detail, color, false, false, |ui| {
+                stop = ui::button(ui, "Stop", Kind::Secondary, true).clicked();
+                if !ph.url.is_empty() && ui::button(ui, "Copy link", Kind::Ghost, true).clicked() {
+                    ui.ctx().copy_text(ph.url.clone());
+                    copied = true;
+                }
+            });
+            let top = ui.cursor().top();
+            ui.painter().hline(ui.max_rect().x_range().shrink(16.0), top, egui::Stroke::new(1.0, c::DIVIDER));
+            ui.add_space(18.0);
+            ui.horizontal_top(|ui| {
+                ui.add_space(18.0);
+                match (&ph.serve_error, &ph.qr) {
+                    (Some(e), _) => {
+                        ui.label(egui::RichText::new(e).font(ui::small()).color(c::WARN));
+                    }
+                    (None, Some(qr)) => {
+                        const QR: f32 = 128.0;
+                        draw_qr(ui, qr, QR);
+                        ui.add_space(26.0);
+                        ui.vertical(|ui| {
+                            let steps = ["Scan the code with your phone's camera", "Keep the phone on the same Wi-Fi as this PC", "If Windows asks, allow Bingo Hub on private networks"];
+                            let block = steps.len() as f32 * 30.0 + 22.0;
+                            ui.add_space(((QR - block) / 2.0).max(0.0));
+                            for (i, step) in steps.iter().enumerate() {
+                                let (rect, _) = ui.allocate_exact_size(egui::vec2(ui.available_width(), 30.0), egui::Sense::hover());
+                                let dot = egui::pos2(rect.left() + 10.0, rect.center().y);
+                                ui.painter().circle_filled(dot, 10.0, c::RAISED);
+                                ui::text_at(ui, dot, egui::Align2::CENTER_CENTER, &(i + 1).to_string(), ui::small(), c::MUTED);
+                                ui::text_at(ui, egui::pos2(rect.left() + 32.0, rect.center().y), egui::Align2::LEFT_CENTER, step, ui::body(), c::TEXT);
+                            }
+                            ui.add_space(6.0);
+                            ui.label(egui::RichText::new(&ph.url).font(ui::small()).color(c::FAINT));
+                        });
+                    }
+                    (None, None) => {}
+                }
+            });
+            ui.add_space(18.0);
         });
+        if copied {
+            self.toast = Some(("Link copied".into(), ui.ctx().input(|i| i.time)));
+        }
+        if stop {
+            self.phone = None;
+        }
+        ui.ctx().request_repaint_after(std::time::Duration::from_millis(500));
     }
 
     // ------------------------------------------------------------ classes

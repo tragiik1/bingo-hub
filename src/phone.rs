@@ -200,94 +200,144 @@ const PAGE: &str = r##"<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#141418">
+<meta name="theme-color" content="#0f0f11">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <title>Bingo board</title>
 <style>
-:root{--bg:#141418;--surface:#1d1d23;--raised:#26262e;--border:#33333d;--text:#ececf1;--muted:#9a9aa6;--accent:#d8b45c}
+:root{--bg:#0f0f11;--surface:#18181c;--raised:#222227;--border:#2c2c33;--text:#eaeaed;--muted:#8e8e96;--faint:#606068;--accent:#ceae74;--good:#7cba88;--warn:#dca858;--bad:#e2706a}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 [hidden]{display:none!important}
-html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.3 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-body{display:flex;flex-direction:column;padding:max(10px,env(safe-area-inset-top)) 10px max(10px,env(safe-area-inset-bottom))}
-header{display:flex;align-items:center;gap:10px;margin-bottom:8px;min-height:34px}
-#team{width:14px;height:14px;border-radius:4px;background:var(--raised);flex:none}
-#who{flex:1;min-width:0}
-#who b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#who span{color:var(--muted);font-size:12px}
-#clock{font-variant-numeric:tabular-nums;font-weight:600;font-size:20px}
-#status{font-size:12px;color:var(--muted);text-align:right}
-#scores{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
-.score{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:3px 10px 3px 6px;font-size:13px}
-.score i{width:10px;height:10px;border-radius:3px;display:block}
-#board{flex:1;display:grid;gap:5px;min-height:0}
-.sq{position:relative;border-radius:8px;background:var(--surface);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;overflow:hidden;user-select:none;font-size:var(--fs,12px);line-height:1.15;transition:transform .08s}
-.sq:active{transform:scale(.96)}
-.sq.mine{border-color:#fff;color:#fff;font-weight:600}
-.sq.other{opacity:.55}
-.sq.pending{outline:2px dashed var(--accent);outline-offset:-4px}
-.sq span{position:relative;z-index:1;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-#msg{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;color:var(--muted);padding:20px}
-#notice{color:var(--muted);font-size:12px;margin-top:6px;min-height:15px}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:15px/1.3 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+body{display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 10px max(12px,env(safe-area-inset-bottom));user-select:none;-webkit-user-select:none}
+header{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding:0 2px 12px}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#left{min-width:0}
+#team{display:flex;align-items:center;gap:8px;margin-top:4px;font-weight:600;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#team i{width:10px;height:10px;border-radius:50%;flex:none;background:var(--faint);box-shadow:0 0 0 3px rgba(255,255,255,.06)}
+#right{text-align:right;flex:none}
+#clock{font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+#state{display:inline-flex;align-items:center;gap:6px;margin-top:6px;font-size:12px;color:var(--muted)}
+#state i{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+#state.run i{background:var(--good);box-shadow:0 0 0 3px rgba(124,186,136,.18)}
+#state.wait i{background:var(--warn)}
+#state.done i{background:var(--accent)}
+#scores{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:0 0 12px}
+#scores::-webkit-scrollbar{display:none}
+.score{flex:none;display:flex;align-items:center;gap:8px;height:28px;padding:0 11px 0 9px;border-radius:8px;background:var(--surface);border:1px solid var(--border);font-size:13px;color:var(--muted)}
+.score i{width:8px;height:8px;border-radius:2px}
+.score b{color:var(--text);font-variant-numeric:tabular-nums}
+.score.me{border-color:#3a3a43;color:var(--text)}
+#board{flex:1;display:grid;gap:4px;min-height:0}
+.sq span{display:block;max-width:100%}
+.sq{position:relative;display:flex;align-items:center;justify-content:center;text-align:center;padding:5px 2px;border-radius:9px;background:var(--surface);border:1px solid var(--border);color:#d6d6dc;font-size:var(--fs,12px);font-weight:500;line-height:1.18;overflow:hidden;transition:transform .1s ease,background-color .15s ease}
+.sq:active{transform:scale(.95)}
+.sq.mine{background:var(--c);border-color:transparent;color:var(--on);font-weight:650;box-shadow:inset 0 1px 0 rgba(255,255,255,.2),0 2px 10px -2px var(--c)}
+.sq.mine::after{content:"";position:absolute;top:5px;right:5px;width:10px;height:10px;background:var(--on);opacity:.75;-webkit-mask:var(--tick) center/contain no-repeat;mask:var(--tick) center/contain no-repeat}
+:root{--tick:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.4l2.6 2.6L10 3.2' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
+.sq.taken{background:color-mix(in srgb,var(--c) 20%,var(--surface));border-color:color-mix(in srgb,var(--c) 45%,var(--border));color:var(--faint)}
+.sq .bars{position:absolute;left:6px;right:6px;bottom:4px;display:flex;gap:3px}
+.sq .bars i{flex:1;height:3px;border-radius:2px}
+.sq.pending{animation:pulse .9s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.55}}
+#msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:24px;color:var(--muted);font-size:14px;line-height:1.45}
+#msg b{color:var(--text);font-size:16px;font-weight:600}
+#msg p{margin:0;max-width:280px}
+.spin{width:22px;height:22px;border-radius:50%;border:2px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+footer{min-height:18px;padding:10px 2px 0;font-size:12px;color:var(--faint);text-align:center}
+#toast{position:fixed;left:50%;bottom:max(24px,env(safe-area-inset-bottom));transform:translate(-50%,12px);opacity:0;pointer-events:none;background:var(--raised);border:1px solid var(--border);color:var(--text);font-size:13px;padding:9px 14px;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,.45);transition:opacity .18s,transform .18s;white-space:nowrap}
+#toast.on{opacity:1;transform:translate(-50%,0)}
 </style></head><body>
-<header><div id="team"></div><div id="who"><b id="room">Connecting…</b><span id="sub"></span></div><div><div id="clock"></div><div id="status"></div></div></header>
+<header>
+  <div id="left"><div class="eyebrow" id="room">Bingo</div><div id="team"><i></i><span id="teamname">Connecting</span></div></div>
+  <div id="right"><div id="clock">0:00</div><div id="state"><i></i><span id="statetext">Connecting</span></div></div>
+</header>
 <div id="scores"></div>
 <div id="board" hidden></div>
-<div id="msg">Connecting to the lobby…</div>
-<div id="notice"></div>
+<div id="msg"><div class="spin"></div><b>Connecting</b><p>Joining the lobby…</p></div>
+<footer id="foot"></footer>
+<div id="toast"></div>
 <script>
-const base = location.pathname.replace(/\/$/, '');
-const $ = id => document.getElementById(id);
-let st = null, got = 0, pending = new Map(), built = '';
-const STATUS = ['Waiting for the race', 'Starting', 'Preparation', 'Running', 'Finished'];
-function fmt(ms){const neg=ms<0;let s=Math.floor(Math.abs(ms)/1000);const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;return (neg?'-':'')+(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')}
+const base=location.pathname.replace(/\/$/,'');
+const $=id=>document.getElementById(id);
+let st=null,got=0,pending=new Map(),built='',failed=0;
+const STATUS=['Waiting','Starting','Preparation','Running','Finished'];
+function fmt(ms){const neg=ms<0;let s=Math.floor(Math.abs(ms)/1000);const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;return(neg?'-':'')+(h?h+':'+String(m).padStart(2,'0'):m)+':'+String(s).padStart(2,'0')}
+function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function on(c){const m=/(\d+),\s*(\d+),\s*(\d+)/.exec(c||'');if(!m)return'#fff';const[r,g,b]=[m[1],m[2],m[3]].map(Number);return(r*299+g*587+b*114)/1000>150?'#141414':'#fff'}
+function message(title,text,spin){$('board').hidden=true;$('msg').hidden=false;$('msg').innerHTML=(spin?'<div class="spin"></div>':'')+'<b>'+esc(title)+'</b>'+(text?'<p>'+esc(text)+'</p>':'')}
+let toastT;function toast(t){const e=$('toast');e.textContent=t;e.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>e.classList.remove('on'),1800)}
 async function poll(){
-  try{const r=await fetch(base+'/state',{cache:'no-store'});if(!r.ok)throw 0;st=await r.json();got=performance.now();render()}
-  catch(e){$('msg').hidden=false;$('board').hidden=true;$('msg').textContent='Can\'t reach Bingo Hub. Is your phone on the same Wi-Fi as the PC, and the phone board still on?'}
+  try{const r=await fetch(base+'/state',{cache:'no-store'});if(!r.ok)throw 0;st=await r.json();got=performance.now();failed=0;render()}
+  catch(e){if(++failed>=3){message("Can't reach Bingo Hub","Check that this phone is on the same Wi-Fi as the PC and the phone board is still on.");setState('','Offline')}}
   setTimeout(poll,700)
 }
+function setState(cls,text){$('state').className=cls;$('statetext').textContent=text}
 function render(){
   const s=st;
-  $('room').textContent=s.room?('Lobby '+s.room):'Connecting…';
-  $('sub').textContent=s.myName?('Claiming for '+s.myName):'';
-  $('team').style.background=s.myColor||'';
-  $('status').textContent=s.paused?'Paused':(STATUS[s.status]||'');
-  $('scores').innerHTML=s.scores.map(t=>`<div class="score"><i style="background:${t.color}"></i>${esc(t.name)} <b>${t.score}</b></div>`).join('');
-  $('notice').textContent=s.notice||'';
-  let msg='';
-  if(s.conn==='failed'||s.conn==='closed')msg=s.error;
-  else if(s.conn==='connecting')msg='Connecting to the lobby…';
-  else if(!s.size)msg=s.status<2?'The board shows here when the race starts.':'Waiting for the board…';
-  $('msg').hidden=!msg;$('msg').textContent=msg;$('board').hidden=!!msg;
-  if(msg)return;
-  const n=s.size, b=$('board');
+  $('room').textContent=s.room?('Lobby · '+s.room):'Bingo';
+  $('teamname').textContent=s.myName||(s.conn==='joined'?'Spectating':'Connecting');
+  $('team').querySelector('i').style.background=s.myColor||'';
+  if(s.paused)setState('wait','Paused');
+  else setState(['','wait','wait','run','done'][s.status]||'',STATUS[s.status]||'');
+  $('scores').innerHTML=s.scores.map(t=>`<div class="score${t.team===s.myTeam?' me':''}"><i style="background:${t.color}"></i>${esc(t.name)}<b>${t.score}</b></div>`).join('');
+  $('scores').hidden=!s.scores.length;
+  if(s.conn==='failed')return message("Couldn't join the lobby",s.error);
+  if(s.conn==='closed')return message('Phone board stopped','Start it again in Bingo Hub to keep playing.');
+  if(s.conn==='connecting')return message('Connecting','Joining the lobby…',true);
+  if(!s.size)return message(s.status<2?'Waiting for the race':'Waiting for the board',s.status<2?'The board appears here when the race starts.':'',true);
+  $('msg').hidden=true;
+  const n=s.size,b=$('board');
   const key=n+'|'+s.squares.map(q=>q.text).join('|');
   if(key!==built){
-    built=key;b.innerHTML='';
-    b.style.gridTemplateColumns=`repeat(${n},1fr)`;b.style.gridTemplateRows=`repeat(${n},1fr)`;
-    s.squares.forEach((q,i)=>{const d=document.createElement('div');d.className='sq';d.innerHTML='<span></span>';d.firstChild.textContent=q.text;d.onclick=()=>tap(i);b.appendChild(d)});
+    built=key;b.innerHTML='';pending.clear();
+    b.style.gridTemplateColumns=`repeat(${n},minmax(0,1fr))`;b.style.gridTemplateRows=`repeat(${n},minmax(0,1fr))`;
+    s.squares.forEach((q,i)=>{const d=document.createElement('div');d.className='sq';const t=document.createElement('span');t.textContent=q.text;const bars=document.createElement('div');bars.className='bars';d.append(t,bars);d.onclick=()=>tap(i);b.appendChild(d)});
   }
-  fit();
+  b.hidden=false;
+  const col=t=>(s.teams[t]||{}).color||'rgb(128,128,128)';
   [...b.children].forEach((d,i)=>{
-    const q=s.squares[i];const teams=q.teams||[];
+    const teams=s.squares[i].teams||[];
     const mine=s.myTeam!=null&&teams.includes(s.myTeam);
-    const p=pending.get(i);if(p!==undefined&&p!==mine)d.classList.add('pending');else{pending.delete(i);d.classList.remove('pending')}
-    d.classList.toggle('mine',mine);
-    d.classList.toggle('other',!mine&&teams.length>0&&s.lockout);
-    const cols=teams.map(t=>(s.teams[t]||{}).color||'#888');
-    d.style.background=cols.length?(cols.length===1?cols[0]:`linear-gradient(135deg,${cols.map((c,k)=>c+' '+(k*100/cols.length)+'%,'+c+' '+((k+1)*100/cols.length)+'%').join(',')})`):'';
+    const p=pending.get(i);
+    if(p!==undefined&&p!==mine)d.classList.add('pending');else{pending.delete(i);d.classList.remove('pending')}
+    const others=teams.filter(t=>t!==s.myTeam);
+    const taken=!mine&&s.lockout&&others.length>0;
+    d.classList.toggle('mine',mine);d.classList.toggle('taken',taken);
+    const fill=mine?col(s.myTeam):taken?col(others[0]):'';
+    d.style.setProperty('--c',fill);d.style.setProperty('--on',on(fill));
+    const strips=taken?others.slice(1):others;
+    const bars=d.lastChild,html=strips.map(t=>`<i style="background:${col(t)}"></i>`).join('');
+    if(bars.innerHTML!==html)bars.innerHTML=html;
   });
+  fit();
+  const claimed=s.squares.filter(q=>(q.teams||[]).includes(s.myTeam)).length;
+  $('foot').textContent=s.notice||(s.status===3&&!s.paused?(claimed?claimed+' claimed · tap a square to claim or undo':'Tap a square to claim it, tap again to undo'):'');
 }
-function fit(){const b=$('board'),n=st.size||5;if(!b.clientWidth)return;const fs=Math.max(9,Math.min(17,b.clientWidth/n/6.4,b.clientHeight/n/4.2))+'px';if(fit.last!==fs){fit.last=fs;document.documentElement.style.setProperty('--fs',fs)}}
+function fit(){
+  const b=$('board'),n=st.size||5;if(!b.clientWidth)return;
+  const fs=Math.max(9,Math.min(16,b.clientWidth/n/6.2,b.clientHeight/n/4.6));
+  document.documentElement.style.setProperty('--fs',fs+'px');
+  // Shrink only the squares whose longest word or text still doesn't fit.
+  for(const d of b.children){
+    const t=d.firstChild;let f=fs;d.style.fontSize='';
+    while(f>8&&(t.scrollWidth>t.clientWidth+1||t.offsetHeight>d.clientHeight-8)){f-=.5;d.style.fontSize=f+'px'}
+  }
+}
 addEventListener('resize',()=>st&&st.size&&fit());
+addEventListener('load',()=>document.fonts&&document.fonts.ready.then(()=>st&&st.size&&fit()));
 async function tap(i){
-  const s=st;if(!s||s.status!==3||s.paused)return;
+  const s=st;if(!s)return;
+  if(s.paused)return toast('The race is paused');
+  if(s.status!==3)return toast(s.status===4?'The race is over':'Claims open when the race starts');
   const teams=s.squares[i].teams||[];const mine=teams.includes(s.myTeam);
-  if(!mine&&s.lockout&&teams.length)return;
+  if(!mine&&s.lockout&&teams.length)return toast('Already claimed');
   pending.set(i,!mine);render();
-  if(navigator.vibrate)navigator.vibrate(15);
+  if(navigator.vibrate)navigator.vibrate(12);
   try{await fetch(base+'/check/'+i,{method:'POST'})}catch(e){}
 }
-function esc(t){return String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
-setInterval(()=>{if(st&&st.size!==undefined){const run=st.status>=1&&st.status<=3&&!st.paused;$('clock').textContent=st.status===0?'':fmt(st.clock+(run?performance.now()-got:0))}},250);
+setInterval(()=>{if(!st)return;const run=st.status>=1&&st.status<=3&&!st.paused;$('clock').textContent=st.status===0?'0:00':fmt(st.clock+(run?performance.now()-got:0));$('clock').style.color=st.status===0?'var(--faint)':''},250);
 poll();
 </script></body></html>"##;
 

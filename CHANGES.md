@@ -631,3 +631,12 @@ patched (`tools/randomizer-patch`).
   unclaims) and `live_phone` (the whole path: lobby, phone connection, page, /state, a claim via
   POST, a wrong path gets 404). Page checked at phone size in a browser. Not tested: a real phone
   on Wi-Fi through Windows Firewall (Windows should ask to allow Bingo Hub the first time).
+- Redesign (same round): the Race card is one checklist-style row (status dot, "Phone board",
+  lobby field + Start); while running, the row shows the lobby/team and Stop/Copy link, with the
+  QR beside three numbered steps and the link. The phone page uses the hub's palette: lobby and
+  team on top, clock and a status dot on the right, score chips, claimed squares filled in the
+  team color with a tick (dark text on light team colors), other teams' lockout claims tinted,
+  non-lockout claims as small colored bars. Text is sized per board, and only squares whose
+  longest word won't fit get shrunk. Taps that can't count (not running, paused, finished,
+  already claimed) show a short message instead of doing nothing. Hub card not screenshotted
+  (a game was running); the page was checked at 390x844 against a live test lobby.
